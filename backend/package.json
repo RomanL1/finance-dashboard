@@ -26,11 +26,10 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
-    "@fastify/static": "^10.1.3",
     "@libsql/client": "^0.17.4",
     "@nestjs/common": "^12.0.1",
     "@nestjs/core": "^12.0.1",
-    "@nestjs/platform-fastify": "^12.0.1",
+    "@nestjs/platform-express": "^12.0.1",
     "@nestjs/swagger": "^12.0.1",
     "dotenv": "^17.4.2",
     "drizzle-orm": "^1.0.0-rc.4",
