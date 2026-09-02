@@ -1,2 +1,3 @@
 .DS_Store
 backend/tsconfig.build.tsbuildinfo
+.idea
