@@ -52,3 +52,10 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - Design services around a single responsibility
 - Use the `providedIn: 'root'` option for singleton services
 - Use the `inject()` function instead of constructor injection
+
+## API access
+
+- All backend calls go through the generated hey-api SDK in `src/app/core/api` (`import { householdMine } from '../../core/api'`). Never hand-write `fetch`/`HttpClient` calls against the backend.
+- Regenerate after backend changes: start the backend once (it writes `backend/openapi.json` in dev) or run `bun run openapi:generate` there, then `bun run api:generate` here. Generated files are committed.
+- Runtime client config (base URL, `credentials: 'include'`) lives in `src/app/core/api-config.ts`.
+- Auth (sign-in/out, session) uses the better-auth client in `src/app/core/auth`; those endpoints are not part of the OpenAPI document.
