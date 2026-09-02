@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
 import { HouseholdModule } from './features/household/household.module.js';
-import { AuthModule } from './shared/infra/auth/auth.module.js';
+import { AuthModule } from './shared/infra/auth/index.js';
 import { DbModule } from './shared/infra/db/db.module.js';
+import { CategoryModule } from './features/category/category.module.js';
 
 @Module({
-    imports: [DbModule, AuthModule, HouseholdModule],
+    imports: [DbModule, AuthModule, HouseholdModule, CategoryModule],
 })
 export class AppModule {}

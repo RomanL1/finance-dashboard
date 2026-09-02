@@ -8,7 +8,18 @@ import type {
     TDataShape,
 } from './client';
 import { client } from './client.gen';
-import type { HouseholdMineData, HouseholdMineResponses } from './types.gen';
+import type {
+    CategoryCreateCategoryData,
+    CategoryCreateCategoryResponses,
+    CategoryDeleteCategoryData,
+    CategoryDeleteCategoryResponses,
+    CategoryGetCategoriesData,
+    CategoryGetCategoriesResponses,
+    CategoryUpdateCategoryData,
+    CategoryUpdateCategoryResponses,
+    HouseholdMineData,
+    HouseholdMineResponses,
+} from './types.gen';
 
 export type Options<
     TData extends TDataShape = TDataShape,
@@ -47,4 +58,88 @@ export const householdMine = <ThrowOnError extends boolean = false>(
         ],
         url: '/api/households/me',
         ...options,
+    });
+
+export const categoryGetCategories = <ThrowOnError extends boolean = false>(
+    options: Options<CategoryGetCategoriesData, ThrowOnError>,
+): RequestResult<CategoryGetCategoriesResponses, unknown, ThrowOnError> =>
+    (options.client ?? client).get<
+        CategoryGetCategoriesResponses,
+        unknown,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/{householdId}/categories',
+        ...options,
+    });
+
+export const categoryCreateCategory = <ThrowOnError extends boolean = false>(
+    options: Options<CategoryCreateCategoryData, ThrowOnError>,
+): RequestResult<CategoryCreateCategoryResponses, unknown, ThrowOnError> =>
+    (options.client ?? client).post<
+        CategoryCreateCategoryResponses,
+        unknown,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/{householdId}/categories',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers,
+        },
+    });
+
+export const categoryDeleteCategory = <ThrowOnError extends boolean = false>(
+    options: Options<CategoryDeleteCategoryData, ThrowOnError>,
+): RequestResult<CategoryDeleteCategoryResponses, unknown, ThrowOnError> =>
+    (options.client ?? client).delete<
+        CategoryDeleteCategoryResponses,
+        unknown,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/{householdId}/categories/{categoryId}',
+        ...options,
+    });
+
+export const categoryUpdateCategory = <ThrowOnError extends boolean = false>(
+    options: Options<CategoryUpdateCategoryData, ThrowOnError>,
+): RequestResult<CategoryUpdateCategoryResponses, unknown, ThrowOnError> =>
+    (options.client ?? client).patch<
+        CategoryUpdateCategoryResponses,
+        unknown,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/{householdId}/categories/{categoryId}',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers,
+        },
     });

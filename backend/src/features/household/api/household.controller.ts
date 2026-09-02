@@ -1,7 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiCookieAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import type { SessionUser } from '../../../shared/infra/auth/auth.js';
-import { CurrentUser } from '../../../shared/infra/auth/session.decorator.js';
+import { CurrentUser } from '../../../shared/infra/auth/index.js';
 import { HouseholdDto } from '../model/household.dto.js';
 import { HouseholdService } from '../service/household.service.js';
 import { toHouseholdDto } from './household.mapper.js';

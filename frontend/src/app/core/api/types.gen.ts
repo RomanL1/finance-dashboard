@@ -12,6 +12,19 @@ export type HouseholdDto = {
     createdAt: string;
 };
 
+export type CategoryDto = {
+    id: string;
+    name: string;
+    createdAt: string;
+};
+
+export type CreateCategoryDto = {
+    /**
+     * Category name
+     */
+    name: string;
+};
+
 export type HouseholdMineData = {
     body?: never;
     path?: never;
@@ -25,3 +38,72 @@ export type HouseholdMineResponses = {
 
 export type HouseholdMineResponse =
     HouseholdMineResponses[keyof HouseholdMineResponses];
+
+export type CategoryGetCategoriesData = {
+    body?: never;
+    path: {
+        householdId: string;
+    };
+    query?: never;
+    url: '/api/households/{householdId}/categories';
+};
+
+export type CategoryGetCategoriesResponses = {
+    200: Array<CategoryDto>;
+};
+
+export type CategoryGetCategoriesResponse =
+    CategoryGetCategoriesResponses[keyof CategoryGetCategoriesResponses];
+
+export type CategoryCreateCategoryData = {
+    body: CreateCategoryDto;
+    path: {
+        householdId: string;
+    };
+    query?: never;
+    url: '/api/households/{householdId}/categories';
+};
+
+export type CategoryCreateCategoryResponses = {
+    200: CategoryDto;
+};
+
+export type CategoryCreateCategoryResponse =
+    CategoryCreateCategoryResponses[keyof CategoryCreateCategoryResponses];
+
+export type CategoryDeleteCategoryData = {
+    body?: never;
+    path: {
+        householdId: string;
+        categoryId: string;
+    };
+    query?: never;
+    url: '/api/households/{householdId}/categories/{categoryId}';
+};
+
+export type CategoryDeleteCategoryResponses = {
+    /**
+     * Category successfully deleted
+     */
+    204: void;
+};
+
+export type CategoryDeleteCategoryResponse =
+    CategoryDeleteCategoryResponses[keyof CategoryDeleteCategoryResponses];
+
+export type CategoryUpdateCategoryData = {
+    body: CreateCategoryDto;
+    path: {
+        householdId: string;
+        categoryId: string;
+    };
+    query?: never;
+    url: '/api/households/{householdId}/categories/{categoryId}';
+};
+
+export type CategoryUpdateCategoryResponses = {
+    200: CategoryDto;
+};
+
+export type CategoryUpdateCategoryResponse =
+    CategoryUpdateCategoryResponses[keyof CategoryUpdateCategoryResponses];

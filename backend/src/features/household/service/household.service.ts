@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import {
     ConflictError,
+    ForbiddenError,
     newId,
     NotFoundError,
     type Id,
@@ -16,6 +17,20 @@ export class HouseholdService {
         const membership = await this.households.findMembershipByUserId(userId);
         if (!membership) {
             throw new NotFoundError('Household');
+        }
+        return membership;
+    }
+
+    async assertMember(
+        householdId: Id,
+        userId: Id,
+    ): Promise<HouseholdMembership> {
+        const membership = await this.households.findMembership(
+            householdId,
+            userId,
+        );
+        if (!membership) {
+            throw new ForbiddenError('User is not a member of this household');
         }
         return membership;
     }

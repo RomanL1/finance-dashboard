@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { DRIZZLE } from '../../../shared/infra/db/db.module.js';
 import type { Db } from '../../../shared/infra/db/db.js';
 import type { Id } from '../../../shared/kernel/index.js';
@@ -18,6 +18,24 @@ export class HouseholdRepository {
             .from(householdMember)
             .innerJoin(household, eq(household.id, householdMember.householdId))
             .where(eq(householdMember.userId, userId))
+            .limit(1);
+        return row ?? null;
+    }
+
+    async findMembership(
+        householdId: Id,
+        userId: Id,
+    ): Promise<HouseholdMembership | null> {
+        const [row] = await this.db
+            .select({ household, role: householdMember.role })
+            .from(householdMember)
+            .innerJoin(household, eq(household.id, householdMember.householdId))
+            .where(
+                and(
+                    eq(householdMember.householdId, householdId),
+                    eq(householdMember.userId, userId),
+                ),
+            )
             .limit(1);
         return row ?? null;
     }
