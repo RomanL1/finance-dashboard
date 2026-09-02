@@ -1,4 +1,8 @@
-import { ConflictError, NotFoundError } from '../../../shared/kernel/index.js';
+import {
+    ConflictError,
+    ForbiddenError,
+    NotFoundError,
+} from '../../../shared/kernel/index.js';
 import type { HouseholdMembership } from '../model/household.js';
 import type { HouseholdRepository } from '../repository/household.repository.js';
 import { HouseholdService } from './household.service.js';
@@ -18,6 +22,7 @@ const membership = (
 function makeRepo(overrides: Partial<HouseholdRepository> = {}) {
     return {
         findMembershipByUserId: vi.fn().mockResolvedValue(null),
+        findMembership: vi.fn().mockResolvedValue(null),
         insert: vi.fn().mockResolvedValue(undefined),
         ...overrides,
     } as unknown as HouseholdRepository;
@@ -60,5 +65,23 @@ describe('HouseholdService', () => {
         await expect(
             new HouseholdService(repo).getForUser('u1'),
         ).resolves.toEqual(membership('member'));
+    });
+
+    it('assertMember returns membership when user belongs to household', async () => {
+        const repo = makeRepo({
+            findMembership: vi.fn().mockResolvedValue(membership('member')),
+        });
+        await expect(
+            new HouseholdService(repo).assertMember('h1', 'u1'),
+        ).resolves.toEqual(membership('member'));
+    });
+
+    it('assertMember throws ForbiddenError when user does not belong to household', async () => {
+        const repo = makeRepo({
+            findMembership: vi.fn().mockResolvedValue(null),
+        });
+        await expect(
+            new HouseholdService(repo).assertMember('h1', 'u1'),
+        ).rejects.toBeInstanceOf(ForbiddenError);
     });
 });
