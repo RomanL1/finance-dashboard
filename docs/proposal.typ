@@ -18,7 +18,7 @@
   #v(0.3em)
   #text(size: 13pt)[Projektantrag]
   #v(0.6em)
-  #text(size: 10pt)[Roman Lysser · #datetime.today().display("[day].[month].[year]")]
+  #text(size: 10pt)[Roman Lysser · Module WEBLAB.F2601 · 2. September 2026]
 ]
 
 #v(1.5em)
