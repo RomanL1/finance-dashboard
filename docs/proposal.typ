@@ -154,6 +154,25 @@ ein Werkzeug für das gesamte Repository.
   [Sprache], [TypeScript — durchgängige Typisierung von der API bis zur Ansicht.],
   [Styling], [Tailwind CSS 4 über PostCSS — mobile-first: Basis-Layout für schmale Viewports, Breakpoints erweitern für Tablet und Desktop.],
   [Diagramme], [Zwei Kandidaten: *TanStack* (headless, volle Kontrolle über Markup und damit gute Integration ins eigene Tailwind-Design) und *Chart.js* (etabliert, canvas-basiert, geringer Integrationsaufwand). Entscheid nach einem kurzen Spike; Kriterium ist die Reife der Angular-Anbindung, da TanStack-Adapter primär für React gepflegt werden. Fallback: ngx-charts.],
+  [API-Client], [hey-api (`@hey-api/openapi-ts`) generiert typsicheren Client aus dem vom Backend bereitgestellten OpenAPI-Schema — kein manuell gepflegtes DTO-Duplikat zwischen Frontend und Backend.],
   [Authentifizierung], [better-auth Client — Session-Handling gegen die Backend-Auth-Endpunkte.],
   [Tests], [Vitest mit jsdom für Komponenten- und Logiktests; Playwright für E2E-Abläufe (Konto anlegen, Buchung erfassen, Buchung korrigieren, Startansicht prüfen, Budget setzen und überschreiten).],
+)
+
+== Backend
+
+#table(
+  columns: (auto, 1fr),
+  stroke: 0.5pt + gray,
+  inset: 8pt,
+  align: (left + horizon, left),
+  table.header([*Baustein*], [*Wahl und Begründung*]),
+  [Framework], [NestJS auf Express-Platform — modulare, feature-orientierte Struktur mit Dependency Injection; Express als bewährte, breit unterstützte HTTP-Basis.],
+  [Laufzeit/Tooling], [Bun als Paketmanager und Script-Runner.],
+  [Sprache], [TypeScript — durchgängige Typisierung von der API bis zur Datenbank.],
+  [Datenbank/ORM], [SQLite über libSQL-Client, angesprochen mit Drizzle ORM — dateibasiert und ohne Zusatzinfrastruktur lauffähig, typsicheres Schema und Migrationen via Drizzle Kit.],
+  [API-Dokumentation], [`@nestjs/swagger` erzeugt aus Controllern und DTOs eine OpenAPI-Spezifikation, die dem Frontend als Grundlage für die hey-api-Client-Generierung dient.],
+  [Validierung], [class-validator und class-transformer — deklarative DTO-Validierung an der API-Grenze.],
+  [Authentifizierung], [better-auth mit Drizzle-Adapter — Session- und Credential-Handling serverseitig, Schema im selben Drizzle-Schema geführt wie die Fachdaten.],
+  [Tests], [Vitest für Unit-Tests der Fachlogik; separater E2E-Lauf (`vitest.config.e2e.ts`) gegen die laufende API.],
 )
