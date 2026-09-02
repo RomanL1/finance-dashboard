@@ -1,17 +1,27 @@
 import { NestFactory } from '@nestjs/core';
+import { SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module.js';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { setupApp } from './shared/infra/app.setup.js';
+import { env, isProduction } from './shared/infra/config/env.js';
+import {
+    buildOpenApiDocument,
+    writeOpenApiDocument,
+} from './shared/infra/openapi.js';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  const config = new DocumentBuilder()
-    .setTitle('finance-dashboard-api')
-    .setVersion('1.0')
-    .build();
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+    const app = setupApp(await NestFactory.create(AppModule));
 
-  await app.listen(process.env.PORT ?? 3000);
+    const document = buildOpenApiDocument(app);
+    SwaggerModule.setup('docs', app, document);
+    if (!isProduction) {
+        // Keeps openapi.json in sync for the frontend's hey-api codegen (`bun run api:generate` there).
+        writeOpenApiDocument(document);
+    }
+
+    await app.listen(env.port);
+    console.log(
+        `API on http://localhost:${env.port} (swagger: /docs, auth: /api/auth)`,
+    );
 }
 
 await bootstrap();

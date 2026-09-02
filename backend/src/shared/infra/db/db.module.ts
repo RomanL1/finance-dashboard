@@ -1,11 +1,11 @@
 import { Global, Module } from '@nestjs/common';
-import { db } from './index.js';
+import { db } from './db.js';
 
 export const DRIZZLE = Symbol('DRIZZLE');
 
 @Global()
 @Module({
-  providers: [{ provide: DRIZZLE, useValue: db }],
-  exports: [DRIZZLE],
+    providers: [{ provide: DRIZZLE, useValue: db }],
+    exports: [DRIZZLE],
 })
 export class DbModule {}
