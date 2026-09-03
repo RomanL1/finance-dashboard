@@ -36,7 +36,7 @@ Demo login (seeded, use while real auth UI does not exist yet — user story M1)
 
 ## Architecture
 
-Feature-sliced. See [CLAUDE.md](./CLAUDE.md) for the rules; `features/household` is the reference slice.
+Feature-sliced. See [CLAUDE.md](AGENTS.md) for the rules; `features/household` is the reference slice.
 
 ```
 src/
