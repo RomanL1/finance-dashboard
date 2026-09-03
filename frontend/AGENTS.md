@@ -47,6 +47,12 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - Use the async pipe to handle observables
 - Do not assume globals like (`new Date()`) are available.
 
+## UI and Styling
+
+- Angular Material for components and behavior: buttons, dialogs, form fields, tables, menus, accessibility, etc.
+- CSS/SCSS for component-specific styling
+- Tailwind optionally for layout and utility styling
+
 ## Services
 
 - Design services around a single responsibility

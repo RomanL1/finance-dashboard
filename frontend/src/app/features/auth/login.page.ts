@@ -7,37 +7,68 @@ import {
 } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
+import {
+    MatFormField,
+    MatLabel,
+    MatSuffix,
+} from '@angular/material/form-field';
+import { MatInput } from '@angular/material/input';
+import { MatIcon } from '@angular/material/icon';
+import { MatButton, MatIconButton } from '@angular/material/button';
 
 @Component({
     selector: 'app-login-page',
-    imports: [ReactiveFormsModule],
+    imports: [
+        ReactiveFormsModule,
+        MatFormField,
+        MatLabel,
+        MatInput,
+        MatIcon,
+        MatIconButton,
+        MatSuffix,
+        MatButton,
+    ],
     template: `
         <main class="mx-auto mt-16 max-w-sm p-4">
-            <h1 class="mb-6 text-2xl font-semibold">Anmelden</h1>
+            <h1 class="mb-6 text-2xl font-semibold">Login</h1>
             <form
                 [formGroup]="form"
                 (ngSubmit)="submit()"
                 class="flex flex-col gap-4"
                 aria-describedby="login-error"
             >
-                <label class="flex flex-col gap-1">
-                    <span>E-Mail</span>
+                <mat-form-field class="flex flex-col gap-1">
+                    <mat-label>E-Mail</mat-label>
                     <input
-                        type="email"
+                        matInput
+                        type="text"
                         formControlName="email"
                         autocomplete="email"
-                        class="rounded border p-2"
                     />
-                </label>
-                <label class="flex flex-col gap-1">
-                    <span>Passwort</span>
+                </mat-form-field>
+
+                <mat-form-field class="flex flex-col gap-1">
+                    <mat-label>Enter your password</mat-label>
                     <input
-                        type="password"
+                        matInput
+                        [type]="hide() ? 'password' : 'text'"
                         formControlName="password"
                         autocomplete="current-password"
-                        class="rounded border p-2"
                     />
-                </label>
+                    <button
+                        type="button"
+                        matIconButton
+                        matSuffix
+                        (click)="clickEvent($event)"
+                        [attr.aria-label]="'Hide password'"
+                        [attr.aria-pressed]="hide()"
+                    >
+                        <mat-icon
+                            >{{ hide() ? 'visibility_off' : 'visibility' }}
+                        </mat-icon>
+                    </button>
+                </mat-form-field>
+
                 @if (error()) {
                     <p id="login-error" role="alert" class="text-red-700">
                         {{ error() }}
@@ -46,9 +77,9 @@ import { AuthService } from '../../core/auth/auth.service';
                 <button
                     type="submit"
                     [disabled]="form.invalid || busy()"
-                    class="rounded bg-slate-900 p-2 text-white disabled:opacity-50"
+                    matButton="filled"
                 >
-                    Anmelden
+                    Login
                 </button>
             </form>
             <p class="mt-4 text-sm text-slate-600">
@@ -60,6 +91,7 @@ import { AuthService } from '../../core/auth/auth.service';
 export class LoginPage {
     private readonly auth = inject(AuthService);
     private readonly router = inject(Router);
+    readonly hide = signal(true);
 
     readonly busy = signal(false);
     readonly error = signal<string | null>(null);
@@ -89,5 +121,10 @@ export class LoginPage {
         } finally {
             this.busy.set(false);
         }
+    }
+
+    clickEvent(event: MouseEvent) {
+        this.hide.set(!this.hide());
+        event.stopPropagation();
     }
 }
