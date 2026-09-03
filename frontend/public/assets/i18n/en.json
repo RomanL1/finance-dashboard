@@ -1,0 +1,30 @@
+{
+    "auth": {
+        "login": {
+            "title": "Login",
+            "demo": "Demo: demo@finance.local / demo-password",
+            "emailLabel": "Email",
+            "emailRequired": "Email is required",
+            "emailInvalid": "Please enter a valid email address",
+            "passwordLabel": "Enter password",
+            "passwordRequired": "Password is required",
+            "showPassword": "Show password",
+            "hidePassword": "Hide password",
+            "submit": "Login",
+            "failed": "Login failed"
+        }
+    },
+    "home": {
+        "greeting": "Hello {{name}}",
+        "signOut": "Sign out",
+        "loadingHousehold": "Loading household…",
+        "noHouseholdFound": "No household found."
+    },
+    "household": {
+        "card": {
+            "household": "Household",
+            "currency": "Currency",
+            "role": "Role"
+        }
+    }
+}

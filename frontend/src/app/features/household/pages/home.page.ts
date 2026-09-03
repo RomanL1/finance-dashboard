@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, resource } from '@angular/core';
 import { Router } from '@angular/router';
+import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../../core/auth/auth.service';
 import { APP_PATHS } from '../../../config/paths.config';
 import { ButtonComponent } from '../../../components/button/button.component';
@@ -8,25 +9,29 @@ import { HouseholdService } from '../services/household.service';
 
 @Component({
     selector: 'app-home-page',
-    imports: [ButtonComponent, HouseholdCardComponent],
+    imports: [ButtonComponent, HouseholdCardComponent, TranslatePipe],
     template: `
         <main class="mx-auto mt-16 max-w-lg p-4">
             <header class="mb-6 flex items-center justify-between">
                 <h1 class="text-2xl font-semibold">
-                    Hallo {{ auth.user()?.name }}
+                    {{
+                        'home.greeting' | translate: { name: auth.user()?.name }
+                    }}
                 </h1>
                 <app-button
                     type="button"
                     variant="outlined"
                     (clicked)="signOut()"
                 >
-                    Abmelden
+                    {{ 'home.signOut' | translate }}
                 </app-button>
             </header>
             @if (household.isLoading()) {
-                <p>Lade Haushalt…</p>
+                <p>{{ 'home.loadingHousehold' | translate }}</p>
             } @else if (household.error()) {
-                <p role="alert" class="text-red-700">Kein Haushalt gefunden.</p>
+                <p role="alert" class="text-red-700">
+                    {{ 'home.noHouseholdFound' | translate }}
+                </p>
             } @else if (household.value(); as h) {
                 <app-household-card [household]="h" />
             }

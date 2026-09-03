@@ -19,6 +19,7 @@ import {
 } from '@angular/material/form-field';
 import { MatInput } from '@angular/material/input';
 import { MatIcon } from '@angular/material/icon';
+import { TranslatePipe } from '@ngx-translate/core';
 import {
     ButtonComponent,
     IconButtonComponent,
@@ -37,6 +38,7 @@ import type { LoginCredentials } from '../../auth.types';
         MatSuffix,
         ButtonComponent,
         IconButtonComponent,
+        TranslatePipe,
     ],
     template: `
         <form
@@ -46,7 +48,7 @@ import type { LoginCredentials } from '../../auth.types';
             [attr.aria-describedby]="errorMessage() ? 'login-error' : null"
         >
             <mat-form-field class="flex flex-col gap-1">
-                <mat-label>E-Mail</mat-label>
+                <mat-label>{{ 'auth.login.emailLabel' | translate }}</mat-label>
                 <input
                     matInput
                     type="email"
@@ -54,16 +56,20 @@ import type { LoginCredentials } from '../../auth.types';
                     autocomplete="email"
                 />
                 @if (form.controls.email.hasError('required')) {
-                    <mat-error>E-Mail ist erforderlich</mat-error>
+                    <mat-error>{{
+                        'auth.login.emailRequired' | translate
+                    }}</mat-error>
                 } @else if (form.controls.email.hasError('email')) {
-                    <mat-error
-                        >Bitte eine gültige E-Mail-Adresse eingeben</mat-error
-                    >
+                    <mat-error>{{
+                        'auth.login.emailInvalid' | translate
+                    }}</mat-error>
                 }
             </mat-form-field>
 
             <mat-form-field class="flex flex-col gap-1">
-                <mat-label>Passwort eingeben</mat-label>
+                <mat-label>{{
+                    'auth.login.passwordLabel' | translate
+                }}</mat-label>
                 <input
                     matInput
                     [type]="hide() ? 'password' : 'text'"
@@ -74,7 +80,10 @@ import type { LoginCredentials } from '../../auth.types';
                     matSuffix
                     (clicked)="togglePasswordVisibility($event)"
                     [ariaLabel]="
-                        hide() ? 'Passwort anzeigen' : 'Passwort verbergen'
+                        (hide()
+                            ? 'auth.login.showPassword'
+                            : 'auth.login.hidePassword'
+                        ) | translate
                     "
                     [ariaPressed]="!hide()"
                 >
@@ -83,7 +92,9 @@ import type { LoginCredentials } from '../../auth.types';
                     }}</mat-icon>
                 </app-icon-button>
                 @if (form.controls.password.hasError('required')) {
-                    <mat-error>Passwort ist erforderlich</mat-error>
+                    <mat-error>{{
+                        'auth.login.passwordRequired' | translate
+                    }}</mat-error>
                 }
             </mat-form-field>
 
@@ -98,7 +109,7 @@ import type { LoginCredentials } from '../../auth.types';
                 variant="filled"
                 [disabled]="form.invalid || busy()"
             >
-                Login
+                {{ 'auth.login.submit' | translate }}
             </app-button>
         </form>
     `,

@@ -1,0 +1,30 @@
+{
+    "auth": {
+        "login": {
+            "title": "Login",
+            "demo": "Demo: demo@finance.local / demo-password",
+            "emailLabel": "E-Mail",
+            "emailRequired": "E-Mail ist erforderlich",
+            "emailInvalid": "Bitte eine gültige E-Mail-Adresse eingeben",
+            "passwordLabel": "Passwort eingeben",
+            "passwordRequired": "Passwort ist erforderlich",
+            "showPassword": "Passwort anzeigen",
+            "hidePassword": "Passwort verbergen",
+            "submit": "Login",
+            "failed": "Anmeldung fehlgeschlagen"
+        }
+    },
+    "home": {
+        "greeting": "Hallo {{name}}",
+        "signOut": "Abmelden",
+        "loadingHousehold": "Lade Haushalt…",
+        "noHouseholdFound": "Kein Haushalt gefunden."
+    },
+    "household": {
+        "card": {
+            "household": "Haushalt",
+            "currency": "Währung",
+            "role": "Rolle"
+        }
+    }
+}

@@ -8,6 +8,8 @@ NgModules.
 ```text
 frontend/
 ├── public/                         # Static assets
+│   └── assets/
+│       └── i18n/                   # Translation JSON files (en.json, ...)
 ├── src/
 │   ├── app/
 │   │   ├── app.ts                  # Root shell component
@@ -155,6 +157,23 @@ constructor(
 - Unit tests sit beside their implementation as `<name>.spec.ts`.
 - End-to-end tests live under `playwright/e2e` as `<feature>.cy.ts`.
 - Use the `app-` prefix for application component selectors.
+
+## Internationalization (i18n)
+
+- Use `@ngx-translate/core` and `@ngx-translate/http-loader` for application translations.
+- Store translation files as JSON under `public/assets/i18n/<lang>.json`.
+- The default and fallback language is English (`en`).
+- Register global translation providers in `app.config.ts` using `provideTranslateService`
+  with `provideTranslateHttpLoader` and `provideHttpClient`.
+- In templates, import `TranslatePipe` and translate text using the pipe:
+  `{{ 'feature.section.key' | translate }}` or with parameters
+  `{{ 'feature.section.key' | translate: { param: value } }}`.
+- For programmatic translations in services or components, inject `TranslateService`
+  into the constructor (never using `inject()`) and call `translate.instant()` or
+  `translate.stream()`.
+- Structure translation keys hierarchically by feature and context
+  (e.g., `auth.login.emailLabel`, `home.greeting`, `household.card.currency`).
+- Never hardcode user-visible text strings directly in component templates or code.
 
 ## Accessibility
 
