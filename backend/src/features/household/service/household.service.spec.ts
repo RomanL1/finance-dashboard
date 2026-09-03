@@ -22,6 +22,7 @@ const membership = (
 
 function makeRepo(overrides: Partial<HouseholdRepository> = {}) {
     return {
+        findById: vi.fn().mockResolvedValue(null),
         findMembershipByUserId: vi.fn().mockResolvedValue(null),
         findMembership: vi.fn().mockResolvedValue(null),
         insert: vi.fn().mockResolvedValue(undefined),
@@ -31,6 +32,22 @@ function makeRepo(overrides: Partial<HouseholdRepository> = {}) {
 }
 
 describe('HouseholdService', () => {
+    it('getById returns the household when it exists', async () => {
+        const repo = makeRepo({
+            findById: vi.fn().mockResolvedValue(membership('owner').household),
+        });
+        await expect(
+            new HouseholdService(repo).getById('h1'),
+        ).resolves.toEqual(membership('owner').household);
+    });
+
+    it('getById throws NotFoundError when household does not exist', async () => {
+        const service = new HouseholdService(makeRepo());
+        await expect(service.getById('h1')).rejects.toBeInstanceOf(
+            NotFoundError,
+        );
+    });
+
     it('throws NotFoundError when user has no household', async () => {
         const service = new HouseholdService(makeRepo());
         await expect(service.getForUser('u1')).rejects.toBeInstanceOf(

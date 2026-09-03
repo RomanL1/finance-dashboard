@@ -13,6 +13,14 @@ import { HouseholdRepository } from '../repository/household.repository.js';
 export class HouseholdService {
     constructor(private readonly households: HouseholdRepository) {}
 
+    async getById(householdId: Id): Promise<Household> {
+        const found = await this.households.findById(householdId);
+        if (!found) {
+            throw new NotFoundError('Household', householdId);
+        }
+        return found;
+    }
+
     async getForUser(userId: Id): Promise<HouseholdMembership> {
         const membership = await this.households.findMembershipByUserId(userId);
         if (!membership) {

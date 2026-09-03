@@ -19,6 +19,7 @@ import type { SessionUser } from '../../../shared/infra/auth/auth.js';
 import { CurrentUser } from '../../../shared/infra/auth/index.js';
 import type { Id } from '../../../shared/kernel/index.js';
 import { CategoryService } from '../../category/service/category.service.js';
+import { AccountService } from '../../account/service/account.service.js';
 import { CreateHouseholdDto, HouseholdDto } from '../model/household.dto.js';
 import { HouseholdService } from '../service/household.service.js';
 import { HouseholdMemberGuard } from '../guard/household-member.guard.js';
@@ -32,6 +33,8 @@ export class HouseholdController {
         private readonly households: HouseholdService,
         @Inject(forwardRef(() => CategoryService))
         private readonly categories: CategoryService,
+        @Inject(forwardRef(() => AccountService))
+        private readonly accounts: AccountService,
     ) {}
 
     @Get('me')
@@ -67,6 +70,7 @@ export class HouseholdController {
         @CurrentUser() user: SessionUser,
     ): Promise<HouseholdDto> {
         await this.categories.assertHasCategories(householdId);
+        await this.accounts.assertHasAccounts(householdId);
         await this.households.completeOnboarding(householdId);
         return toHouseholdDto(await this.households.getForUser(user.id));
     }

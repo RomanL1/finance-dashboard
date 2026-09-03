@@ -41,6 +41,39 @@ export type DefaultCategoryDto = {
     translateKey: string;
 };
 
+export type AccountDto = {
+    id: string;
+    householdId: string;
+    description: string;
+    currency: string;
+    /**
+     * Minor units (cents)
+     */
+    initialValue: number;
+    /**
+     * Minor units (cents)
+     */
+    amount: number;
+    startDate: string;
+    createdAt: string;
+};
+
+export type CreateAccountDto = {
+    /**
+     * Account description
+     */
+    description: string;
+    /**
+     * Defaults to the household currency when omitted
+     */
+    currency?: 'CHF' | 'EUR' | 'USD' | 'GBP';
+    /**
+     * Minor units (cents)
+     */
+    initialValue: number;
+    startDate: string;
+};
+
 export type HouseholdMineData = {
     body?: never;
     path?: never;
@@ -193,3 +226,41 @@ export type CategoryGetDefaultCategoriesResponses = {
 
 export type CategoryGetDefaultCategoriesResponse =
     CategoryGetDefaultCategoriesResponses[keyof CategoryGetDefaultCategoriesResponses];
+
+export type AccountGetAccountsData = {
+    body?: never;
+    path: {
+        /**
+         * Household id
+         */
+        householdId: string;
+    };
+    query?: never;
+    url: '/api/households/{householdId}/accounts';
+};
+
+export type AccountGetAccountsResponses = {
+    200: Array<AccountDto>;
+};
+
+export type AccountGetAccountsResponse =
+    AccountGetAccountsResponses[keyof AccountGetAccountsResponses];
+
+export type AccountCreateAccountData = {
+    body: CreateAccountDto;
+    path: {
+        /**
+         * Household id
+         */
+        householdId: string;
+    };
+    query?: never;
+    url: '/api/households/{householdId}/accounts';
+};
+
+export type AccountCreateAccountResponses = {
+    200: AccountDto;
+};
+
+export type AccountCreateAccountResponse =
+    AccountCreateAccountResponses[keyof AccountCreateAccountResponses];

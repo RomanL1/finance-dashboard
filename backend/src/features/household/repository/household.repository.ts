@@ -10,6 +10,15 @@ import type { Household, HouseholdMembership } from '../model/household.js';
 export class HouseholdRepository {
     constructor(@Inject(DRIZZLE) private readonly db: Db) {}
 
+    async findById(id: Id): Promise<Household | null> {
+        const [row] = await this.db
+            .select()
+            .from(household)
+            .where(eq(household.id, id))
+            .limit(1);
+        return row ?? null;
+    }
+
     async findMembershipByUserId(
         userId: Id,
     ): Promise<HouseholdMembership | null> {

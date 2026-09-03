@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsIn, IsNotEmpty, IsString, MaxLength } from 'class-validator';
+import { SUPPORTED_CURRENCIES } from '../../../shared/kernel/index.js';
 import type { HouseholdRole } from './household.js';
-import { SUPPORTED_CURRENCIES } from './household.js';
 
 export class HouseholdDto {
     @ApiProperty() id!: string;

@@ -9,6 +9,10 @@ import type {
 } from './client';
 import { client } from './client.gen';
 import type {
+    AccountCreateAccountData,
+    AccountCreateAccountResponses,
+    AccountGetAccountsData,
+    AccountGetAccountsResponses,
     CategoryCreateCategoryData,
     CategoryCreateCategoryResponses,
     CategoryDeleteCategoryData,
@@ -217,4 +221,46 @@ export const categoryGetDefaultCategories = <
         ],
         url: '/api/households/{householdId}/categories/default',
         ...options,
+    });
+
+export const accountGetAccounts = <ThrowOnError extends boolean = false>(
+    options: Options<AccountGetAccountsData, ThrowOnError>,
+): RequestResult<AccountGetAccountsResponses, unknown, ThrowOnError> =>
+    (options.client ?? client).get<
+        AccountGetAccountsResponses,
+        unknown,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/{householdId}/accounts',
+        ...options,
+    });
+
+export const accountCreateAccount = <ThrowOnError extends boolean = false>(
+    options: Options<AccountCreateAccountData, ThrowOnError>,
+): RequestResult<AccountCreateAccountResponses, unknown, ThrowOnError> =>
+    (options.client ?? client).post<
+        AccountCreateAccountResponses,
+        unknown,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/{householdId}/accounts',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers,
+        },
     });

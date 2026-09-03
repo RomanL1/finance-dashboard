@@ -3,9 +3,6 @@ import type { HOUSEHOLD_ROLES } from './household.schema.js';
 
 export type HouseholdRole = (typeof HOUSEHOLD_ROLES)[number];
 
-export const SUPPORTED_CURRENCIES = ['CHF', 'EUR', 'USD', 'GBP'] as const;
-export type SupportedCurrency = (typeof SUPPORTED_CURRENCIES)[number];
-
 /** Domain model. Independent of persistence and transport shapes. */
 export interface Household {
     id: Id;
