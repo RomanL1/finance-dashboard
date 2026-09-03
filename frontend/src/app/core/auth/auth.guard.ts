@@ -1,14 +1,22 @@
-import { inject } from '@angular/core';
-import { CanActivateFn, Router } from '@angular/router';
+import { Injectable } from '@angular/core';
+import { CanActivate, Router, UrlTree } from '@angular/router';
 import { AuthService } from './auth.service';
+import { APP_PATHS } from '../../config/paths.config';
 
 /** Route guard: redirects anonymous users to /login. */
-export const authGuard: CanActivateFn = async () => {
-    const auth = inject(AuthService);
-    if (!auth.ready()) {
-        await auth.refresh();
+@Injectable({ providedIn: 'root' })
+export class AuthGuard implements CanActivate {
+    constructor(
+        private readonly auth: AuthService,
+        private readonly router: Router,
+    ) {}
+
+    async canActivate(): Promise<boolean | UrlTree> {
+        if (!this.auth.ready()) {
+            await this.auth.refresh();
+        }
+        return this.auth.isAuthenticated()
+            ? true
+            : this.router.createUrlTree(['/' + APP_PATHS.LOGIN]);
     }
-    return auth.isAuthenticated()
-        ? true
-        : inject(Router).createUrlTree(['/login']);
-};
+}

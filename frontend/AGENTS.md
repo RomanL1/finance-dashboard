@@ -34,7 +34,7 @@ frontend/
 │   │           └── <feature-data>.ts
 │   ├── main.ts                     # bootstrapApplication entry point
 │   └── styles.css                  # Reset, theme, and global element styles
-└── cypress/
+└── playwright/
     ├── e2e/
     ├── fixtures/
     └── support/
@@ -153,7 +153,7 @@ constructor(
 - General service classes end in `Service`.
 - Shared type files end in `.type.ts`; feature type files end in `.types.ts`.
 - Unit tests sit beside their implementation as `<name>.spec.ts`.
-- End-to-end tests live under `cypress/e2e` as `<feature>.cy.ts`.
+- End-to-end tests live under `playwright/e2e` as `<feature>.cy.ts`.
 - Use the `app-` prefix for application component selectors.
 
 ## Accessibility
@@ -179,5 +179,5 @@ constructor(
 - Provide router dependencies with `provideRouter`.
 - Unit-test emitted outputs, rendered behavior, routing links, validation, and service
   state transitions.
-- Keep Cypress tests focused on complete user-visible flows.
+- Keep Playwright tests focused on complete user-visible flows.
 - Add stable `data-testid` attributes only when semantic selectors are insufficient.
