@@ -18,3 +18,11 @@ export class CreateCategoryDto {
     @MaxLength(100)
     name!: string;
 }
+
+export class DefaultCategoryDto {
+    @ApiProperty({
+        description: 'category translation key',
+        example: 'GROCERIES',
+    })
+    translateKey!: string;
+}

@@ -25,6 +25,13 @@ export type CreateCategoryDto = {
     name: string;
 };
 
+export type DefaultCategoryDto = {
+    /**
+     * category translation key
+     */
+    translateKey: string;
+};
+
 export type HouseholdMineData = {
     body?: never;
     path?: never;
@@ -107,3 +114,17 @@ export type CategoryUpdateCategoryResponses = {
 
 export type CategoryUpdateCategoryResponse =
     CategoryUpdateCategoryResponses[keyof CategoryUpdateCategoryResponses];
+
+export type CategoryGetDefaultCategoriesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/households/{householdId}/categories/default';
+};
+
+export type CategoryGetDefaultCategoriesResponses = {
+    200: Array<DefaultCategoryDto>;
+};
+
+export type CategoryGetDefaultCategoriesResponse =
+    CategoryGetDefaultCategoriesResponses[keyof CategoryGetDefaultCategoriesResponses];

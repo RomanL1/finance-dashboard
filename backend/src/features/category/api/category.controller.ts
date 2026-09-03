@@ -17,10 +17,15 @@ import {
     ApiTags,
 } from '@nestjs/swagger';
 import { CategoryService } from '../service/category.service.js';
-import { CategoryDto, CreateCategoryDto } from '../model/category.dto.js';
+import {
+    CategoryDto,
+    CreateCategoryDto,
+    DefaultCategoryDto,
+} from '../model/category.dto.js';
 import { toCategoriesDto, toCategoryDto } from './category.mapper.js';
 import { type Id } from '../../../shared/kernel/index.js';
 import { HouseholdMemberGuard } from '../../household/guard/household-member.guard.js';
+import { DefaultCategory } from '../model/category.js';
 
 @ApiTags('category')
 @ApiCookieAuth()
@@ -68,5 +73,11 @@ export class CategoryController {
         @Param('categoryId') categoryId: Id,
     ): Promise<void> {
         await this.categories.delete(householdId, categoryId);
+    }
+
+    @Get('default')
+    @ApiOkResponse({ type: [DefaultCategoryDto] })
+    async getDefaultCategories(): Promise<DefaultCategory[]> {
+        return this.categories.getDefaultCategories();
     }
 }

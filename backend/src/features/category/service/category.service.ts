@@ -1,6 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CategoryRepository } from '../repository/category.repository.js';
-import { Category, CreateOrUpdateCategory } from '../model/category.js';
+import {
+    Category,
+    CreateOrUpdateCategory,
+    defaultCategories,
+    DefaultCategory,
+} from '../model/category.js';
 import {
     ConflictError,
     Id,
@@ -8,6 +13,7 @@ import {
     NotFoundError,
     ValidationError,
 } from '../../../shared/kernel/index.js';
+import { CreateCategoryDto } from '../model/category.dto.js';
 
 @Injectable()
 export class CategoryService {
@@ -99,5 +105,9 @@ export class CategoryService {
         if (!deleted) {
             throw new NotFoundError('Category', id);
         }
+    }
+
+    getDefaultCategories(): DefaultCategory[] {
+        return defaultCategories;
     }
 }

@@ -15,6 +15,8 @@ import type {
     CategoryDeleteCategoryResponses,
     CategoryGetCategoriesData,
     CategoryGetCategoriesResponses,
+    CategoryGetDefaultCategoriesData,
+    CategoryGetDefaultCategoriesResponses,
     CategoryUpdateCategoryData,
     CategoryUpdateCategoryResponses,
     HouseholdMineData,
@@ -142,4 +144,29 @@ export const categoryUpdateCategory = <ThrowOnError extends boolean = false>(
             'Content-Type': 'application/json',
             ...options.headers,
         },
+    });
+
+export const categoryGetDefaultCategories = <
+    ThrowOnError extends boolean = false,
+>(
+    options?: Options<CategoryGetDefaultCategoriesData, ThrowOnError>,
+): RequestResult<
+    CategoryGetDefaultCategoriesResponses,
+    unknown,
+    ThrowOnError
+> =>
+    (options?.client ?? client).get<
+        CategoryGetDefaultCategoriesResponses,
+        unknown,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/{householdId}/categories/default',
+        ...options,
     });
