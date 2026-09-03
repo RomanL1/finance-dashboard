@@ -3,12 +3,13 @@ import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import { AppModule } from '../src/app.module.js';
 import { setupApp } from '../src/shared/infra/app.setup.js';
-import { DEMO_HOUSEHOLD, DEMO_USER } from '../src/shared/infra/db/seed.js';
+import { DEMO_USER } from '../src/shared/infra/db/seed.js';
 import { prepareTestDb } from './setup-db.js';
 
 describe('category (e2e)', () => {
     let app: INestApplication;
     let cookie: string;
+    let householdId: string;
     let createdCategoryId: string;
 
     beforeAll(async () => {
@@ -24,7 +25,7 @@ describe('category (e2e)', () => {
 
     it('rejects anonymous access with 401', async () => {
         await request(app.getHttpServer())
-            .get(`/api/households/${DEMO_HOUSEHOLD.id}/categories`)
+            .get('/api/households/placeholder-household-id/categories')
             .expect(401);
     });
 
@@ -37,9 +38,18 @@ describe('category (e2e)', () => {
         cookie = res.headers['set-cookie'][0].split(';')[0];
     });
 
+    it('creates a household for the demo user', async () => {
+        const res = await request(app.getHttpServer())
+            .post('/api/households')
+            .set('Cookie', cookie)
+            .send({ name: 'Demo Haushalt', currency: 'CHF' })
+            .expect(201);
+        householdId = res.body.id;
+    });
+
     it('GET categories succeeds for household member', async () => {
         const res = await request(app.getHttpServer())
-            .get(`/api/households/${DEMO_HOUSEHOLD.id}/categories`)
+            .get(`/api/households/${householdId}/categories`)
             .set('Cookie', cookie)
             .expect(200);
         expect(Array.isArray(res.body)).toBe(true);
@@ -54,7 +64,7 @@ describe('category (e2e)', () => {
 
     it('POST creates a category', async () => {
         const res = await request(app.getHttpServer())
-            .post(`/api/households/${DEMO_HOUSEHOLD.id}/categories`)
+            .post(`/api/households/${householdId}/categories`)
             .set('Cookie', cookie)
             .send({ name: 'Groceries' })
             .expect(201);
@@ -67,7 +77,7 @@ describe('category (e2e)', () => {
 
     it('POST rejects empty or whitespace name with 400', async () => {
         await request(app.getHttpServer())
-            .post(`/api/households/${DEMO_HOUSEHOLD.id}/categories`)
+            .post(`/api/households/${householdId}/categories`)
             .set('Cookie', cookie)
             .send({ name: '   ' })
             .expect(400);
@@ -75,7 +85,7 @@ describe('category (e2e)', () => {
 
     it('POST rejects duplicate category name in the same household with 409', async () => {
         await request(app.getHttpServer())
-            .post(`/api/households/${DEMO_HOUSEHOLD.id}/categories`)
+            .post(`/api/households/${householdId}/categories`)
             .set('Cookie', cookie)
             .send({ name: 'Groceries' })
             .expect(409);
@@ -84,7 +94,7 @@ describe('category (e2e)', () => {
     it('PATCH renames the category', async () => {
         const res = await request(app.getHttpServer())
             .patch(
-                `/api/households/${DEMO_HOUSEHOLD.id}/categories/${createdCategoryId}`,
+                `/api/households/${householdId}/categories/${createdCategoryId}`,
             )
             .set('Cookie', cookie)
             .send({ name: 'Supermarket' })
@@ -96,7 +106,7 @@ describe('category (e2e)', () => {
     it('PATCH rejects empty name with 400', async () => {
         await request(app.getHttpServer())
             .patch(
-                `/api/households/${DEMO_HOUSEHOLD.id}/categories/${createdCategoryId}`,
+                `/api/households/${householdId}/categories/${createdCategoryId}`,
             )
             .set('Cookie', cookie)
             .send({ name: '' })
@@ -105,9 +115,7 @@ describe('category (e2e)', () => {
 
     it('PATCH returns 404 for non-existent category', async () => {
         await request(app.getHttpServer())
-            .patch(
-                `/api/households/${DEMO_HOUSEHOLD.id}/categories/non-existent-id`,
-            )
+            .patch(`/api/households/${householdId}/categories/non-existent-id`)
             .set('Cookie', cookie)
             .send({ name: 'Anything' })
             .expect(404);
@@ -116,13 +124,13 @@ describe('category (e2e)', () => {
     it('DELETE deletes category with 204', async () => {
         await request(app.getHttpServer())
             .delete(
-                `/api/households/${DEMO_HOUSEHOLD.id}/categories/${createdCategoryId}`,
+                `/api/households/${householdId}/categories/${createdCategoryId}`,
             )
             .set('Cookie', cookie)
             .expect(204);
 
         const res = await request(app.getHttpServer())
-            .get(`/api/households/${DEMO_HOUSEHOLD.id}/categories`)
+            .get(`/api/households/${householdId}/categories`)
             .set('Cookie', cookie)
             .expect(200);
 
@@ -135,9 +143,7 @@ describe('category (e2e)', () => {
 
     it('DELETE returns 404 for non-existent category', async () => {
         await request(app.getHttpServer())
-            .delete(
-                `/api/households/${DEMO_HOUSEHOLD.id}/categories/non-existent-id`,
-            )
+            .delete(`/api/households/${householdId}/categories/non-existent-id`)
             .set('Cookie', cookie)
             .expect(404);
     });

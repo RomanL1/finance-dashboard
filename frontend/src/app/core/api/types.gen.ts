@@ -9,7 +9,16 @@ export type HouseholdDto = {
     name: string;
     currency: string;
     role: 'owner' | 'member';
+    onboardingComplete: boolean;
     createdAt: string;
+};
+
+export type CreateHouseholdDto = {
+    /**
+     * Household name
+     */
+    name: string;
+    currency: 'CHF' | 'EUR' | 'USD' | 'GBP';
 };
 
 export type CategoryDto = {
@@ -46,9 +55,45 @@ export type HouseholdMineResponses = {
 export type HouseholdMineResponse =
     HouseholdMineResponses[keyof HouseholdMineResponses];
 
+export type HouseholdCreateData = {
+    body: CreateHouseholdDto;
+    path?: never;
+    query?: never;
+    url: '/api/households';
+};
+
+export type HouseholdCreateResponses = {
+    200: HouseholdDto;
+};
+
+export type HouseholdCreateResponse =
+    HouseholdCreateResponses[keyof HouseholdCreateResponses];
+
+export type HouseholdCompleteOnboardingData = {
+    body?: never;
+    path: {
+        /**
+         * Household id
+         */
+        householdId: string;
+    };
+    query?: never;
+    url: '/api/households/{householdId}/complete-onboarding';
+};
+
+export type HouseholdCompleteOnboardingResponses = {
+    200: HouseholdDto;
+};
+
+export type HouseholdCompleteOnboardingResponse =
+    HouseholdCompleteOnboardingResponses[keyof HouseholdCompleteOnboardingResponses];
+
 export type CategoryGetCategoriesData = {
     body?: never;
     path: {
+        /**
+         * Household id
+         */
         householdId: string;
     };
     query?: never;
@@ -65,6 +110,9 @@ export type CategoryGetCategoriesResponse =
 export type CategoryCreateCategoryData = {
     body: CreateCategoryDto;
     path: {
+        /**
+         * Household id
+         */
         householdId: string;
     };
     query?: never;
@@ -81,7 +129,13 @@ export type CategoryCreateCategoryResponse =
 export type CategoryDeleteCategoryData = {
     body?: never;
     path: {
+        /**
+         * Household id
+         */
         householdId: string;
+        /**
+         * Category id
+         */
         categoryId: string;
     };
     query?: never;
@@ -101,7 +155,13 @@ export type CategoryDeleteCategoryResponse =
 export type CategoryUpdateCategoryData = {
     body: CreateCategoryDto;
     path: {
+        /**
+         * Household id
+         */
         householdId: string;
+        /**
+         * Category id
+         */
         categoryId: string;
     };
     query?: never;
@@ -117,7 +177,12 @@ export type CategoryUpdateCategoryResponse =
 
 export type CategoryGetDefaultCategoriesData = {
     body?: never;
-    path?: never;
+    path: {
+        /**
+         * Household id
+         */
+        householdId: string;
+    };
     query?: never;
     url: '/api/households/{householdId}/categories/default';
 };

@@ -12,7 +12,7 @@ export interface Category {
 }
 
 export interface DefaultCategory {
-    translateKey: string,
+    translateKey: string;
 }
 
 export const defaultCategories: DefaultCategory[] = [

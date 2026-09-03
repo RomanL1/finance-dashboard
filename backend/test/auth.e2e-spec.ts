@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import { AppModule } from '../src/app.module.js';
 import { setupApp } from '../src/shared/infra/app.setup.js';
-import { DEMO_HOUSEHOLD, DEMO_USER } from '../src/shared/infra/db/seed.js';
+import { DEMO_USER } from '../src/shared/infra/db/seed.js';
 import { prepareTestDb } from './setup-db.js';
 
 describe('auth + household (e2e)', () => {
@@ -36,16 +36,11 @@ describe('auth + household (e2e)', () => {
         cookie = res.headers['set-cookie'][0].split(';')[0];
     });
 
-    it('GET /api/households/me returns the seeded household', async () => {
-        const res = await request(app.getHttpServer())
+    it('GET /api/households/me returns 404 for the seeded demo user (no household yet)', async () => {
+        await request(app.getHttpServer())
             .get('/api/households/me')
             .set('Cookie', cookie)
-            .expect(200);
-        expect(res.body).toMatchObject({
-            id: DEMO_HOUSEHOLD.id,
-            name: DEMO_HOUSEHOLD.name,
-            role: 'owner',
-        });
+            .expect(404);
     });
 
     it('a fresh user without household gets 404', async () => {

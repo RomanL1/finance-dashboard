@@ -48,9 +48,19 @@ export class HouseholdService {
             id: newId(),
             name,
             currency,
+            onboardingComplete: false,
             createdAt: new Date(),
         };
         await this.households.insert(entity, ownerUserId);
         return entity;
+    }
+
+    async completeOnboarding(householdId: Id): Promise<Household> {
+        const updated =
+            await this.households.setOnboardingComplete(householdId);
+        if (!updated) {
+            throw new NotFoundError('Household', householdId);
+        }
+        return updated;
     }
 }

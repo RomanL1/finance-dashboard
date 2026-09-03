@@ -10,6 +10,7 @@ export function toHouseholdDto({
     dto.name = household.name;
     dto.currency = household.currency;
     dto.role = role;
+    dto.onboardingComplete = household.onboardingComplete;
     dto.createdAt = household.createdAt.toISOString();
     return dto;
 }

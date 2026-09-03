@@ -14,6 +14,7 @@ const dummyMembership: HouseholdMembership = {
         id: 'h1',
         name: 'Home',
         currency: 'CHF',
+        onboardingComplete: false,
         createdAt: new Date('2026-01-01'),
     },
 };

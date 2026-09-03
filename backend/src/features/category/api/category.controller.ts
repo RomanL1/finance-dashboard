@@ -14,6 +14,7 @@ import {
     ApiCookieAuth,
     ApiNoContentResponse,
     ApiOkResponse,
+    ApiParam,
     ApiTags,
 } from '@nestjs/swagger';
 import { CategoryService } from '../service/category.service.js';
@@ -29,6 +30,7 @@ import { DefaultCategory } from '../model/category.js';
 
 @ApiTags('category')
 @ApiCookieAuth()
+@ApiParam({ name: 'householdId', description: 'Household id', type: String })
 @UseGuards(HouseholdMemberGuard)
 @Controller('households/:householdId/categories')
 export class CategoryController {
@@ -54,6 +56,7 @@ export class CategoryController {
     }
 
     @Patch(':categoryId')
+    @ApiParam({ name: 'categoryId', description: 'Category id', type: String })
     @ApiOkResponse({ type: CategoryDto })
     async updateCategory(
         @Param('householdId') householdId: Id,
@@ -66,6 +69,7 @@ export class CategoryController {
     }
 
     @Delete(':categoryId')
+    @ApiParam({ name: 'categoryId', description: 'Category id', type: String })
     @HttpCode(HttpStatus.NO_CONTENT)
     @ApiNoContentResponse({ description: 'Category successfully deleted' })
     async deleteCategory(

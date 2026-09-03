@@ -26,5 +26,53 @@
             "currency": "Currency",
             "role": "Role"
         }
+    },
+    "onboarding": {
+        "title": "Welcome",
+        "failed": "Something went wrong. Please try again.",
+        "steps": {
+            "household": "Household",
+            "currency": "Currency",
+            "categories": "Categories"
+        },
+        "household": {
+            "loading": "Loading…",
+            "nameLabel": "Household name",
+            "nameRequired": "Household name is required",
+            "next": "Next"
+        },
+        "currency": {
+            "label": "Currency",
+            "required": "Currency is required",
+            "next": "Next"
+        },
+        "categories": {
+            "loading": "Loading categories…",
+            "description": "Pick the categories you want to start with.",
+            "selectAll": "Select all",
+            "deselectAll": "Deselect all",
+            "customLabel": "Add a custom category",
+            "addButton": "Add",
+            "removeCustom": "Remove {{name}}",
+            "submit": "Finish setup"
+        }
+    },
+    "category": {
+        "default": {
+            "HOUSING": "Housing",
+            "GROCERIES": "Groceries",
+            "DINING_OUT": "Dining Out",
+            "TRANSPORTATION": "Transportation",
+            "SHOPPING": "Shopping",
+            "HEALTH": "Health",
+            "ENTERTAINMENT": "Entertainment",
+            "EDUCATION": "Education",
+            "PERSONAL_CARE": "Personal Care",
+            "GIFT_DONATIONS": "Gifts & Donations",
+            "BILLS_SUBSCRIPTIONS": "Bills & Subscriptions",
+            "SAVINGS_INVESTMENTS": "Savings & Investments",
+            "DEBT_PAYMENTS": "Debt Payments",
+            "MISC": "Miscellaneous"
+        }
     }
 }

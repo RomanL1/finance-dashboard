@@ -19,6 +19,10 @@ import type {
     CategoryGetDefaultCategoriesResponses,
     CategoryUpdateCategoryData,
     CategoryUpdateCategoryResponses,
+    HouseholdCompleteOnboardingData,
+    HouseholdCompleteOnboardingResponses,
+    HouseholdCreateData,
+    HouseholdCreateResponses,
     HouseholdMineData,
     HouseholdMineResponses,
 } from './types.gen';
@@ -59,6 +63,50 @@ export const householdMine = <ThrowOnError extends boolean = false>(
             },
         ],
         url: '/api/households/me',
+        ...options,
+    });
+
+export const householdCreate = <ThrowOnError extends boolean = false>(
+    options: Options<HouseholdCreateData, ThrowOnError>,
+): RequestResult<HouseholdCreateResponses, unknown, ThrowOnError> =>
+    (options.client ?? client).post<
+        HouseholdCreateResponses,
+        unknown,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers,
+        },
+    });
+
+export const householdCompleteOnboarding = <
+    ThrowOnError extends boolean = false,
+>(
+    options: Options<HouseholdCompleteOnboardingData, ThrowOnError>,
+): RequestResult<HouseholdCompleteOnboardingResponses, unknown, ThrowOnError> =>
+    (options.client ?? client).patch<
+        HouseholdCompleteOnboardingResponses,
+        unknown,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/{householdId}/complete-onboarding',
         ...options,
     });
 
@@ -149,13 +197,13 @@ export const categoryUpdateCategory = <ThrowOnError extends boolean = false>(
 export const categoryGetDefaultCategories = <
     ThrowOnError extends boolean = false,
 >(
-    options?: Options<CategoryGetDefaultCategoriesData, ThrowOnError>,
+    options: Options<CategoryGetDefaultCategoriesData, ThrowOnError>,
 ): RequestResult<
     CategoryGetDefaultCategoriesResponses,
     unknown,
     ThrowOnError
 > =>
-    (options?.client ?? client).get<
+    (options.client ?? client).get<
         CategoryGetDefaultCategoriesResponses,
         unknown,
         ThrowOnError

@@ -41,13 +41,20 @@ export class HouseholdRepository {
     }
 
     async insert(entity: Household, ownerUserId: Id): Promise<void> {
-        await this.db.transaction(async (tx) => {
-            await tx.insert(household).values(entity);
-            await tx.insert(householdMember).values({
-                householdId: entity.id,
-                userId: ownerUserId,
-                role: 'owner',
-            });
+        await this.db.insert(household).values(entity);
+        await this.db.insert(householdMember).values({
+            householdId: entity.id,
+            userId: ownerUserId,
+            role: 'owner',
         });
+    }
+
+    async setOnboardingComplete(householdId: Id): Promise<Household | null> {
+        const [row] = await this.db
+            .update(household)
+            .set({ onboardingComplete: true })
+            .where(eq(household.id, householdId))
+            .returning();
+        return row ?? null;
     }
 }

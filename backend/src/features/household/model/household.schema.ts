@@ -1,4 +1,9 @@
-import { primaryKey, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import {
+    integer,
+    primaryKey,
+    sqliteTable,
+    text,
+} from 'drizzle-orm/sqlite-core';
 import { user } from '../../../shared/infra/auth/auth.schema.js';
 import { timestamps } from '../../../shared/infra/db/timestamp.schema.js';
 
@@ -8,6 +13,9 @@ export const household = sqliteTable('household', {
     id: text('id').primaryKey(),
     name: text('name').notNull(),
     currency: text('currency').notNull(),
+    onboardingComplete: integer('onboarding_complete', { mode: 'boolean' })
+        .notNull()
+        .default(false),
 
     ...timestamps,
 });

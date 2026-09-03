@@ -15,6 +15,7 @@ const membership = (
         id: 'h1',
         name: 'Home',
         currency: 'CHF',
+        onboardingComplete: false,
         createdAt: new Date('2026-01-01'),
     },
 });
@@ -24,6 +25,7 @@ function makeRepo(overrides: Partial<HouseholdRepository> = {}) {
         findMembershipByUserId: vi.fn().mockResolvedValue(null),
         findMembership: vi.fn().mockResolvedValue(null),
         insert: vi.fn().mockResolvedValue(undefined),
+        setOnboardingComplete: vi.fn().mockResolvedValue(null),
         ...overrides,
     } as unknown as HouseholdRepository;
 }
@@ -42,6 +44,7 @@ describe('HouseholdService', () => {
         const created = await service.createForOwner('u1', 'Home');
         expect(created.name).toBe('Home');
         expect(created.currency).toBe('CHF');
+        expect(created.onboardingComplete).toBe(false);
         expect(repo.insert).toHaveBeenCalledWith(created, 'u1');
     });
 
@@ -83,5 +86,26 @@ describe('HouseholdService', () => {
         await expect(
             new HouseholdService(repo).assertMember('h1', 'u1'),
         ).rejects.toBeInstanceOf(ForbiddenError);
+    });
+
+    it('completeOnboarding returns the updated household', async () => {
+        const repo = makeRepo({
+            setOnboardingComplete: vi.fn().mockResolvedValue({
+                ...membership('owner').household,
+                onboardingComplete: true,
+            }),
+        });
+        await expect(
+            new HouseholdService(repo).completeOnboarding('h1'),
+        ).resolves.toMatchObject({ onboardingComplete: true });
+    });
+
+    it('completeOnboarding throws NotFoundError when household does not exist', async () => {
+        const repo = makeRepo({
+            setOnboardingComplete: vi.fn().mockResolvedValue(null),
+        });
+        await expect(
+            new HouseholdService(repo).completeOnboarding('h1'),
+        ).rejects.toBeInstanceOf(NotFoundError);
     });
 });

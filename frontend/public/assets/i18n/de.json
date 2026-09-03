@@ -26,5 +26,53 @@
             "currency": "Währung",
             "role": "Rolle"
         }
+    },
+    "onboarding": {
+        "title": "Willkommen",
+        "failed": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
+        "steps": {
+            "household": "Haushalt",
+            "currency": "Währung",
+            "categories": "Kategorien"
+        },
+        "household": {
+            "loading": "Lade…",
+            "nameLabel": "Haushaltsname",
+            "nameRequired": "Haushaltsname ist erforderlich",
+            "next": "Weiter"
+        },
+        "currency": {
+            "label": "Währung",
+            "required": "Währung ist erforderlich",
+            "next": "Weiter"
+        },
+        "categories": {
+            "loading": "Lade Kategorien…",
+            "description": "Wähle die Kategorien, mit denen du starten möchtest.",
+            "selectAll": "Alle auswählen",
+            "deselectAll": "Alle abwählen",
+            "customLabel": "Eigene Kategorie hinzufügen",
+            "addButton": "Hinzufügen",
+            "removeCustom": "{{name}} entfernen",
+            "submit": "Einrichtung abschliessen"
+        }
+    },
+    "category": {
+        "default": {
+            "HOUSING": "Wohnen",
+            "GROCERIES": "Lebensmittel",
+            "DINING_OUT": "Auswärts essen",
+            "TRANSPORTATION": "Transport",
+            "SHOPPING": "Einkaufen",
+            "HEALTH": "Gesundheit",
+            "ENTERTAINMENT": "Unterhaltung",
+            "EDUCATION": "Bildung",
+            "PERSONAL_CARE": "Körperpflege",
+            "GIFT_DONATIONS": "Geschenke & Spenden",
+            "BILLS_SUBSCRIPTIONS": "Rechnungen & Abos",
+            "SAVINGS_INVESTMENTS": "Sparen & Investieren",
+            "DEBT_PAYMENTS": "Schuldenrückzahlung",
+            "MISC": "Sonstiges"
+        }
     }
 }

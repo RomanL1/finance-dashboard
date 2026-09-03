@@ -8,4 +8,10 @@ export class HouseholdService {
         const response = await householdMine({ throwOnError: true });
         return response.data;
     }
+
+    /** Resolves `null` instead of throwing when the user has no household yet. */
+    async getHouseholdOrNull(): Promise<HouseholdMineResponse | null> {
+        const response = await householdMine();
+        return response.data ?? null;
+    }
 }

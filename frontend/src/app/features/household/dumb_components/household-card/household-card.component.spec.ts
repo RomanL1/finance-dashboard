@@ -12,6 +12,7 @@ describe('HouseholdCardComponent', () => {
         name: 'Our Home',
         currency: 'EUR',
         role: 'owner',
+        onboardingComplete: true,
         createdAt: '2026-01-01T00:00:00Z',
     };
 

@@ -13,7 +13,6 @@ import {
     NotFoundError,
     ValidationError,
 } from '../../../shared/kernel/index.js';
-import { CreateCategoryDto } from '../model/category.dto.js';
 
 @Injectable()
 export class CategoryService {
@@ -109,5 +108,13 @@ export class CategoryService {
 
     getDefaultCategories(): DefaultCategory[] {
         return defaultCategories;
+    }
+
+    /** Onboarding cannot complete with zero categories, regardless of what the client sent. */
+    async assertHasCategories(householdId: Id): Promise<void> {
+        const existing = await this.categories.listByHouseholdId(householdId);
+        if (existing.length === 0) {
+            throw new ValidationError('At least one category must be selected');
+        }
     }
 }
