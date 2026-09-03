@@ -1,6 +1,7 @@
 import {
     ChangeDetectionStrategy,
     Component,
+    effect,
     input,
     output,
 } from '@angular/core';
@@ -60,6 +61,7 @@ import { ButtonComponent } from '../../../../components/button/button.component'
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HouseholdFormComponent {
+    readonly initialName = input<string>('');
     readonly busy = input<boolean>(false);
     readonly errorMessage = input<string | null>(null);
     readonly submitted = output<string>();
@@ -70,6 +72,14 @@ export class HouseholdFormComponent {
             validators: [Validators.required],
         }),
     });
+
+    /** Prefills the name control once the current household name is available. */
+    constructor() {
+        effect(() => {
+            const name = this.initialName();
+            if (name) this.form.controls.name.setValue(name);
+        });
+    }
 
     submit(): void {
         if (this.form.invalid || this.busy()) return;

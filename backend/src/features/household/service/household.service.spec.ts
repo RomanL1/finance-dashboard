@@ -1,8 +1,4 @@
-import {
-    ConflictError,
-    ForbiddenError,
-    NotFoundError,
-} from '../../../shared/kernel/index.js';
+import { ForbiddenError, NotFoundError } from '../../../shared/kernel/index.js';
 import type { HouseholdMembership } from '../model/household.js';
 import type { HouseholdRepository } from '../repository/household.repository.js';
 import { HouseholdService } from './household.service.js';
@@ -25,8 +21,6 @@ function makeRepo(overrides: Partial<HouseholdRepository> = {}) {
         findById: vi.fn().mockResolvedValue(null),
         findMembershipByUserId: vi.fn().mockResolvedValue(null),
         findMembership: vi.fn().mockResolvedValue(null),
-        insert: vi.fn().mockResolvedValue(undefined),
-        setOnboardingComplete: vi.fn().mockResolvedValue(null),
         ...overrides,
     } as unknown as HouseholdRepository;
 }
@@ -36,9 +30,9 @@ describe('HouseholdService', () => {
         const repo = makeRepo({
             findById: vi.fn().mockResolvedValue(membership('owner').household),
         });
-        await expect(
-            new HouseholdService(repo).getById('h1'),
-        ).resolves.toEqual(membership('owner').household);
+        await expect(new HouseholdService(repo).getById('h1')).resolves.toEqual(
+            membership('owner').household,
+        );
     });
 
     it('getById throws NotFoundError when household does not exist', async () => {
@@ -55,27 +49,6 @@ describe('HouseholdService', () => {
         );
     });
 
-    it('creates a household and registers the owner', async () => {
-        const repo = makeRepo();
-        const service = new HouseholdService(repo);
-        const created = await service.createForOwner('u1', 'Home');
-        expect(created.name).toBe('Home');
-        expect(created.currency).toBe('CHF');
-        expect(created.onboardingComplete).toBe(false);
-        expect(repo.insert).toHaveBeenCalledWith(created, 'u1');
-    });
-
-    it('refuses a second household for the same user', async () => {
-        const repo = makeRepo({
-            findMembershipByUserId: vi
-                .fn()
-                .mockResolvedValue(membership('owner')),
-        });
-        await expect(
-            new HouseholdService(repo).createForOwner('u1', 'Other'),
-        ).rejects.toBeInstanceOf(ConflictError);
-    });
-
     it('returns the membership for a household member', async () => {
         const repo = makeRepo({
             findMembershipByUserId: vi
@@ -85,6 +58,21 @@ describe('HouseholdService', () => {
         await expect(
             new HouseholdService(repo).getForUser('u1'),
         ).resolves.toEqual(membership('member'));
+    });
+
+    it('hasHousehold reflects whether the user already belongs to one', async () => {
+        await expect(
+            new HouseholdService(makeRepo()).hasHousehold('u1'),
+        ).resolves.toBe(false);
+
+        const repo = makeRepo({
+            findMembershipByUserId: vi
+                .fn()
+                .mockResolvedValue(membership('owner')),
+        });
+        await expect(
+            new HouseholdService(repo).hasHousehold('u1'),
+        ).resolves.toBe(true);
     });
 
     it('assertMember returns membership when user belongs to household', async () => {
@@ -103,26 +91,5 @@ describe('HouseholdService', () => {
         await expect(
             new HouseholdService(repo).assertMember('h1', 'u1'),
         ).rejects.toBeInstanceOf(ForbiddenError);
-    });
-
-    it('completeOnboarding returns the updated household', async () => {
-        const repo = makeRepo({
-            setOnboardingComplete: vi.fn().mockResolvedValue({
-                ...membership('owner').household,
-                onboardingComplete: true,
-            }),
-        });
-        await expect(
-            new HouseholdService(repo).completeOnboarding('h1'),
-        ).resolves.toMatchObject({ onboardingComplete: true });
-    });
-
-    it('completeOnboarding throws NotFoundError when household does not exist', async () => {
-        const repo = makeRepo({
-            setOnboardingComplete: vi.fn().mockResolvedValue(null),
-        });
-        await expect(
-            new HouseholdService(repo).completeOnboarding('h1'),
-        ).rejects.toBeInstanceOf(NotFoundError);
     });
 });

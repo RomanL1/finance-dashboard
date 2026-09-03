@@ -1,15 +1,9 @@
-import type { CreateHouseholdDto, DefaultCategoryDto } from '../../core/api';
+import type { DefaultCategoryDto } from '../../core/api';
+import { CURRENCIES } from '../../core/constants/currencies';
+import type { Currency } from '../../core/constants/currencies';
 
-export type { DefaultCategoryDto };
-
-export const CURRENCIES: readonly CreateHouseholdDto['currency'][] = [
-    'CHF',
-    'EUR',
-    'USD',
-    'GBP',
-] as const;
-
-export type Currency = CreateHouseholdDto['currency'];
+export type { DefaultCategoryDto, Currency };
+export { CURRENCIES };
 
 export interface CategorySelection {
     translateKeys: string[];

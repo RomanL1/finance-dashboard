@@ -221,28 +221,4 @@ describe('CategoryService', () => {
             ).rejects.toBeInstanceOf(NotFoundError);
         });
     });
-
-    describe('assertHasCategories', () => {
-        it('throws ValidationError when the household has no categories', async () => {
-            const repo = makeRepo({
-                listByHouseholdId: vi.fn().mockResolvedValue([]),
-            });
-            const service = new CategoryService(repo);
-
-            await expect(
-                service.assertHasCategories('household-1'),
-            ).rejects.toBeInstanceOf(ValidationError);
-        });
-
-        it('resolves when the household has at least one category', async () => {
-            const repo = makeRepo({
-                listByHouseholdId: vi.fn().mockResolvedValue([dummyCategory]),
-            });
-            const service = new CategoryService(repo);
-
-            await expect(
-                service.assertHasCategories('household-1'),
-            ).resolves.toBeUndefined();
-        });
-    });
 });

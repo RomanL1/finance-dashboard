@@ -15,20 +15,24 @@ import type {
     AccountGetAccountsResponses,
     CategoryCreateCategoryData,
     CategoryCreateCategoryResponses,
+    CategoryDefaultsGetDefaultCategoriesData,
+    CategoryDefaultsGetDefaultCategoriesResponses,
     CategoryDeleteCategoryData,
     CategoryDeleteCategoryResponses,
     CategoryGetCategoriesData,
     CategoryGetCategoriesResponses,
-    CategoryGetDefaultCategoriesData,
-    CategoryGetDefaultCategoriesResponses,
     CategoryUpdateCategoryData,
     CategoryUpdateCategoryResponses,
-    HouseholdCompleteOnboardingData,
-    HouseholdCompleteOnboardingResponses,
-    HouseholdCreateData,
-    HouseholdCreateResponses,
     HouseholdMineData,
     HouseholdMineResponses,
+    OnboardingOnboardData,
+    OnboardingOnboardResponses,
+    OnboardingValidateAccountsData,
+    OnboardingValidateAccountsResponses,
+    OnboardingValidateCategoriesData,
+    OnboardingValidateCategoriesResponses,
+    OnboardingValidateHouseholdData,
+    OnboardingValidateHouseholdResponses,
 } from './types.gen';
 
 export type Options<
@@ -67,50 +71,6 @@ export const householdMine = <ThrowOnError extends boolean = false>(
             },
         ],
         url: '/api/households/me',
-        ...options,
-    });
-
-export const householdCreate = <ThrowOnError extends boolean = false>(
-    options: Options<HouseholdCreateData, ThrowOnError>,
-): RequestResult<HouseholdCreateResponses, unknown, ThrowOnError> =>
-    (options.client ?? client).post<
-        HouseholdCreateResponses,
-        unknown,
-        ThrowOnError
-    >({
-        security: [
-            {
-                in: 'cookie',
-                name: 'better-auth.session_token',
-                type: 'apiKey',
-            },
-        ],
-        url: '/api/households',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers,
-        },
-    });
-
-export const householdCompleteOnboarding = <
-    ThrowOnError extends boolean = false,
->(
-    options: Options<HouseholdCompleteOnboardingData, ThrowOnError>,
-): RequestResult<HouseholdCompleteOnboardingResponses, unknown, ThrowOnError> =>
-    (options.client ?? client).patch<
-        HouseholdCompleteOnboardingResponses,
-        unknown,
-        ThrowOnError
-    >({
-        security: [
-            {
-                in: 'cookie',
-                name: 'better-auth.session_token',
-                type: 'apiKey',
-            },
-        ],
-        url: '/api/households/{householdId}/complete-onboarding',
         ...options,
     });
 
@@ -198,17 +158,17 @@ export const categoryUpdateCategory = <ThrowOnError extends boolean = false>(
         },
     });
 
-export const categoryGetDefaultCategories = <
+export const categoryDefaultsGetDefaultCategories = <
     ThrowOnError extends boolean = false,
 >(
-    options: Options<CategoryGetDefaultCategoriesData, ThrowOnError>,
+    options?: Options<CategoryDefaultsGetDefaultCategoriesData, ThrowOnError>,
 ): RequestResult<
-    CategoryGetDefaultCategoriesResponses,
+    CategoryDefaultsGetDefaultCategoriesResponses,
     unknown,
     ThrowOnError
 > =>
-    (options.client ?? client).get<
-        CategoryGetDefaultCategoriesResponses,
+    (options?.client ?? client).get<
+        CategoryDefaultsGetDefaultCategoriesResponses,
         unknown,
         ThrowOnError
     >({
@@ -219,7 +179,7 @@ export const categoryGetDefaultCategories = <
                 type: 'apiKey',
             },
         ],
-        url: '/api/households/{householdId}/categories/default',
+        url: '/api/categories/default',
         ...options,
     });
 
@@ -258,6 +218,108 @@ export const accountCreateAccount = <ThrowOnError extends boolean = false>(
             },
         ],
         url: '/api/households/{householdId}/accounts',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers,
+        },
+    });
+
+export const onboardingOnboard = <ThrowOnError extends boolean = false>(
+    options: Options<OnboardingOnboardData, ThrowOnError>,
+): RequestResult<OnboardingOnboardResponses, unknown, ThrowOnError> =>
+    (options.client ?? client).post<
+        OnboardingOnboardResponses,
+        unknown,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/onboarding',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers,
+        },
+    });
+
+export const onboardingValidateHousehold = <
+    ThrowOnError extends boolean = false,
+>(
+    options: Options<OnboardingValidateHouseholdData, ThrowOnError>,
+): RequestResult<OnboardingValidateHouseholdResponses, unknown, ThrowOnError> =>
+    (options.client ?? client).post<
+        OnboardingValidateHouseholdResponses,
+        unknown,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/onboarding/validate-household',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers,
+        },
+    });
+
+export const onboardingValidateCategories = <
+    ThrowOnError extends boolean = false,
+>(
+    options: Options<OnboardingValidateCategoriesData, ThrowOnError>,
+): RequestResult<
+    OnboardingValidateCategoriesResponses,
+    unknown,
+    ThrowOnError
+> =>
+    (options.client ?? client).post<
+        OnboardingValidateCategoriesResponses,
+        unknown,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/onboarding/validate-categories',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers,
+        },
+    });
+
+export const onboardingValidateAccounts = <
+    ThrowOnError extends boolean = false,
+>(
+    options: Options<OnboardingValidateAccountsData, ThrowOnError>,
+): RequestResult<OnboardingValidateAccountsResponses, unknown, ThrowOnError> =>
+    (options.client ?? client).post<
+        OnboardingValidateAccountsResponses,
+        unknown,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/onboarding/validate-accounts',
         ...options,
         headers: {
             'Content-Type': 'application/json',

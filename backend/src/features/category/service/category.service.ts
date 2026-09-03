@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CategoryRepository } from '../repository/category.repository.js';
 import {
+    buildCategory,
     Category,
     CreateOrUpdateCategory,
     defaultCategories,
@@ -9,7 +10,6 @@ import {
 import {
     ConflictError,
     Id,
-    newId,
     NotFoundError,
     ValidationError,
 } from '../../../shared/kernel/index.js';
@@ -23,25 +23,17 @@ export class CategoryService {
     }
 
     async create(name: string, householdId: Id): Promise<Category> {
-        const trimmedName = name?.trim();
-        if (!trimmedName) {
-            throw new ValidationError('Category name cannot be empty');
-        }
+        const entity = buildCategory(name);
 
         const existing = await this.categories.findByName(
             householdId,
-            trimmedName,
+            entity.name,
         );
         if (existing) {
             throw new ConflictError(
-                `Category "${trimmedName}" already exists in this household`,
+                `Category "${entity.name}" already exists in this household`,
             );
         }
-
-        const entity: CreateOrUpdateCategory = {
-            id: newId(),
-            name: trimmedName,
-        };
 
         try {
             return await this.categories.createCategory(entity, householdId);
@@ -51,7 +43,7 @@ export class CategoryService {
                 err.message.includes('UNIQUE constraint failed')
             ) {
                 throw new ConflictError(
-                    `Category "${trimmedName}" already exists in this household`,
+                    `Category "${entity.name}" already exists in this household`,
                 );
             }
             throw err;
@@ -108,13 +100,5 @@ export class CategoryService {
 
     getDefaultCategories(): DefaultCategory[] {
         return defaultCategories;
-    }
-
-    /** Onboarding cannot complete with zero categories, regardless of what the client sent. */
-    async assertHasCategories(householdId: Id): Promise<void> {
-        const existing = await this.categories.listByHouseholdId(householdId);
-        if (existing.length === 0) {
-            throw new ValidationError('At least one category must be selected');
-        }
     }
 }

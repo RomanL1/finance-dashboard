@@ -1,6 +1,7 @@
 import {
     ChangeDetectionStrategy,
     Component,
+    effect,
     input,
     output,
 } from '@angular/core';
@@ -69,6 +70,7 @@ import { CURRENCIES, type Currency } from '../../onboarding.types';
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CurrencyFormComponent {
+    readonly initialCurrency = input<string | null>(null);
     readonly busy = input<boolean>(false);
     readonly errorMessage = input<string | null>(null);
     readonly submitted = output<Currency>();
@@ -81,6 +83,16 @@ export class CurrencyFormComponent {
             validators: [Validators.required],
         }),
     });
+
+    /** Prefills the currency control once the current household currency is available. */
+    constructor() {
+        effect(() => {
+            const currency = this.initialCurrency();
+            if (currency) {
+                this.form.controls.currency.setValue(currency as Currency);
+            }
+        });
+    }
 
     submit(): void {
         if (this.form.invalid || this.busy()) return;

@@ -126,28 +126,4 @@ describe('AccountService', () => {
             ).rejects.toBeInstanceOf(ValidationError);
         });
     });
-
-    describe('assertHasAccounts', () => {
-        it('throws ValidationError when the household has no accounts', async () => {
-            const repo = makeRepo({
-                listByHouseholdId: vi.fn().mockResolvedValue([]),
-            });
-            const service = new AccountService(repo, makeHouseholds());
-
-            await expect(
-                service.assertHasAccounts('household-1'),
-            ).rejects.toBeInstanceOf(ValidationError);
-        });
-
-        it('resolves when the household has at least one account', async () => {
-            const repo = makeRepo({
-                listByHouseholdId: vi.fn().mockResolvedValue([dummyAccount]),
-            });
-            const service = new AccountService(repo, makeHouseholds());
-
-            await expect(
-                service.assertHasAccounts('household-1'),
-            ).resolves.toBeUndefined();
-        });
-    });
 });

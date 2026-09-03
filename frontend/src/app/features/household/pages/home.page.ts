@@ -6,10 +6,17 @@ import { APP_PATHS } from '../../../config/paths.config';
 import { ButtonComponent } from '../../../components/button/button.component';
 import { HouseholdCardComponent } from '../dumb_components/household-card/household-card.component';
 import { HouseholdService } from '../services/household.service';
+import { AccountListComponent } from '../../account/dumb_components/account-list/account-list.component';
+import { AccountService } from '../../account/services/account.service';
 
 @Component({
     selector: 'app-home-page',
-    imports: [ButtonComponent, HouseholdCardComponent, TranslatePipe],
+    imports: [
+        ButtonComponent,
+        HouseholdCardComponent,
+        AccountListComponent,
+        TranslatePipe,
+    ],
     template: `
         <main class="mx-auto mt-16 max-w-lg p-4">
             <header class="mb-6 flex items-center justify-between">
@@ -34,6 +41,9 @@ import { HouseholdService } from '../services/household.service';
                 </p>
             } @else if (household.value(); as h) {
                 <app-household-card [household]="h" />
+                @if (accounts.value(); as accts) {
+                    <app-account-list [accounts]="accts" class="mt-6 block" />
+                }
             }
         </main>
     `,
@@ -44,9 +54,15 @@ export class HomePage {
         loader: () => this.householdService.getHousehold(),
     });
 
+    readonly accounts = resource({
+        params: () => this.household.value()?.id,
+        loader: ({ params }) => this.accountService.list(params),
+    });
+
     constructor(
         protected readonly auth: AuthService,
         private readonly householdService: HouseholdService,
+        private readonly accountService: AccountService,
         private readonly router: Router,
     ) {}
 

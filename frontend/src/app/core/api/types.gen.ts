@@ -13,14 +13,6 @@ export type HouseholdDto = {
     createdAt: string;
 };
 
-export type CreateHouseholdDto = {
-    /**
-     * Household name
-     */
-    name: string;
-    currency: 'CHF' | 'EUR' | 'USD' | 'GBP';
-};
-
 export type CategoryDto = {
     id: string;
     name: string;
@@ -74,6 +66,48 @@ export type CreateAccountDto = {
     startDate: string;
 };
 
+export type OnboardingAccountDto = {
+    /**
+     * Account description
+     */
+    description: string;
+    /**
+     * Defaults to the household currency when omitted
+     */
+    currency?: 'CHF' | 'EUR' | 'USD' | 'GBP';
+    /**
+     * Minor units (cents)
+     */
+    initialValue: number;
+    startDate: string;
+};
+
+export type CompleteOnboardingDto = {
+    /**
+     * Household name
+     */
+    name: string;
+    currency: 'CHF' | 'EUR' | 'USD' | 'GBP';
+    categoryNames: Array<string>;
+    accounts: Array<OnboardingAccountDto>;
+};
+
+export type OnboardingHouseholdDto = {
+    /**
+     * Household name
+     */
+    name: string;
+    currency: 'CHF' | 'EUR' | 'USD' | 'GBP';
+};
+
+export type OnboardingCategoriesDto = {
+    categoryNames: Array<string>;
+};
+
+export type OnboardingAccountsDto = {
+    accounts: Array<OnboardingAccountDto>;
+};
+
 export type HouseholdMineData = {
     body?: never;
     path?: never;
@@ -87,39 +121,6 @@ export type HouseholdMineResponses = {
 
 export type HouseholdMineResponse =
     HouseholdMineResponses[keyof HouseholdMineResponses];
-
-export type HouseholdCreateData = {
-    body: CreateHouseholdDto;
-    path?: never;
-    query?: never;
-    url: '/api/households';
-};
-
-export type HouseholdCreateResponses = {
-    200: HouseholdDto;
-};
-
-export type HouseholdCreateResponse =
-    HouseholdCreateResponses[keyof HouseholdCreateResponses];
-
-export type HouseholdCompleteOnboardingData = {
-    body?: never;
-    path: {
-        /**
-         * Household id
-         */
-        householdId: string;
-    };
-    query?: never;
-    url: '/api/households/{householdId}/complete-onboarding';
-};
-
-export type HouseholdCompleteOnboardingResponses = {
-    200: HouseholdDto;
-};
-
-export type HouseholdCompleteOnboardingResponse =
-    HouseholdCompleteOnboardingResponses[keyof HouseholdCompleteOnboardingResponses];
 
 export type CategoryGetCategoriesData = {
     body?: never;
@@ -208,24 +209,19 @@ export type CategoryUpdateCategoryResponses = {
 export type CategoryUpdateCategoryResponse =
     CategoryUpdateCategoryResponses[keyof CategoryUpdateCategoryResponses];
 
-export type CategoryGetDefaultCategoriesData = {
+export type CategoryDefaultsGetDefaultCategoriesData = {
     body?: never;
-    path: {
-        /**
-         * Household id
-         */
-        householdId: string;
-    };
+    path?: never;
     query?: never;
-    url: '/api/households/{householdId}/categories/default';
+    url: '/api/categories/default';
 };
 
-export type CategoryGetDefaultCategoriesResponses = {
+export type CategoryDefaultsGetDefaultCategoriesResponses = {
     200: Array<DefaultCategoryDto>;
 };
 
-export type CategoryGetDefaultCategoriesResponse =
-    CategoryGetDefaultCategoriesResponses[keyof CategoryGetDefaultCategoriesResponses];
+export type CategoryDefaultsGetDefaultCategoriesResponse =
+    CategoryDefaultsGetDefaultCategoriesResponses[keyof CategoryDefaultsGetDefaultCategoriesResponses];
 
 export type AccountGetAccountsData = {
     body?: never;
@@ -264,3 +260,68 @@ export type AccountCreateAccountResponses = {
 
 export type AccountCreateAccountResponse =
     AccountCreateAccountResponses[keyof AccountCreateAccountResponses];
+
+export type OnboardingOnboardData = {
+    body: CompleteOnboardingDto;
+    path?: never;
+    query?: never;
+    url: '/api/households/onboarding';
+};
+
+export type OnboardingOnboardResponses = {
+    200: HouseholdDto;
+};
+
+export type OnboardingOnboardResponse =
+    OnboardingOnboardResponses[keyof OnboardingOnboardResponses];
+
+export type OnboardingValidateHouseholdData = {
+    body: OnboardingHouseholdDto;
+    path?: never;
+    query?: never;
+    url: '/api/households/onboarding/validate-household';
+};
+
+export type OnboardingValidateHouseholdResponses = {
+    /**
+     * Household step values are valid
+     */
+    204: void;
+};
+
+export type OnboardingValidateHouseholdResponse =
+    OnboardingValidateHouseholdResponses[keyof OnboardingValidateHouseholdResponses];
+
+export type OnboardingValidateCategoriesData = {
+    body: OnboardingCategoriesDto;
+    path?: never;
+    query?: never;
+    url: '/api/households/onboarding/validate-categories';
+};
+
+export type OnboardingValidateCategoriesResponses = {
+    /**
+     * Categories step values are valid
+     */
+    204: void;
+};
+
+export type OnboardingValidateCategoriesResponse =
+    OnboardingValidateCategoriesResponses[keyof OnboardingValidateCategoriesResponses];
+
+export type OnboardingValidateAccountsData = {
+    body: OnboardingAccountsDto;
+    path?: never;
+    query?: never;
+    url: '/api/households/onboarding/validate-accounts';
+};
+
+export type OnboardingValidateAccountsResponses = {
+    /**
+     * Accounts step values are valid
+     */
+    204: void;
+};
+
+export type OnboardingValidateAccountsResponse =
+    OnboardingValidateAccountsResponses[keyof OnboardingValidateAccountsResponses];

@@ -1,15 +1,8 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { AccountRepository } from '../repository/account.repository.js';
-import { Account, CreateAccount } from '../model/account.js';
-import { Id, newId, ValidationError } from '../../../shared/kernel/index.js';
+import { Account, buildAccount, CreateAccountInput } from '../model/account.js';
+import { Id } from '../../../shared/kernel/index.js';
 import { HouseholdService } from '../../household/service/household.service.js';
-
-export interface CreateAccountInput {
-    description: string;
-    currency?: string;
-    initialValue: number;
-    startDate: Date;
-}
 
 @Injectable()
 export class AccountService {
@@ -23,36 +16,12 @@ export class AccountService {
         return this.accounts.listByHouseholdId(householdId);
     }
 
-    async create(
-        householdId: Id,
-        input: CreateAccountInput,
-    ): Promise<Account> {
-        const description = input.description?.trim();
-        if (!description) {
-            throw new ValidationError('Account description cannot be empty');
-        }
-
-        const currency =
+    async create(householdId: Id, input: CreateAccountInput): Promise<Account> {
+        /** Only look the household up when the caller left the currency open. */
+        const householdCurrency =
             input.currency ??
             (await this.households.getById(householdId)).currency;
-
-        const entity: CreateAccount = {
-            id: newId(),
-            description,
-            currency,
-            initialValue: input.initialValue,
-            amount: input.initialValue,
-            startDate: input.startDate,
-        };
-
+        const entity = buildAccount(input, householdCurrency);
         return this.accounts.createAccount(entity, householdId);
-    }
-
-    /** Onboarding cannot complete with zero accounts, regardless of what the client sent. */
-    async assertHasAccounts(householdId: Id): Promise<void> {
-        const existing = await this.accounts.listByHouseholdId(householdId);
-        if (existing.length === 0) {
-            throw new ValidationError('At least one account must be added');
-        }
     }
 }

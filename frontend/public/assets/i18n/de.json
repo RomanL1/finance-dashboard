@@ -30,10 +30,12 @@
     "onboarding": {
         "title": "Willkommen",
         "failed": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
+        "back": "Zurück",
         "steps": {
             "household": "Haushalt",
             "currency": "Währung",
-            "categories": "Kategorien"
+            "categories": "Kategorien",
+            "accounts": "Konten"
         },
         "household": {
             "loading": "Lade…",
@@ -54,7 +56,28 @@
             "customLabel": "Eigene Kategorie hinzufügen",
             "addButton": "Hinzufügen",
             "removeCustom": "{{name}} entfernen",
-            "submit": "Einrichtung abschliessen"
+            "submit": "Weiter"
+        },
+        "accounts": {
+            "description": "Füge mindestens ein Konto hinzu, um es zu verfolgen."
+        }
+    },
+    "account": {
+        "form": {
+            "descriptionLabel": "Beschreibung",
+            "descriptionRequired": "Beschreibung ist erforderlich",
+            "currencyLabel": "Währung",
+            "initialValueLabel": "Anfangswert",
+            "initialValueRequired": "Anfangswert ist erforderlich",
+            "startDateLabel": "Startdatum",
+            "startDateRequired": "Startdatum ist erforderlich",
+            "submit": "Konto hinzufügen"
+        },
+        "list": {
+            "empty": "Noch keine Konten.",
+            "description": "Beschreibung",
+            "currency": "Währung",
+            "amount": "Betrag"
         }
     },
     "category": {

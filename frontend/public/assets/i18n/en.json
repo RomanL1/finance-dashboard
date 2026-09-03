@@ -30,10 +30,12 @@
     "onboarding": {
         "title": "Welcome",
         "failed": "Something went wrong. Please try again.",
+        "back": "Back",
         "steps": {
             "household": "Household",
             "currency": "Currency",
-            "categories": "Categories"
+            "categories": "Categories",
+            "accounts": "Accounts"
         },
         "household": {
             "loading": "Loading…",
@@ -54,7 +56,28 @@
             "customLabel": "Add a custom category",
             "addButton": "Add",
             "removeCustom": "Remove {{name}}",
-            "submit": "Finish setup"
+            "submit": "Next"
+        },
+        "accounts": {
+            "description": "Add at least one account to track."
+        }
+    },
+    "account": {
+        "form": {
+            "descriptionLabel": "Description",
+            "descriptionRequired": "Description is required",
+            "currencyLabel": "Currency",
+            "initialValueLabel": "Initial value",
+            "initialValueRequired": "Initial value is required",
+            "startDateLabel": "Start date",
+            "startDateRequired": "Start date is required",
+            "submit": "Add account"
+        },
+        "list": {
+            "empty": "No accounts yet.",
+            "description": "Description",
+            "currency": "Currency",
+            "amount": "Amount"
         }
     },
     "category": {

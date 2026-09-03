@@ -1,50 +1,54 @@
 import { Injectable } from '@angular/core';
 import {
-    categoryCreateCategory,
-    categoryGetDefaultCategories,
-    householdCompleteOnboarding,
-    householdCreate,
+    categoryDefaultsGetDefaultCategories,
+    onboardingOnboard,
+    onboardingValidateAccounts,
+    onboardingValidateCategories,
+    onboardingValidateHousehold,
 } from '../../../core/api';
 import type {
-    CreateHouseholdDto,
+    CompleteOnboardingDto,
     DefaultCategoryDto,
     HouseholdDto,
+    OnboardingAccountDto,
 } from '../../../core/api';
 
 @Injectable({ providedIn: 'root' })
 export class OnboardingService {
-    async createHousehold(
+    async getDefaultCategories(): Promise<DefaultCategoryDto[]> {
+        const response = await categoryDefaultsGetDefaultCategories({
+            throwOnError: true,
+        });
+        return response.data;
+    }
+
+    async validateHousehold(
         name: string,
-        currency: CreateHouseholdDto['currency'],
-    ): Promise<HouseholdDto> {
-        const response = await householdCreate({
+        currency: CompleteOnboardingDto['currency'],
+    ): Promise<void> {
+        await onboardingValidateHousehold({
             body: { name, currency },
             throwOnError: true,
         });
-        return response.data;
     }
 
-    async getDefaultCategories(
-        householdId: string,
-    ): Promise<DefaultCategoryDto[]> {
-        const response = await categoryGetDefaultCategories({
-            path: { householdId },
-            throwOnError: true,
-        });
-        return response.data;
-    }
-
-    async createCategory(householdId: string, name: string): Promise<void> {
-        await categoryCreateCategory({
-            path: { householdId },
-            body: { name },
+    async validateCategories(categoryNames: string[]): Promise<void> {
+        await onboardingValidateCategories({
+            body: { categoryNames },
             throwOnError: true,
         });
     }
 
-    async completeOnboarding(householdId: string): Promise<HouseholdDto> {
-        const response = await householdCompleteOnboarding({
-            path: { householdId },
+    async validateAccounts(accounts: OnboardingAccountDto[]): Promise<void> {
+        await onboardingValidateAccounts({
+            body: { accounts },
+            throwOnError: true,
+        });
+    }
+
+    async submit(dto: CompleteOnboardingDto): Promise<HouseholdDto> {
+        const response = await onboardingOnboard({
+            body: dto,
             throwOnError: true,
         });
         return response.data;

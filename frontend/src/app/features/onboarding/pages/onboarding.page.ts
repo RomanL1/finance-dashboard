@@ -1,20 +1,26 @@
 import {
     ChangeDetectionStrategy,
     Component,
-    effect,
     resource,
     signal,
     viewChild,
+    type Signal,
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { MatStep, MatStepLabel, MatStepper } from '@angular/material/stepper';
 import { APP_PATHS } from '../../../config/paths.config';
-import { HouseholdService } from '../../household/services/household.service';
+import { ButtonComponent } from '../../../components/button/button.component';
 import { HouseholdFormComponent } from '../dumb_components/household-form/household-form.component';
 import { CurrencyFormComponent } from '../dumb_components/currency-form/currency-form.component';
 import { CategoryPickerComponent } from '../dumb_components/category-picker/category-picker.component';
+import { AccountFormComponent } from '../../account/dumb_components/account-form/account-form.component';
+import type { CreateAccountDto } from '../../account/account.types';
 import { OnboardingService } from '../services/onboarding.service';
+import {
+    OnboardingStateService,
+    type OnboardingDraft,
+} from '../services/onboarding-state.service';
 import type { CategorySelection, Currency } from '../onboarding.types';
 
 @Component({
@@ -26,6 +32,8 @@ import type { CategorySelection, Currency } from '../onboarding.types';
         HouseholdFormComponent,
         CurrencyFormComponent,
         CategoryPickerComponent,
+        AccountFormComponent,
+        ButtonComponent,
         TranslatePipe,
     ],
     template: `
@@ -33,38 +41,40 @@ import type { CategorySelection, Currency } from '../onboarding.types';
             <h1 class="mb-6 text-2xl font-semibold">
                 {{ 'onboarding.title' | translate }}
             </h1>
-            <mat-stepper linear>
-                <mat-step
-                    [completed]="!!householdName() || !!household.value()"
-                >
+            <mat-stepper linear orientation="vertical">
+                <mat-step [completed]="!!draft().name">
                     <ng-template matStepLabel>{{
                         'onboarding.steps.household' | translate
                     }}</ng-template>
-                    @if (household.isLoading()) {
-                        <p>{{ 'onboarding.household.loading' | translate }}</p>
-                    } @else if (!household.value() && !householdName()) {
-                        <app-household-form
-                            [busy]="busy()"
-                            [errorMessage]="error()"
-                            (submitted)="onHouseholdNameSubmit($event)"
-                        />
-                    }
+                    <app-household-form
+                        [initialName]="draft().name ?? ''"
+                        [busy]="busy()"
+                        [errorMessage]="error()"
+                        (submitted)="onHouseholdNameSubmit($event)"
+                    />
                 </mat-step>
 
-                <mat-step [completed]="!!household.value()">
+                <mat-step [completed]="!!draft().currency">
                     <ng-template matStepLabel>{{
                         'onboarding.steps.currency' | translate
                     }}</ng-template>
-                    @if (!household.value()) {
-                        <app-currency-form
-                            [busy]="busy()"
-                            [errorMessage]="error()"
-                            (submitted)="onCurrencySubmit($event)"
-                        />
-                    }
+                    <app-currency-form
+                        [initialCurrency]="draft().currency ?? null"
+                        [busy]="busy()"
+                        [errorMessage]="error()"
+                        (submitted)="onCurrencySubmit($event)"
+                    />
+                    <app-button
+                        type="button"
+                        variant="outlined"
+                        class="mt-2 block"
+                        (clicked)="goBack()"
+                    >
+                        {{ 'onboarding.back' | translate }}
+                    </app-button>
                 </mat-step>
 
-                <mat-step>
+                <mat-step [completed]="!!draft().categories">
                     <ng-template matStepLabel>{{
                         'onboarding.steps.categories' | translate
                     }}</ng-template>
@@ -80,6 +90,39 @@ import type { CategorySelection, Currency } from '../onboarding.types';
                             (submitted)="onCategoriesSubmit($event)"
                         />
                     }
+                    <app-button
+                        type="button"
+                        variant="outlined"
+                        class="mt-2 block"
+                        (clicked)="goBack()"
+                    >
+                        {{ 'onboarding.back' | translate }}
+                    </app-button>
+                </mat-step>
+
+                <mat-step>
+                    <ng-template matStepLabel>{{
+                        'onboarding.steps.accounts' | translate
+                    }}</ng-template>
+                    @if (draft().currency; as currency) {
+                        <p>
+                            {{ 'onboarding.accounts.description' | translate }}
+                        </p>
+                        <app-account-form
+                            [defaultCurrency]="currency"
+                            [busy]="busy()"
+                            [errorMessage]="error()"
+                            (submitted)="onAccountSubmit($event)"
+                        />
+                    }
+                    <app-button
+                        type="button"
+                        variant="outlined"
+                        class="mt-2 block"
+                        (clicked)="goBack()"
+                    >
+                        {{ 'onboarding.back' | translate }}
+                    </app-button>
                 </mat-step>
             </mat-stepper>
         </main>
@@ -91,50 +134,66 @@ export class OnboardingPage {
 
     readonly busy = signal(false);
     readonly error = signal<string | null>(null);
-    readonly householdName = signal<string | null>(null);
-
-    readonly household = resource({
-        loader: () => this.householdService.getHouseholdOrNull(),
-    });
+    readonly draft: Signal<OnboardingDraft>;
 
     readonly defaultCategories = resource({
-        params: () => this.household.value()?.id,
-        loader: ({ params }) =>
-            this.onboardingService.getDefaultCategories(params),
+        loader: () => this.onboardingService.getDefaultCategories(),
     });
 
     constructor(
-        private readonly householdService: HouseholdService,
         private readonly onboardingService: OnboardingService,
+        private readonly onboardingState: OnboardingStateService,
         private readonly router: Router,
         private readonly translate: TranslateService,
     ) {
-        effect(() => {
-            const stepper = this.stepper();
-            if (!stepper) return;
+        this.draft = this.onboardingState.draft;
 
-            if (this.household.value() && stepper.selectedIndex < 2) {
-                stepper.selectedIndex = 2;
-            } else if (this.householdName() && stepper.selectedIndex === 0) {
-                stepper.selectedIndex = 1;
-            }
+        /** Resume mid-flow from the cached draft on page reload. */
+        const resumeIndex = this.resumeIndexFor(this.draft());
+        if (resumeIndex > 0) this.goToStep(resumeIndex);
+    }
+
+    private resumeIndexFor(draft: OnboardingDraft): number {
+        if (draft.categories) return 3;
+        if (draft.currency) return 2;
+        if (draft.name) return 1;
+        return 0;
+    }
+
+    private goToStep(index: number): void {
+        /** Deferred: [completed] on the target's preceding steps is signal-driven
+         * and may not have flushed to the stepper yet in the same tick (a
+         * microtask isn't enough — it can race Angular's own CD scheduling),
+         * which makes the linear stepper silently reject the jump. */
+        setTimeout(() => {
+            const stepper = this.stepper();
+            if (stepper) stepper.selectedIndex = index;
         });
+    }
+
+    goBack(): void {
+        const stepper = this.stepper();
+        if (stepper && stepper.selectedIndex > 0) {
+            stepper.selectedIndex -= 1;
+        }
     }
 
     onHouseholdNameSubmit(name: string): void {
         this.error.set(null);
-        this.householdName.set(name);
+        this.onboardingState.setHousehold(name);
+        this.goToStep(1);
     }
 
     async onCurrencySubmit(currency: Currency): Promise<void> {
-        const name = this.householdName();
+        const name = this.draft().name;
         if (!name) return;
 
         this.busy.set(true);
         this.error.set(null);
         try {
-            await this.onboardingService.createHousehold(name, currency);
-            await this.household.reload();
+            await this.onboardingService.validateHousehold(name, currency);
+            this.onboardingState.setCurrency(currency);
+            this.goToStep(2);
         } catch (e) {
             this.error.set(
                 e instanceof Error
@@ -147,20 +206,40 @@ export class OnboardingPage {
     }
 
     async onCategoriesSubmit(selection: CategorySelection): Promise<void> {
-        const householdId = this.household.value()?.id;
-        if (!householdId) return;
+        const categoryNames = this.resolveCategoryNames(selection);
 
         this.busy.set(true);
         this.error.set(null);
         try {
-            for (const key of selection.translateKeys) {
-                const name = this.translate.instant('category.default.' + key);
-                await this.onboardingService.createCategory(householdId, name);
-            }
-            for (const name of selection.customNames) {
-                await this.onboardingService.createCategory(householdId, name);
-            }
-            await this.onboardingService.completeOnboarding(householdId);
+            await this.onboardingService.validateCategories(categoryNames);
+            this.onboardingState.setCategories(selection);
+            this.goToStep(3);
+        } catch (e) {
+            this.error.set(
+                e instanceof Error
+                    ? e.message
+                    : this.translate.instant('onboarding.failed'),
+            );
+        } finally {
+            this.busy.set(false);
+        }
+    }
+
+    async onAccountSubmit(dto: CreateAccountDto): Promise<void> {
+        const draft = this.draft();
+        if (!draft.name || !draft.currency || !draft.categories) return;
+
+        this.busy.set(true);
+        this.error.set(null);
+        try {
+            await this.onboardingService.validateAccounts([dto]);
+            await this.onboardingService.submit({
+                name: draft.name,
+                currency: draft.currency,
+                categoryNames: this.resolveCategoryNames(draft.categories),
+                accounts: [dto],
+            });
+            this.onboardingState.clear();
             await this.router.navigate(['/' + APP_PATHS.HOME]);
         } catch (e) {
             this.error.set(
@@ -171,5 +250,12 @@ export class OnboardingPage {
         } finally {
             this.busy.set(false);
         }
+    }
+
+    private resolveCategoryNames(selection: CategorySelection): string[] {
+        const defaultNames = selection.translateKeys.map((key) =>
+            this.translate.instant('category.default.' + key),
+        );
+        return [...defaultNames, ...selection.customNames];
     }
 }

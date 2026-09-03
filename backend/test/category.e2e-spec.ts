@@ -38,11 +38,22 @@ describe('category (e2e)', () => {
         cookie = res.headers['set-cookie'][0].split(';')[0];
     });
 
-    it('creates a household for the demo user', async () => {
+    it('onboards the demo user with a household', async () => {
         const res = await request(app.getHttpServer())
-            .post('/api/households')
+            .post('/api/households/onboarding')
             .set('Cookie', cookie)
-            .send({ name: 'Demo Haushalt', currency: 'CHF' })
+            .send({
+                name: 'Demo Haushalt',
+                currency: 'CHF',
+                categoryNames: ['Utilities'],
+                accounts: [
+                    {
+                        description: 'Checking',
+                        initialValue: 100000,
+                        startDate: '2026-01-01',
+                    },
+                ],
+            })
             .expect(201);
         householdId = res.body.id;
     });

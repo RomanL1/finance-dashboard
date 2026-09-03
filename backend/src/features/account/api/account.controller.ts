@@ -1,5 +1,10 @@
 import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
-import { ApiCookieAuth, ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
+import {
+    ApiCookieAuth,
+    ApiOkResponse,
+    ApiParam,
+    ApiTags,
+} from '@nestjs/swagger';
 import { AccountService } from '../service/account.service.js';
 import { AccountDto, CreateAccountDto } from '../model/account.dto.js';
 import { toAccountDto, toAccountsDto } from './account.mapper.js';
