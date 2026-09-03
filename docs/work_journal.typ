@@ -19,6 +19,7 @@
 #let entries = (
   ("2026-09-01", 4.5, [evaluate technologies for frontend and backend, initialized repository and set up backend & frontend]),
   ("2026-09-02", 5.0, [setup first feature slice for categories & mocking auth with minimal frontend]),
+  ("2026-09-03", 6.0, [change styling to angular material, add translations, add default categories, implement onboarding workflow including account and currency]),
 )
 
 // Automatically calculate total hours
