@@ -6,18 +6,17 @@ import {
     LOCALE_ID,
     resource,
 } from '@angular/core';
-import { Router } from '@angular/router';
 import { MatFabButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../../core/auth/auth.service';
-import { APP_PATHS } from '../../../config/paths.config';
-import { ButtonComponent } from '../../../components/button/button.component';
 import { DialogService } from '../../../components/dialog/dialog.service';
 import { HouseholdCardComponent } from '../dumb_components/household-card/household-card.component';
 import { HouseholdService } from '../services/household.service';
 import { AccountListComponent } from '../../account/dumb_components/account-list/account-list.component';
 import { AccountService } from '../../account/services/account.service';
+import { isActiveAccount } from '../../account/account.types';
 import { CategoryService } from '../../category/services/category.service';
 import { TransactionListComponent } from '../../transaction/dumb_components/transaction-list/transaction-list.component';
 import { TransactionDialogComponent } from '../../transaction/smart_components/transaction-dialog/transaction-dialog.component';
@@ -31,42 +30,36 @@ import {
 @Component({
     selector: 'app-home-page',
     imports: [
-        ButtonComponent,
         HouseholdCardComponent,
         AccountListComponent,
         TransactionListComponent,
         MatFabButton,
         MatIcon,
+        MatProgressSpinner,
         TranslatePipe,
     ],
     template: `
-        <main class="mx-auto mt-16 max-w-lg p-4 pb-24">
-            <header class="mb-6 flex items-center justify-between">
-                <h1 class="text-2xl font-semibold">
-                    {{
-                        'home.greeting' | translate: { name: auth.user()?.name }
-                    }}
-                </h1>
-                <app-button
-                    type="button"
-                    variant="outlined"
-                    (clicked)="signOut()"
-                >
-                    {{ 'home.signOut' | translate }}
-                </app-button>
-            </header>
+        <main class="mx-auto max-w-lg p-4 pb-24">
+            <h1 class="mb-6 text-2xl font-semibold">
+                {{ 'home.greeting' | translate: { name: auth.user()?.name } }}
+            </h1>
             @if (household.isLoading()) {
-                <p>{{ 'home.loadingHousehold' | translate }}</p>
+                <mat-spinner class="mx-auto" diameter="40" />
             } @else if (household.error()) {
                 <p role="alert" class="text-red-700">
                     {{ 'home.noHouseholdFound' | translate }}
                 </p>
             } @else if (household.value(); as h) {
                 <app-household-card [household]="h" />
-                @if (accounts.value(); as accts) {
-                    <app-account-list [accounts]="accts" class="mt-6 block" />
+                @if (accounts.value()) {
+                    <app-account-list
+                        [accounts]="activeAccounts()"
+                        class="mt-6 block"
+                    />
                 }
-                @if (transactions.value()) {
+                @if (transactions.isLoading() || accounts.isLoading()) {
+                    <mat-spinner class="mx-auto mt-6" diameter="40" />
+                } @else if (transactions.value()) {
                     <app-transaction-list
                         [groups]="transactionGroups()"
                         (edit)="openTransactionDialog(h.id, $event)"
@@ -75,7 +68,7 @@ import {
                     />
                 }
                 <!-- Wrapper positions: Material's own position:relative beats layered Tailwind utilities on the button. -->
-                <div class="fixed right-4 bottom-4">
+                <div class="fixed right-4 bottom-20 md:bottom-4">
                     <button
                         matFab
                         type="button"
@@ -115,6 +108,11 @@ export class HomePage {
 
     private readonly locale = inject(LOCALE_ID);
 
+    /** Archived accounts keep their history but take no new transactions. */
+    readonly activeAccounts = computed(() =>
+        (this.accounts.value() ?? []).filter((a) => isActiveAccount(a)),
+    );
+
     /** Grouped at load time: "today" is not re-evaluated at midnight until the next reload. */
     readonly transactionGroups = computed(() =>
         toTransactionGroups(
@@ -133,7 +131,6 @@ export class HomePage {
         private readonly categoryService: CategoryService,
         private readonly transactionService: TransactionService,
         private readonly dialogs: DialogService,
-        private readonly router: Router,
     ) {}
 
     /** With `transactionId` the dialog edits that row instead of creating one. */
@@ -144,7 +141,6 @@ export class HomePage {
             TransactionDto
         >(TransactionDialogComponent, {
             householdId,
-            accounts: this.accounts.value() ?? [],
             categories: this.categories.value() ?? [],
             transaction: this.transactions
                 .value()
@@ -174,10 +170,5 @@ export class HomePage {
         this.transactions.reload();
         /** Balance is derived from transactions server-side. */
         this.accounts.reload();
-    }
-
-    async signOut(): Promise<void> {
-        await this.auth.signOut();
-        await this.router.navigate(['/' + APP_PATHS.LOGIN]);
     }
 }

@@ -46,6 +46,7 @@ export type AccountDto = {
      */
     amount: number;
     startDate: string;
+    archivedAt: string | null;
     createdAt: string;
 };
 
@@ -60,6 +61,16 @@ export type CreateAccountDto = {
      */
     initialValue: number;
     startDate: string;
+};
+
+export type UpdateAccountDto = {
+    /**
+     * Account description
+     */
+    description: string;
+    currency: 'CHF' | 'EUR' | 'USD' | 'GBP';
+    startDate: string;
+    archivedAt?: string | null;
 };
 
 export type OnboardingAccountDto = {
@@ -285,6 +296,52 @@ export type AccountCreateAccountResponses = {
 
 export type AccountCreateAccountResponse =
     AccountCreateAccountResponses[keyof AccountCreateAccountResponses];
+
+export type AccountDeleteAccountData = {
+    body?: never;
+    path: {
+        /**
+         * Household id
+         */
+        householdId: string;
+        /**
+         * Account id
+         */
+        accountId: string;
+    };
+    query?: never;
+    url: '/api/households/{householdId}/accounts/{accountId}';
+};
+
+export type AccountDeleteAccountResponses = {
+    204: void;
+};
+
+export type AccountDeleteAccountResponse =
+    AccountDeleteAccountResponses[keyof AccountDeleteAccountResponses];
+
+export type AccountUpdateAccountData = {
+    body: UpdateAccountDto;
+    path: {
+        /**
+         * Household id
+         */
+        householdId: string;
+        /**
+         * Account id
+         */
+        accountId: string;
+    };
+    query?: never;
+    url: '/api/households/{householdId}/accounts/{accountId}';
+};
+
+export type AccountUpdateAccountResponses = {
+    200: AccountDto;
+};
+
+export type AccountUpdateAccountResponse =
+    AccountUpdateAccountResponses[keyof AccountUpdateAccountResponses];
 
 export type OnboardingOnboardData = {
     body: CompleteOnboardingDto;

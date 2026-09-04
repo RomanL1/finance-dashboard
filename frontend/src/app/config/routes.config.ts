@@ -23,12 +23,29 @@ export const routes: Routes = [
             ),
     },
     {
+        /** Layout route: tab bar + outlet. Guards run once for every tab. */
         path: APP_PATHS.HOME,
         canActivate: [AuthGuard, OnboardingGuard],
         loadComponent: () =>
-            import('../features/household/pages/home.page').then(
-                (m) => m.HomePage,
+            import('../features/shell/pages/shell.page').then(
+                (m) => m.ShellPage,
             ),
+        children: [
+            {
+                path: APP_PATHS.HOME,
+                loadComponent: () =>
+                    import('../features/household/pages/home.page').then(
+                        (m) => m.HomePage,
+                    ),
+            },
+            {
+                path: APP_PATHS.SETTINGS,
+                loadComponent: () =>
+                    import('../features/settings/pages/settings.page').then(
+                        (m) => m.SettingsPage,
+                    ),
+            },
+        ],
     },
     { path: '**', redirectTo: APP_PATHS.HOME },
 ];

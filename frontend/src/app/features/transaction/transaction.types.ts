@@ -14,7 +14,7 @@ export type TransactionDefaults = Partial<CreateTransactionDto>;
 /** What the transaction dialog needs from its opener. `transaction` set = edit mode. */
 export interface TransactionDialogData {
     householdId: string;
-    accounts: AccountDto[];
+    /** Accounts are fetched by the dialog itself: archive dates must be fresh. */
     categories: CategoryDto[];
     transaction?: TransactionDto;
 }

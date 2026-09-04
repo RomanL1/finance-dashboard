@@ -1,10 +1,12 @@
 import {
     ChangeDetectionStrategy,
     Component,
+    computed,
     effect,
     input,
     output,
 } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import {
     FormControl,
     FormGroup,
@@ -21,6 +23,7 @@ import { MatInput } from '@angular/material/input';
 import { MatSelect } from '@angular/material/select';
 import { TranslatePipe } from '@ngx-translate/core';
 import type { AccountDto, CategoryDto } from '../../../../core/api';
+import { isActiveAccount } from '../../../account/account.types';
 import type {
     CreateTransactionDto,
     TransactionDefaults,
@@ -92,7 +95,7 @@ function toLocalDateTime(instant: Date): string {
                     >{{ 'transaction.form.accountLabel' | translate }}
                 </mat-label>
                 <mat-select formControlName="accountId">
-                    @for (account of accounts(); track account.id) {
+                    @for (account of activeAccounts(); track account.id) {
                         <mat-option [value]="account.id"
                             >{{ account.description }} ({{ account.currency }})
                         </mat-option>
@@ -180,6 +183,16 @@ export class TransactionFormComponent {
         description: new FormControl('', { nonNullable: true }),
     });
 
+    private readonly date = toSignal(this.form.controls.date.valueChanges, {
+        initialValue: this.form.controls.date.value,
+    });
+
+    /** Accounts not archived at the transaction's date. Changing the date can drop the selected one. */
+    readonly activeAccounts = computed(() => {
+        const at = new Date(this.date());
+        return this.accounts().filter((a) => isActiveAccount(a, at));
+    });
+
     /** Preselect last-used account and category; fall back to the only account. Editing prefills the rest. */
     constructor() {
         effect(() => {
@@ -193,12 +206,15 @@ export class TransactionFormComponent {
             });
         });
         effect(() => {
-            const accounts = this.accounts();
+            const accounts = this.activeAccounts();
             const defaults = this.defaults();
+            const control = this.form.controls.accountId;
+            const keep = accounts.some((a) => a.id === control.value);
             const account =
                 accounts.find((a) => a.id === defaults.accountId) ??
                 (accounts.length === 1 ? accounts[0] : undefined);
-            if (account) this.form.controls.accountId.setValue(account.id);
+            if (account && !keep) control.setValue(account.id);
+            else if (!keep) control.setValue('');
         });
         effect(() => {
             const categoryId = this.defaults().categoryId;

@@ -2,7 +2,9 @@
 
 export {
     accountCreateAccount,
+    accountDeleteAccount,
     accountGetAccounts,
+    accountUpdateAccount,
     categoryCreateCategory,
     categoryDefaultsGetDefaultCategories,
     categoryDeleteCategory,
@@ -23,10 +25,16 @@ export type {
     AccountCreateAccountData,
     AccountCreateAccountResponse,
     AccountCreateAccountResponses,
+    AccountDeleteAccountData,
+    AccountDeleteAccountResponse,
+    AccountDeleteAccountResponses,
     AccountDto,
     AccountGetAccountsData,
     AccountGetAccountsResponse,
     AccountGetAccountsResponses,
+    AccountUpdateAccountData,
+    AccountUpdateAccountResponse,
+    AccountUpdateAccountResponses,
     CategoryCreateCategoryData,
     CategoryCreateCategoryResponse,
     CategoryCreateCategoryResponses,
@@ -82,4 +90,5 @@ export type {
     TransactionUpdateTransactionData,
     TransactionUpdateTransactionResponse,
     TransactionUpdateTransactionResponses,
+    UpdateAccountDto,
 } from './types.gen';

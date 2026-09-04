@@ -16,6 +16,7 @@ describe('AccountListComponent', () => {
             initialValue: 10000,
             amount: 10050,
             startDate: '2026-01-01',
+            archivedAt: null,
             createdAt: '2026-01-01T00:00:00Z',
         },
     ];

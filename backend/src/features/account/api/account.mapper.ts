@@ -9,6 +9,7 @@ export function toAccountDto({
     initialValue,
     amount,
     startDate,
+    archivedAt,
     createdAt,
 }: Account): AccountDto {
     const dto = new AccountDto();
@@ -19,6 +20,7 @@ export function toAccountDto({
     dto.initialValue = initialValue;
     dto.amount = amount;
     dto.startDate = startDate.toISOString();
+    dto.archivedAt = archivedAt?.toISOString() ?? null;
     dto.createdAt = createdAt.toISOString();
     return dto;
 }

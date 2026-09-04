@@ -1,6 +1,15 @@
 import { Injectable } from '@angular/core';
-import { accountCreateAccount, accountGetAccounts } from '../../../core/api';
-import type { AccountDto, CreateAccountDto } from '../account.types';
+import {
+    accountCreateAccount,
+    accountDeleteAccount,
+    accountGetAccounts,
+    accountUpdateAccount,
+} from '../../../core/api';
+import type {
+    AccountDto,
+    CreateAccountDto,
+    UpdateAccountDto,
+} from '../account.types';
 
 @Injectable({ providedIn: 'root' })
 export class AccountService {
@@ -22,5 +31,26 @@ export class AccountService {
             throwOnError: true,
         });
         return response.data;
+    }
+
+    async update(
+        householdId: string,
+        accountId: string,
+        body: UpdateAccountDto,
+    ): Promise<AccountDto> {
+        const response = await accountUpdateAccount({
+            path: { householdId, accountId },
+            body,
+            throwOnError: true,
+        });
+        return response.data;
+    }
+
+    /** Deletes the account and all of its transactions. */
+    async delete(householdId: string, accountId: string): Promise<void> {
+        await accountDeleteAccount({
+            path: { householdId, accountId },
+            throwOnError: true,
+        });
     }
 }

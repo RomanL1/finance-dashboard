@@ -2,6 +2,7 @@ import {
     ChangeDetectionStrategy,
     Component,
     Inject,
+    resource,
     signal,
 } from '@angular/core';
 import {
@@ -12,7 +13,9 @@ import {
     MatDialogRef,
     MatDialogTitle,
 } from '@angular/material/dialog';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { AccountService } from '../../../account/services/account.service';
 import { ButtonComponent } from '../../../../components/button/button.component';
 import { TransactionFormComponent } from '../../dumb_components/transaction-form/transaction-form.component';
 import { TransactionService } from '../../services/transaction.service';
@@ -32,6 +35,7 @@ import type {
         MatDialogClose,
         ButtonComponent,
         TransactionFormComponent,
+        MatProgressSpinner,
         TranslatePipe,
     ],
     template: `
@@ -44,13 +48,17 @@ import type {
             }}
         </h2>
         <mat-dialog-content>
-            <app-transaction-form
-                [formId]="formId"
-                [accounts]="data.accounts"
-                [categories]="data.categories"
-                [defaults]="defaults"
-                (submitted)="save($event)"
-            />
+            @if (accounts.value(); as accts) {
+                <app-transaction-form
+                    [formId]="formId"
+                    [accounts]="accts"
+                    [categories]="data.categories"
+                    [defaults]="defaults"
+                    (submitted)="save($event)"
+                />
+            } @else {
+                <mat-spinner class="mx-auto" diameter="40" />
+            }
             @if (error()) {
                 <p role="alert" class="mt-2 text-red-700">{{ error() }}</p>
             }
@@ -63,7 +71,7 @@ import type {
                 type="submit"
                 variant="filled"
                 [formId]="formId"
-                [disabled]="busy()"
+                [disabled]="busy() || !accounts.value()"
             >
                 {{ 'transaction.dialog.save' | translate }}
             </app-button>
@@ -76,6 +84,10 @@ export class TransactionDialogComponent {
     readonly busy = signal(false);
     readonly error = signal<string | null>(null);
     readonly defaults: TransactionDefaults;
+    /** All accounts, archived included; the form hides those inactive at the chosen date. */
+    readonly accounts = resource({
+        loader: () => this.accountService.list(this.data.householdId),
+    });
 
     constructor(
         @Inject(MAT_DIALOG_DATA) readonly data: TransactionDialogData,
@@ -84,6 +96,7 @@ export class TransactionDialogComponent {
             TransactionDto
         >,
         private readonly transactions: TransactionService,
+        private readonly accountService: AccountService,
         private readonly translate: TranslateService,
     ) {
         this.defaults = data.transaction ?? transactions.lastUsed();

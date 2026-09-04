@@ -10,6 +10,7 @@ export interface CreateAccount {
     currency: string;
     initialValue: number;
     startDate: Date;
+    archivedAt: Date | null;
 }
 
 /** Domain model. Independent of persistence and transport shapes. */
@@ -22,6 +23,7 @@ export interface Account {
     /** Current balance: initialValue plus the signed sum of its transactions. Computed, never stored. */
     amount: number;
     startDate: Date;
+    archivedAt: Date | null;
     createdAt: Date;
 }
 
@@ -30,10 +32,19 @@ export interface CreateAccountInput {
     currency: string;
     initialValue: number;
     startDate: Date;
+    archivedAt?: Date | null;
 }
+
+/** Everything but the initial value, which is fixed at creation. */
+export type UpdateAccountInput = Omit<CreateAccountInput, 'initialValue'>;
+export type UpdateAccount = Omit<CreateAccount, 'initialValue'>;
 
 /** Domain rules for a new account, independent of how it is persisted. */
 export function buildAccount(input: CreateAccountInput): CreateAccount {
+    return { ...buildAccountUpdate(input), initialValue: input.initialValue };
+}
+
+export function buildAccountUpdate(input: UpdateAccountInput): UpdateAccount {
     const description = input.description?.trim();
     if (!description) {
         throw new ValidationError('Account description cannot be empty');
@@ -42,7 +53,7 @@ export function buildAccount(input: CreateAccountInput): CreateAccount {
         id: newId(),
         description,
         currency: input.currency,
-        initialValue: input.initialValue,
         startDate: input.startDate,
+        archivedAt: input.archivedAt ?? null,
     };
 }

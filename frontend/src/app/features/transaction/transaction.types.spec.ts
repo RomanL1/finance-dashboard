@@ -17,6 +17,7 @@ const ACCOUNTS: AccountDto[] = [
         initialValue: 0,
         amount: 0,
         startDate: '',
+        archivedAt: null,
         createdAt: '',
     },
 ];

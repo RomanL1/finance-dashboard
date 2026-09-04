@@ -118,4 +118,25 @@ describe('transaction (e2e)', () => {
             .expect(200);
         expect(list.body).toEqual([]);
     });
+
+    it('DELETE account removes its transactions with it', async () => {
+        await request(app.getHttpServer())
+            .post(url())
+            .set('Cookie', cookie)
+            .send(body('expense', 1000))
+            .expect(201);
+        await request(app.getHttpServer())
+            .delete(`/api/households/${householdId}/accounts/${accountId}`)
+            .set('Cookie', cookie)
+            .expect(204);
+        const list = await request(app.getHttpServer())
+            .get(url())
+            .set('Cookie', cookie)
+            .expect(200);
+        expect(list.body).toEqual([]);
+        await request(app.getHttpServer())
+            .delete(`/api/households/${householdId}/accounts/${accountId}`)
+            .set('Cookie', cookie)
+            .expect(404);
+    });
 });

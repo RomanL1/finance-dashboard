@@ -1,10 +1,11 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, OmitType } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
     IsIn,
     IsInt,
     IsISO8601,
     IsNotEmpty,
+    IsOptional,
     IsString,
     MaxLength,
 } from 'class-validator';
@@ -18,6 +19,7 @@ export class AccountDto {
     @ApiProperty({ description: 'Minor units (cents)' }) initialValue!: number;
     @ApiProperty({ description: 'Minor units (cents)' }) amount!: number;
     @ApiProperty() startDate!: string;
+    @ApiProperty({ type: String, nullable: true }) archivedAt!: string | null;
     @ApiProperty() createdAt!: string;
 }
 
@@ -42,4 +44,14 @@ export class CreateAccountDto {
     @ApiProperty({ example: '2026-01-01' })
     @IsISO8601()
     startDate!: string;
+}
+
+/** Full replace, except `initialValue`: fixed at creation. `archivedAt` null or absent = active. */
+export class UpdateAccountDto extends OmitType(CreateAccountDto, [
+    'initialValue',
+] as const) {
+    @ApiProperty({ type: String, nullable: true, required: false })
+    @IsOptional()
+    @IsISO8601()
+    archivedAt?: string | null;
 }

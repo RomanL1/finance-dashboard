@@ -11,8 +11,12 @@ import { client } from './client.gen';
 import type {
     AccountCreateAccountData,
     AccountCreateAccountResponses,
+    AccountDeleteAccountData,
+    AccountDeleteAccountResponses,
     AccountGetAccountsData,
     AccountGetAccountsResponses,
+    AccountUpdateAccountData,
+    AccountUpdateAccountResponses,
     CategoryCreateCategoryData,
     CategoryCreateCategoryResponses,
     CategoryDefaultsGetDefaultCategoriesData,
@@ -226,6 +230,48 @@ export const accountCreateAccount = <ThrowOnError extends boolean = false>(
             },
         ],
         url: '/api/households/{householdId}/accounts',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers,
+        },
+    });
+
+export const accountDeleteAccount = <ThrowOnError extends boolean = false>(
+    options: Options<AccountDeleteAccountData, ThrowOnError>,
+): RequestResult<AccountDeleteAccountResponses, unknown, ThrowOnError> =>
+    (options.client ?? client).delete<
+        AccountDeleteAccountResponses,
+        unknown,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/{householdId}/accounts/{accountId}',
+        ...options,
+    });
+
+export const accountUpdateAccount = <ThrowOnError extends boolean = false>(
+    options: Options<AccountUpdateAccountData, ThrowOnError>,
+): RequestResult<AccountUpdateAccountResponses, unknown, ThrowOnError> =>
+    (options.client ?? client).patch<
+        AccountUpdateAccountResponses,
+        unknown,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/{householdId}/accounts/{accountId}',
         ...options,
         headers: {
             'Content-Type': 'application/json',

@@ -1,4 +1,7 @@
 {
+    "app": {
+        "title": "Personal Finance Dashboard"
+    },
     "auth": {
         "login": {
             "title": "Login",
@@ -16,8 +19,6 @@
     },
     "home": {
         "greeting": "Hallo {{name}}",
-        "signOut": "Abmelden",
-        "loadingHousehold": "Lade Haushalt…",
         "noHouseholdFound": "Kein Haushalt gefunden."
     },
     "household": {
@@ -71,6 +72,31 @@
             "description": "Beschreibung",
             "currency": "Währung",
             "amount": "Betrag"
+        },
+        "dialog": {
+            "title": "Konto hinzufügen",
+            "editTitle": "Konto bearbeiten",
+            "cancel": "Abbrechen",
+            "save": "Speichern",
+            "failed": "Konto konnte nicht gespeichert werden."
+        },
+        "manage": {
+            "actions": "Kontoaktionen",
+            "edit": "Bearbeiten",
+            "archive": "Archivieren",
+            "unarchive": "Wiederherstellen",
+            "archivedSince": "Archiviert seit {{date}}",
+            "delete": "Löschen"
+        },
+        "archive": {
+            "title": "Konto archivieren?",
+            "message": "Archivierte Konten behalten ihre Buchungen, können aber keine neuen mehr erhalten.",
+            "confirm": "Archivieren"
+        },
+        "delete": {
+            "title": "Konto löschen?",
+            "message": "Das Konto und alle seine Buchungen werden dauerhaft gelöscht. Dies kann nicht rückgängig gemacht werden.",
+            "confirm": "Löschen"
         }
     },
     "category": {
@@ -130,6 +156,18 @@
             "title": "Transaktion löschen?",
             "message": "Die Transaktion wird entfernt und der Kontostand angepasst.",
             "confirm": "Löschen"
+        }
+    },
+    "nav": {
+        "home": "Start",
+        "settings": "Einstellungen"
+    },
+    "settings": {
+        "title": "Einstellungen",
+        "signOut": "Abmelden",
+        "accounts": {
+            "title": "Konten",
+            "add": "Konto hinzufügen"
         }
     }
 }

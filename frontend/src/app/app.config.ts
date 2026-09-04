@@ -5,7 +5,11 @@ import {
     LOCALE_ID,
     provideBrowserGlobalErrorListeners,
 } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import {
+    PreloadAllModules,
+    provideRouter,
+    withPreloading,
+} from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { provideTranslateService } from '@ngx-translate/core';
 import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
@@ -19,7 +23,8 @@ registerLocaleData(localeDe);
 export const appConfig: ApplicationConfig = {
     providers: [
         provideBrowserGlobalErrorListeners(),
-        provideRouter(routes),
+        /** Fetch lazy chunks right after boot so tab switches do not wait on the network. */
+        provideRouter(routes, withPreloading(PreloadAllModules)),
         provideHttpClient(),
         provideTranslateService({
             loader: provideTranslateHttpLoader({

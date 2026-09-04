@@ -1,4 +1,7 @@
 {
+    "app": {
+        "title": "Personal Finance Dashboard"
+    },
     "auth": {
         "login": {
             "title": "Login",
@@ -16,8 +19,6 @@
     },
     "home": {
         "greeting": "Hello {{name}}",
-        "signOut": "Sign out",
-        "loadingHousehold": "Loading household…",
         "noHouseholdFound": "No household found."
     },
     "household": {
@@ -71,6 +72,31 @@
             "description": "Description",
             "currency": "Currency",
             "amount": "Amount"
+        },
+        "dialog": {
+            "title": "Add account",
+            "editTitle": "Edit account",
+            "cancel": "Cancel",
+            "save": "Save",
+            "failed": "Could not save the account."
+        },
+        "manage": {
+            "actions": "Account actions",
+            "edit": "Edit",
+            "archive": "Archive",
+            "unarchive": "Unarchive",
+            "archivedSince": "Archived since {{date}}",
+            "delete": "Delete"
+        },
+        "archive": {
+            "title": "Archive account?",
+            "message": "Archived accounts keep their transactions but cannot receive new ones.",
+            "confirm": "Archive"
+        },
+        "delete": {
+            "title": "Delete account?",
+            "message": "This permanently deletes the account and all of its transactions. This cannot be undone.",
+            "confirm": "Delete"
         }
     },
     "category": {
@@ -130,6 +156,18 @@
             "title": "Delete transaction?",
             "message": "This removes the transaction and adjusts the account balance.",
             "confirm": "Delete"
+        }
+    },
+    "nav": {
+        "home": "Home",
+        "settings": "Settings"
+    },
+    "settings": {
+        "title": "Settings",
+        "signOut": "Sign out",
+        "accounts": {
+            "title": "Accounts",
+            "add": "Add account"
         }
     }
 }

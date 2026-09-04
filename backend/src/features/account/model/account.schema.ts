@@ -13,6 +13,8 @@ export const financeAccount = sqliteTable('finance_account', {
     /** Minor units (cents), fixed starting balance. */
     initialValue: integer('initial_value').notNull(),
     startDate: integer('start_date', { mode: 'timestamp' }).notNull(),
+    /** Null = active. Set = inactive from that date on. */
+    archivedAt: integer('archived_at', { mode: 'timestamp' }),
 
     ...timestamps,
 });
