@@ -31,7 +31,6 @@ export class OnboardingController {
     ): Promise<HouseholdDto> {
         const household = await this.onboarding.onboard(user.id, {
             name: dto.name,
-            currency: dto.currency,
             categoryNames: dto.categoryNames,
             accounts: dto.accounts.map((account) => ({
                 description: account.description,

@@ -44,11 +44,11 @@ describe('category (e2e)', () => {
             .set('Cookie', cookie)
             .send({
                 name: 'Demo Haushalt',
-                currency: 'CHF',
                 categoryNames: ['Utilities'],
                 accounts: [
                     {
                         description: 'Checking',
+                        currency: 'CHF',
                         initialValue: 100000,
                         startDate: '2026-01-01',
                     },

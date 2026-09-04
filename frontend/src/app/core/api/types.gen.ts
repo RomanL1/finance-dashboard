@@ -7,7 +7,6 @@ export type ClientOptions = {
 export type HouseholdDto = {
     id: string;
     name: string;
-    currency: string;
     role: 'owner' | 'member';
     onboardingComplete: boolean;
     createdAt: string;
@@ -55,10 +54,7 @@ export type CreateAccountDto = {
      * Account description
      */
     description: string;
-    /**
-     * Defaults to the household currency when omitted
-     */
-    currency?: 'CHF' | 'EUR' | 'USD' | 'GBP';
+    currency: 'CHF' | 'EUR' | 'USD' | 'GBP';
     /**
      * Minor units (cents)
      */
@@ -71,10 +67,7 @@ export type OnboardingAccountDto = {
      * Account description
      */
     description: string;
-    /**
-     * Defaults to the household currency when omitted
-     */
-    currency?: 'CHF' | 'EUR' | 'USD' | 'GBP';
+    currency: 'CHF' | 'EUR' | 'USD' | 'GBP';
     /**
      * Minor units (cents)
      */
@@ -87,7 +80,6 @@ export type CompleteOnboardingDto = {
      * Household name
      */
     name: string;
-    currency: 'CHF' | 'EUR' | 'USD' | 'GBP';
     categoryNames: Array<string>;
     accounts: Array<OnboardingAccountDto>;
 };
@@ -97,7 +89,6 @@ export type OnboardingHouseholdDto = {
      * Household name
      */
     name: string;
-    currency: 'CHF' | 'EUR' | 'USD' | 'GBP';
 };
 
 export type OnboardingCategoriesDto = {
@@ -111,13 +102,13 @@ export type OnboardingAccountsDto = {
 export type TransactionDto = {
     id: string;
     accountId: string;
-    categoryId: string;
+    categoryId: string | null;
     type: 'expense' | 'income';
     /**
      * Minor units (cents), positive; sign comes from type
      */
     amount: number;
-    title: string;
+    title: string | null;
     description: string | null;
     date: string;
     createdAt: string;
@@ -131,13 +122,13 @@ export type CreateTransactionDto = {
     /**
      * Category id within the household
      */
-    categoryId: string;
+    categoryId?: string | null;
     type: 'expense' | 'income';
     /**
      * Minor units (cents)
      */
     amount: number;
-    title: string;
+    title?: string | null;
     description?: string | null;
     date: string;
 };
@@ -198,13 +189,13 @@ export type CategoryDeleteCategoryData = {
     body?: never;
     path: {
         /**
-         * Household id
-         */
-        householdId: string;
-        /**
          * Category id
          */
         categoryId: string;
+        /**
+         * Household id
+         */
+        householdId: string;
     };
     query?: never;
     url: '/api/households/{householdId}/categories/{categoryId}';
@@ -224,13 +215,13 @@ export type CategoryUpdateCategoryData = {
     body: CreateCategoryDto;
     path: {
         /**
-         * Household id
-         */
-        householdId: string;
-        /**
          * Category id
          */
         categoryId: string;
+        /**
+         * Household id
+         */
+        householdId: string;
     };
     query?: never;
     url: '/api/households/{householdId}/categories/{categoryId}';

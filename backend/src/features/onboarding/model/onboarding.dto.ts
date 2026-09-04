@@ -7,7 +7,6 @@ import {
     IsInt,
     IsISO8601,
     IsNotEmpty,
-    IsOptional,
     IsString,
     MaxLength,
     ValidateNested,
@@ -23,10 +22,6 @@ export class OnboardingHouseholdDto {
     @IsNotEmpty()
     @MaxLength(100)
     name!: string;
-
-    @ApiProperty({ enum: SUPPORTED_CURRENCIES, example: 'CHF' })
-    @IsIn(SUPPORTED_CURRENCIES)
-    currency!: string;
 }
 
 export class OnboardingAccountDto {
@@ -39,15 +34,9 @@ export class OnboardingAccountDto {
     @MaxLength(100)
     description!: string;
 
-    @ApiProperty({
-        enum: SUPPORTED_CURRENCIES,
-        example: 'CHF',
-        required: false,
-        description: 'Defaults to the household currency when omitted',
-    })
-    @IsOptional()
+    @ApiProperty({ enum: SUPPORTED_CURRENCIES, example: 'CHF' })
     @IsIn(SUPPORTED_CURRENCIES)
-    currency?: string;
+    currency!: string;
 
     @ApiProperty({ description: 'Minor units (cents)', example: 100000 })
     @IsInt()

@@ -10,7 +10,6 @@ describe('HouseholdCardComponent', () => {
     const mockHousehold: HouseholdMineResponse = {
         id: 'h-1',
         name: 'Our Home',
-        currency: 'EUR',
         role: 'owner',
         onboardingComplete: true,
         createdAt: '2026-01-01T00:00:00Z',
@@ -32,7 +31,6 @@ describe('HouseholdCardComponent', () => {
             household: {
                 card: {
                     household: 'Household',
-                    currency: 'Currency',
                     role: 'Role',
                 },
             },
@@ -48,12 +46,10 @@ describe('HouseholdCardComponent', () => {
         const compiled = fixture.nativeElement as HTMLElement;
         const dts = compiled.querySelectorAll('dt');
         expect(dts[0].textContent).toBe('Household');
-        expect(dts[1].textContent).toBe('Currency');
-        expect(dts[2].textContent).toBe('Role');
+        expect(dts[1].textContent).toBe('Role');
 
         const dds = compiled.querySelectorAll('dd');
         expect(dds[0].textContent).toBe('Our Home');
-        expect(dds[1].textContent).toBe('EUR');
-        expect(dds[2].textContent).toBe('owner');
+        expect(dds[1].textContent).toBe('owner');
     });
 });

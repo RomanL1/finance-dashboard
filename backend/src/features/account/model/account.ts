@@ -27,19 +27,13 @@ export interface Account {
 
 export interface CreateAccountInput {
     description: string;
-    currency?: string;
+    currency: string;
     initialValue: number;
     startDate: Date;
 }
 
-/**
- * Domain rules for a new account, independent of how it is persisted.
- * `householdCurrency` is the fallback when the input leaves the currency open.
- */
-export function buildAccount(
-    input: CreateAccountInput,
-    householdCurrency: string,
-): CreateAccount {
+/** Domain rules for a new account, independent of how it is persisted. */
+export function buildAccount(input: CreateAccountInput): CreateAccount {
     const description = input.description?.trim();
     if (!description) {
         throw new ValidationError('Account description cannot be empty');
@@ -47,7 +41,7 @@ export function buildAccount(
     return {
         id: newId(),
         description,
-        currency: input.currency ?? householdCurrency,
+        currency: input.currency,
         initialValue: input.initialValue,
         amount: input.initialValue,
         startDate: input.startDate,

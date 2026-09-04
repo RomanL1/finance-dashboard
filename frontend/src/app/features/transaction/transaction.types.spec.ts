@@ -50,6 +50,40 @@ describe('toTransactionRows', () => {
             amount: -1250,
         });
         expect(rows[1].amount).toBe(500000);
-        expect(rows[1].category).toBe('');
+        expect(rows[1].category).toBeNull();
+    });
+
+    it('falls back to the category name when the title is missing', () => {
+        const rows = toTransactionRows(
+            [
+                {
+                    id: 't1',
+                    accountId: 'a1',
+                    categoryId: 'c1',
+                    type: 'expense',
+                    amount: 100,
+                    title: null,
+                    description: null,
+                    date: '',
+                    createdAt: '',
+                },
+                {
+                    id: 't2',
+                    accountId: 'a1',
+                    categoryId: null,
+                    type: 'expense',
+                    amount: 100,
+                    title: null,
+                    description: null,
+                    date: '',
+                    createdAt: '',
+                },
+            ],
+            [],
+            [{ id: 'c1', name: 'Groceries', createdAt: '' }],
+        );
+        expect(rows[0].title).toBe('Groceries');
+        expect(rows[1].title).toBeNull();
+        expect(rows[1].category).toBeNull();
     });
 });

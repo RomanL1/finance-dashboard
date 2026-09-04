@@ -10,10 +10,10 @@ export type TransactionType = (typeof TRANSACTION_TYPES)[number];
 export interface CreateTransaction {
     id: Id;
     accountId: Id;
-    categoryId: Id;
+    categoryId: Id | null;
     type: TransactionType;
     amount: number;
-    title: string;
+    title: string | null;
     description: string | null;
     date: Date;
 }
@@ -25,10 +25,10 @@ export interface Transaction extends CreateTransaction {
 
 export interface CreateTransactionInput {
     accountId: Id;
-    categoryId: Id;
+    categoryId?: Id | null;
     type: TransactionType;
     amount: number;
-    title: string;
+    title?: string | null;
     description?: string | null;
     date: Date;
 }
@@ -44,10 +44,6 @@ export function balanceDelta(
 export function buildTransaction(
     input: CreateTransactionInput,
 ): CreateTransaction {
-    const title = input.title?.trim();
-    if (!title) {
-        throw new ValidationError('Transaction title cannot be empty');
-    }
     if (!Number.isInteger(input.amount) || input.amount <= 0) {
         throw new ValidationError(
             'Transaction amount must be a positive integer',
@@ -56,10 +52,10 @@ export function buildTransaction(
     return {
         id: newId(),
         accountId: input.accountId,
-        categoryId: input.categoryId,
+        categoryId: input.categoryId ?? null,
         type: input.type,
         amount: input.amount,
-        title,
+        title: input.title?.trim() || null,
         description: input.description?.trim() || null,
         date: input.date,
     };

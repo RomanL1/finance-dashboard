@@ -23,7 +23,6 @@
     "household": {
         "card": {
             "household": "Haushalt",
-            "currency": "Währung",
             "role": "Rolle"
         }
     },
@@ -33,7 +32,6 @@
         "back": "Zurück",
         "steps": {
             "household": "Haushalt",
-            "currency": "Währung",
             "categories": "Kategorien",
             "accounts": "Konten"
         },
@@ -41,11 +39,6 @@
             "loading": "Lade…",
             "nameLabel": "Haushaltsname",
             "nameRequired": "Haushaltsname ist erforderlich",
-            "next": "Weiter"
-        },
-        "currency": {
-            "label": "Währung",
-            "required": "Währung ist erforderlich",
             "next": "Weiter"
         },
         "categories": {
@@ -111,16 +104,17 @@
             "income": "Einnahme",
             "amountLabel": "Betrag",
             "amountRequired": "Betrag muss grösser als 0 sein",
-            "titleLabel": "Titel",
-            "titleRequired": "Titel ist erforderlich",
+            "titleLabel": "Titel (optional)",
             "categoryLabel": "Kategorie",
+            "noCategory": "Keine Kategorie",
             "accountLabel": "Konto",
             "dateLabel": "Datum",
             "descriptionLabel": "Notiz (optional)"
         },
         "list": {
             "title": "Transaktionen",
-            "empty": "Noch keine Transaktionen."
+            "empty": "Noch keine Transaktionen.",
+            "uncategorized": "Ohne Kategorie"
         }
     }
 }

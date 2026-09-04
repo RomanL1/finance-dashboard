@@ -8,7 +8,6 @@ export function toHouseholdDto({
     const dto = new HouseholdDto();
     dto.id = household.id;
     dto.name = household.name;
-    dto.currency = household.currency;
     dto.role = role;
     dto.onboardingComplete = household.onboardingComplete;
     dto.createdAt = household.createdAt.toISOString();

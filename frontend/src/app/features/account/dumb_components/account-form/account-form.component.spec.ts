@@ -32,13 +32,12 @@ describe('AccountFormComponent', () => {
         translate.use('en');
 
         fixture = TestBed.createComponent(AccountFormComponent);
-        fixture.componentRef.setInput('defaultCurrency', 'EUR');
         fixture.detectChanges();
     });
 
-    it('prefills the currency control from defaultCurrency', () => {
+    it('defaults the currency control to CHF', () => {
         expect(fixture.componentInstance.form.controls.currency.value).toBe(
-            'EUR',
+            'CHF',
         );
     });
 

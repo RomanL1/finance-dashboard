@@ -31,6 +31,7 @@ export class TransactionService {
             throw new NotFoundError('Account', entity.accountId);
         }
         if (
+            entity.categoryId &&
             !(await this.transactions.categoryExists(
                 householdId,
                 entity.categoryId,

@@ -14,7 +14,6 @@ import { OnboardingRepository } from '../repository/onboarding.repository.js';
 
 export interface OnboardingInput {
     name: string;
-    currency: string;
     categoryNames: string[];
     accounts: CreateAccountInput[];
 }
@@ -43,7 +42,6 @@ export class OnboardingService {
         const household: Household = {
             id: newId(),
             name: input.name,
-            currency: input.currency,
             onboardingComplete: true,
             createdAt: new Date(),
         };
@@ -52,9 +50,7 @@ export class OnboardingService {
             household,
             ownerUserId,
             categories: input.categoryNames.map(buildCategory),
-            accounts: input.accounts.map((account) =>
-                buildAccount(account, household.currency),
-            ),
+            accounts: input.accounts.map(buildAccount),
         });
 
         return household;

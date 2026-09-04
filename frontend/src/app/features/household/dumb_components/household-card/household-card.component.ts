@@ -9,8 +9,6 @@ import type { HouseholdMineResponse } from '../../household.types';
         <dl class="grid grid-cols-2 gap-2">
             <dt>{{ 'household.card.household' | translate }}</dt>
             <dd>{{ household().name }}</dd>
-            <dt>{{ 'household.card.currency' | translate }}</dt>
-            <dd>{{ household().currency }}</dd>
             <dt>{{ 'household.card.role' | translate }}</dt>
             <dd>{{ household().role }}</dd>
         </dl>

@@ -1,17 +1,15 @@
 import { Injectable, signal } from '@angular/core';
-import type { CategorySelection, Currency } from '../onboarding.types';
+import type { CategorySelection } from '../onboarding.types';
 
 const STORAGE_KEY = 'onboarding-draft';
 
 export interface OnboardingDraft {
     name: string | null;
-    currency: Currency | null;
     categories: CategorySelection | null;
 }
 
 const EMPTY_DRAFT: OnboardingDraft = {
     name: null,
-    currency: null,
     categories: null,
 };
 
@@ -26,10 +24,6 @@ export class OnboardingStateService {
 
     setHousehold(name: string): void {
         this.update({ name });
-    }
-
-    setCurrency(currency: Currency): void {
-        this.update({ currency });
     }
 
     setCategories(categories: CategorySelection): void {

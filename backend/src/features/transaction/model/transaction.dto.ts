@@ -15,15 +15,15 @@ import { TRANSACTION_TYPES } from './transaction.schema.js';
 export class TransactionDto {
     @ApiProperty() id!: string;
     @ApiProperty() accountId!: string;
-    @ApiProperty() categoryId!: string;
+    @ApiProperty({ nullable: true, type: String }) categoryId!: string | null;
     @ApiProperty({ enum: TRANSACTION_TYPES }) type!: string;
     @ApiProperty({
         description: 'Minor units (cents), positive; sign comes from type',
     })
     amount!: number;
-    @ApiProperty() title!: string;
+    @ApiProperty({ nullable: true, type: String }) title!: string | null;
     @ApiProperty({ nullable: true, type: String }) description!: string | null;
-    @ApiProperty() date!: string;
+    @ApiProperty({ example: '2026-01-15T12:30:00.000Z' }) date!: string;
     @ApiProperty() createdAt!: string;
 }
 
@@ -37,10 +37,16 @@ export class CreateTransactionDto {
     @IsNotEmpty()
     accountId!: string;
 
-    @ApiProperty({ description: 'Category id within the household' })
+    @ApiProperty({
+        description: 'Category id within the household',
+        required: false,
+        nullable: true,
+        type: String,
+    })
+    @IsOptional()
     @IsString()
     @IsNotEmpty()
-    categoryId!: string;
+    categoryId?: string | null;
 
     @ApiProperty({ enum: TRANSACTION_TYPES, example: 'expense' })
     @IsIn(TRANSACTION_TYPES)
@@ -51,12 +57,17 @@ export class CreateTransactionDto {
     @IsPositive()
     amount!: number;
 
-    @ApiProperty({ example: 'Groceries' })
+    @ApiProperty({
+        example: 'Groceries',
+        required: false,
+        nullable: true,
+        type: String,
+    })
+    @IsOptional()
     @trim
     @IsString()
-    @IsNotEmpty()
     @MaxLength(100)
-    title!: string;
+    title?: string | null;
 
     @ApiProperty({ required: false, nullable: true, type: String })
     @IsOptional()
@@ -65,7 +76,7 @@ export class CreateTransactionDto {
     @MaxLength(1000)
     description?: string | null;
 
-    @ApiProperty({ example: '2026-01-15' })
+    @ApiProperty({ example: '2026-01-15T12:30:00.000Z' })
     @IsISO8601()
     date!: string;
 }

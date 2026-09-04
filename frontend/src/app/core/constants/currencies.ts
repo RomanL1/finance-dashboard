@@ -1,10 +1,5 @@
-import type { OnboardingHouseholdDto } from '../api';
+import type { CreateAccountDto } from '../api';
 
-export const CURRENCIES: readonly OnboardingHouseholdDto['currency'][] = [
-    'CHF',
-    'EUR',
-    'USD',
-    'GBP',
-] as const;
+export type Currency = CreateAccountDto['currency'];
 
-export type Currency = OnboardingHouseholdDto['currency'];
+export const CURRENCIES: readonly Currency[] = ['CHF', 'EUR', 'USD', 'GBP'];

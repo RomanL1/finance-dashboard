@@ -11,11 +11,11 @@ import { OnboardingService } from './onboarding.service.js';
 
 const input = {
     name: 'Home',
-    currency: 'CHF',
     categoryNames: ['Groceries', 'Housing'],
     accounts: [
         {
             description: 'Checking',
+            currency: 'CHF',
             initialValue: 100000,
             startDate: new Date('2026-01-01'),
         },
@@ -44,7 +44,6 @@ describe('OnboardingService', () => {
 
         expect(household).toMatchObject({
             name: 'Home',
-            currency: 'CHF',
             onboardingComplete: true,
         });
         expect(repo.insertHousehold).toHaveBeenCalledTimes(1);
@@ -60,34 +59,10 @@ describe('OnboardingService', () => {
         expect(written.accounts).toHaveLength(1);
         expect(written.accounts[0]).toMatchObject({
             description: 'Checking',
+            currency: 'CHF',
             initialValue: 100000,
             amount: 100000,
         });
-    });
-
-    it('falls back to the household currency for accounts that omit one', async () => {
-        const repo = makeRepo();
-        const service = new OnboardingService(repo, makeHouseholds());
-
-        await service.onboard('u1', { ...input, currency: 'EUR' });
-
-        const written = vi.mocked(repo.insertHousehold).mock
-            .calls[0][0] as NewHousehold;
-        expect(written.accounts[0].currency).toBe('EUR');
-    });
-
-    it('keeps an explicit account currency', async () => {
-        const repo = makeRepo();
-        const service = new OnboardingService(repo, makeHouseholds());
-
-        await service.onboard('u1', {
-            ...input,
-            accounts: [{ ...input.accounts[0], currency: 'USD' }],
-        });
-
-        const written = vi.mocked(repo.insertHousehold).mock
-            .calls[0][0] as NewHousehold;
-        expect(written.accounts[0].currency).toBe('USD');
     });
 
     it('refuses a second household for the same user', async () => {

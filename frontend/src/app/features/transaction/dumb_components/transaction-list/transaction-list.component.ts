@@ -22,13 +22,21 @@ import type { TransactionRow } from '../../transaction.types';
                             [attr.datetime]="row.date"
                             class="text-sm text-gray-600"
                         >
-                            {{ row.date | date: 'dd.MM.' }}
+                            {{ row.date | date: 'dd.MM. HH:mm' }}
                         </time>
                         <div class="min-w-0">
-                            <p class="truncate">{{ row.title }}</p>
-                            <p class="truncate text-sm text-gray-600">
-                                {{ row.category }}
+                            <p class="truncate">
+                                {{
+                                    row.title ??
+                                        ('transaction.list.uncategorized'
+                                            | translate)
+                                }}
                             </p>
+                            @if (row.category) {
+                                <p class="truncate text-sm text-gray-600">
+                                    {{ row.category }}
+                                </p>
+                            }
                         </div>
                         <p
                             class="tabular-nums whitespace-nowrap"

@@ -13,13 +13,15 @@ export const transaction = sqliteTable(
         accountId: text('account_id')
             .notNull()
             .references(() => financeAccount.id, { onDelete: 'restrict' }),
-        categoryId: text('category_id')
-            .notNull()
-            .references(() => category.id, { onDelete: 'restrict' }),
+        /** Optional: quick entry without picking one. Deleting the category uncategorizes. */
+        categoryId: text('category_id').references(() => category.id, {
+            onDelete: 'set null',
+        }),
         type: text('type', { enum: TRANSACTION_TYPES }).notNull(),
         /** Minor units (cents), always positive; sign comes from `type`. Currency is the account's. */
         amount: integer('amount').notNull(),
-        title: text('title').notNull(),
+        /** Optional: the UI falls back to the category name. */
+        title: text('title'),
         description: text('description'),
         date: integer('date', { mode: 'timestamp' }).notNull(),
 

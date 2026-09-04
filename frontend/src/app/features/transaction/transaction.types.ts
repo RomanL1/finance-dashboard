@@ -7,6 +7,12 @@ import type {
 
 export type { CreateTransactionDto, TransactionDto };
 
+/** Preselected form values; ids that no longer exist are ignored by the form. */
+export interface TransactionDefaults {
+    accountId?: string;
+    categoryId?: string | null;
+}
+
 /** What the add-transaction dialog needs from its opener. */
 export interface TransactionDialogData {
     householdId: string;
@@ -18,8 +24,10 @@ export interface TransactionDialogData {
 export interface TransactionRow {
     id: string;
     date: string;
-    category: string;
-    title: string;
+    /** Null when uncategorized or the category was deleted. */
+    category: string | null;
+    /** Falls back to the category name; null only when both are missing. */
+    title: string | null;
     currency: string;
     /** Signed minor units: negative for expenses. */
     amount: number;
@@ -32,12 +40,16 @@ export function toTransactionRows(
 ): TransactionRow[] {
     const currencyByAccount = new Map(accounts.map((a) => [a.id, a.currency]));
     const nameByCategory = new Map(categories.map((c) => [c.id, c.name]));
-    return transactions.map((t) => ({
-        id: t.id,
-        date: t.date,
-        category: nameByCategory.get(t.categoryId) ?? '',
-        title: t.title,
-        currency: currencyByAccount.get(t.accountId) ?? '',
-        amount: t.type === 'income' ? t.amount : -t.amount,
-    }));
+    return transactions.map((t) => {
+        const category =
+            (t.categoryId && nameByCategory.get(t.categoryId)) || null;
+        return {
+            id: t.id,
+            date: t.date,
+            category,
+            title: t.title || category,
+            currency: currencyByAccount.get(t.accountId) ?? '',
+            amount: t.type === 'income' ? t.amount : -t.amount,
+        };
+    });
 }

@@ -18,6 +18,7 @@ import { TransactionFormComponent } from '../../dumb_components/transaction-form
 import { TransactionService } from '../../services/transaction.service';
 import type {
     CreateTransactionDto,
+    TransactionDefaults,
     TransactionDialogData,
     TransactionDto,
 } from '../../transaction.types';
@@ -40,6 +41,7 @@ import type {
                 [formId]="formId"
                 [accounts]="data.accounts"
                 [categories]="data.categories"
+                [defaults]="defaults"
                 (submitted)="save($event)"
             />
             @if (error()) {
@@ -66,6 +68,7 @@ export class TransactionDialogComponent {
     readonly formId = 'transaction-form';
     readonly busy = signal(false);
     readonly error = signal<string | null>(null);
+    readonly defaults: TransactionDefaults;
 
     constructor(
         @Inject(MAT_DIALOG_DATA) readonly data: TransactionDialogData,
@@ -75,7 +78,9 @@ export class TransactionDialogComponent {
         >,
         private readonly transactions: TransactionService,
         private readonly translate: TranslateService,
-    ) {}
+    ) {
+        this.defaults = transactions.lastUsed();
+    }
 
     async save(dto: CreateTransactionDto): Promise<void> {
         this.busy.set(true);

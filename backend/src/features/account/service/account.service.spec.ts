@@ -1,7 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
 import { ValidationError } from '../../../shared/kernel/index.js';
-import type { Household } from '../../household/model/household.js';
-import type { HouseholdService } from '../../household/service/household.service.js';
 import type { Account, CreateAccount } from '../model/account.js';
 import type { AccountRepository } from '../repository/account.repository.js';
 import { AccountService } from './account.service.js';
@@ -14,14 +12,6 @@ const dummyAccount: Account = {
     initialValue: 10000,
     amount: 10000,
     startDate: new Date('2026-01-01'),
-    createdAt: new Date('2026-01-01'),
-};
-
-const dummyHousehold: Household = {
-    id: 'household-1',
-    name: 'Home',
-    currency: 'EUR',
-    onboardingComplete: false,
     createdAt: new Date('2026-01-01'),
 };
 
@@ -41,18 +31,11 @@ function makeRepo(overrides: Partial<AccountRepository> = {}) {
     } as unknown as AccountRepository;
 }
 
-function makeHouseholds(overrides: Partial<HouseholdService> = {}) {
-    return {
-        getById: vi.fn().mockResolvedValue(dummyHousehold),
-        ...overrides,
-    } as unknown as HouseholdService;
-}
-
 describe('AccountService', () => {
     describe('getAll', () => {
         it('returns all accounts for a household', async () => {
             const repo = makeRepo();
-            const service = new AccountService(repo, makeHouseholds());
+            const service = new AccountService(repo);
 
             const accounts = await service.getAll('household-1');
 
@@ -62,10 +45,9 @@ describe('AccountService', () => {
     });
 
     describe('create', () => {
-        it('creates an account with a generated id, using the given currency', async () => {
+        it('creates an account with a generated id', async () => {
             const repo = makeRepo();
-            const households = makeHouseholds();
-            const service = new AccountService(repo, households);
+            const service = new AccountService(repo);
 
             const created = await service.create('household-1', {
                 description: 'Checking',
@@ -78,7 +60,6 @@ describe('AccountService', () => {
             expect(created.currency).toBe('USD');
             expect(created.initialValue).toBe(5000);
             expect(created.amount).toBe(5000);
-            expect(households.getById).not.toHaveBeenCalled();
             expect(repo.createAccount).toHaveBeenCalledWith(
                 {
                     id: expect.any(String),
@@ -92,27 +73,13 @@ describe('AccountService', () => {
             );
         });
 
-        it('defaults currency to the household currency when omitted', async () => {
-            const repo = makeRepo();
-            const households = makeHouseholds();
-            const service = new AccountService(repo, households);
-
-            const created = await service.create('household-1', {
-                description: 'Savings',
-                initialValue: 1000,
-                startDate: new Date('2026-01-01'),
-            });
-
-            expect(created.currency).toBe('EUR');
-            expect(households.getById).toHaveBeenCalledWith('household-1');
-        });
-
         it('throws ValidationError when description is empty or whitespace', async () => {
-            const service = new AccountService(makeRepo(), makeHouseholds());
+            const service = new AccountService(makeRepo());
 
             await expect(
                 service.create('household-1', {
                     description: '',
+                    currency: 'CHF',
                     initialValue: 1000,
                     startDate: new Date('2026-01-01'),
                 }),
@@ -120,6 +87,7 @@ describe('AccountService', () => {
             await expect(
                 service.create('household-1', {
                     description: '   ',
+                    currency: 'CHF',
                     initialValue: 1000,
                     startDate: new Date('2026-01-01'),
                 }),

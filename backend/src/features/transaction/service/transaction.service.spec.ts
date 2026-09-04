@@ -52,11 +52,21 @@ describe('TransactionService.create', () => {
         );
     });
 
-    it('rejects empty title and non-positive amount', async () => {
+    it('nulls a blank title and skips the category check when none is given', async () => {
+        const repo = makeRepo();
+        const created = await new TransactionService(repo).create('h-1', {
+            ...input,
+            title: ' ',
+            categoryId: null,
+        });
+
+        expect(created.title).toBeNull();
+        expect(created.categoryId).toBeNull();
+        expect(repo.categoryExists).not.toHaveBeenCalled();
+    });
+
+    it('rejects non-positive amount', async () => {
         const service = new TransactionService(makeRepo());
-        await expect(
-            service.create('h-1', { ...input, title: ' ' }),
-        ).rejects.toBeInstanceOf(ValidationError);
         await expect(
             service.create('h-1', { ...input, amount: 0 }),
         ).rejects.toBeInstanceOf(ValidationError);

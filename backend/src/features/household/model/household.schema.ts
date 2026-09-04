@@ -12,7 +12,6 @@ export const HOUSEHOLD_ROLES = ['owner', 'member'] as const;
 export const household = sqliteTable('household', {
     id: text('id').primaryKey(),
     name: text('name').notNull(),
-    currency: text('currency').notNull(),
     onboardingComplete: integer('onboarding_complete', { mode: 'boolean' })
         .notNull()
         .default(false),

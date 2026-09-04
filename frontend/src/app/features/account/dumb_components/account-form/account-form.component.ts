@@ -1,7 +1,6 @@
 import {
     ChangeDetectionStrategy,
     Component,
-    effect,
     input,
     output,
 } from '@angular/core';
@@ -120,7 +119,6 @@ function todayIsoDate(): string {
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AccountFormComponent {
-    readonly defaultCurrency = input<string>('CHF');
     readonly busy = input<boolean>(false);
     readonly errorMessage = input<string | null>(null);
     readonly submitted = output<CreateAccountDto>();
@@ -144,15 +142,6 @@ export class AccountFormComponent {
             validators: [Validators.required],
         }),
     });
-
-    /** Prefills the currency control once the household default is available. */
-    constructor() {
-        effect(() => {
-            this.form.controls.currency.setValue(
-                this.defaultCurrency() as Currency,
-            );
-        });
-    }
 
     submit(): void {
         if (this.form.invalid || this.busy()) return;

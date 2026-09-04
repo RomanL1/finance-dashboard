@@ -22,12 +22,9 @@ export class OnboardingService {
         return response.data;
     }
 
-    async validateHousehold(
-        name: string,
-        currency: CompleteOnboardingDto['currency'],
-    ): Promise<void> {
+    async validateHousehold(name: string): Promise<void> {
         await onboardingValidateHousehold({
-            body: { name, currency },
+            body: { name },
             throwOnError: true,
         });
     }

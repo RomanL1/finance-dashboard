@@ -21,10 +21,16 @@ import { MatInput } from '@angular/material/input';
 import { MatSelect } from '@angular/material/select';
 import { TranslatePipe } from '@ngx-translate/core';
 import type { AccountDto, CategoryDto } from '../../../../core/api';
-import type { CreateTransactionDto } from '../../transaction.types';
+import type {
+    CreateTransactionDto,
+    TransactionDefaults,
+} from '../../transaction.types';
 
-function todayIsoDate(): string {
-    return new Date().toISOString().slice(0, 10);
+/** Local wall-clock time as `YYYY-MM-DDTHH:mm`, what `<input type="datetime-local">` expects. */
+function nowLocalDateTime(): string {
+    const now = new Date();
+    const offsetMs = now.getTimezoneOffset() * 60_000;
+    return new Date(now.getTime() - offsetMs).toISOString().slice(0, 16);
 }
 
 /** Fields only; the owning dialog renders the actions and calls `submit()`. */
@@ -86,11 +92,6 @@ function todayIsoDate(): string {
                     'transaction.form.titleLabel' | translate
                 }}</mat-label>
                 <input matInput formControlName="title" autocomplete="off" />
-                @if (form.controls.title.hasError('required')) {
-                    <mat-error>{{
-                        'transaction.form.titleRequired' | translate
-                    }}</mat-error>
-                }
             </mat-form-field>
 
             <mat-form-field>
@@ -98,6 +99,9 @@ function todayIsoDate(): string {
                     'transaction.form.categoryLabel' | translate
                 }}</mat-label>
                 <mat-select formControlName="categoryId">
+                    <mat-option [value]="null">{{
+                        'transaction.form.noCategory' | translate
+                    }}</mat-option>
                     @for (category of categories(); track category.id) {
                         <mat-option [value]="category.id">{{
                             category.name
@@ -125,7 +129,7 @@ function todayIsoDate(): string {
                 <mat-label>{{
                     'transaction.form.dateLabel' | translate
                 }}</mat-label>
-                <input matInput type="date" formControlName="date" />
+                <input matInput type="datetime-local" formControlName="date" />
             </mat-form-field>
 
             <mat-form-field>
@@ -155,6 +159,7 @@ export class TransactionFormComponent {
     readonly formId = input<string>('transaction-form');
     readonly accounts = input.required<AccountDto[]>();
     readonly categories = input.required<CategoryDto[]>();
+    readonly defaults = input<TransactionDefaults>({});
     readonly submitted = output<CreateTransactionDto>();
 
     readonly form = new FormGroup({
@@ -164,31 +169,33 @@ export class TransactionFormComponent {
         amount: new FormControl<number | null>(null, {
             validators: [Validators.required, Validators.min(0.01)],
         }),
-        title: new FormControl('', {
-            nonNullable: true,
-            validators: [Validators.required],
-        }),
-        categoryId: new FormControl('', {
-            nonNullable: true,
-            validators: [Validators.required],
-        }),
+        title: new FormControl('', { nonNullable: true }),
+        categoryId: new FormControl<string | null>(null),
         accountId: new FormControl('', {
             nonNullable: true,
             validators: [Validators.required],
         }),
-        date: new FormControl(todayIsoDate(), {
+        date: new FormControl(nowLocalDateTime(), {
             nonNullable: true,
             validators: [Validators.required],
         }),
         description: new FormControl('', { nonNullable: true }),
     });
 
-    /** Preselect the account when there is exactly one to choose from. */
+    /** Preselect last-used account and category; fall back to the only account. */
     constructor() {
         effect(() => {
             const accounts = this.accounts();
-            if (accounts.length === 1) {
-                this.form.controls.accountId.setValue(accounts[0].id);
+            const defaults = this.defaults();
+            const account =
+                accounts.find((a) => a.id === defaults.accountId) ??
+                (accounts.length === 1 ? accounts[0] : undefined);
+            if (account) this.form.controls.accountId.setValue(account.id);
+        });
+        effect(() => {
+            const categoryId = this.defaults().categoryId;
+            if (this.categories().some((c) => c.id === categoryId)) {
+                this.form.controls.categoryId.setValue(categoryId ?? null);
             }
         });
     }
@@ -199,10 +206,11 @@ export class TransactionFormComponent {
         this.submitted.emit({
             type: value.type,
             amount: Math.round((value.amount ?? 0) * 100),
-            title: value.title.trim(),
+            title: value.title.trim() || null,
             categoryId: value.categoryId,
             accountId: value.accountId,
-            date: value.date,
+            /** datetime-local has no zone: parses as local, sent as UTC instant. */
+            date: new Date(value.date).toISOString(),
             description: value.description.trim() || null,
         });
     }

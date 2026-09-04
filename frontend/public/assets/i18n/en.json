@@ -23,7 +23,6 @@
     "household": {
         "card": {
             "household": "Household",
-            "currency": "Currency",
             "role": "Role"
         }
     },
@@ -33,7 +32,6 @@
         "back": "Back",
         "steps": {
             "household": "Household",
-            "currency": "Currency",
             "categories": "Categories",
             "accounts": "Accounts"
         },
@@ -41,11 +39,6 @@
             "loading": "Loading…",
             "nameLabel": "Household name",
             "nameRequired": "Household name is required",
-            "next": "Next"
-        },
-        "currency": {
-            "label": "Currency",
-            "required": "Currency is required",
             "next": "Next"
         },
         "categories": {
@@ -111,16 +104,17 @@
             "income": "Income",
             "amountLabel": "Amount",
             "amountRequired": "Enter an amount greater than 0",
-            "titleLabel": "Title",
-            "titleRequired": "Title is required",
+            "titleLabel": "Title (optional)",
             "categoryLabel": "Category",
+            "noCategory": "No category",
             "accountLabel": "Account",
             "dateLabel": "Date",
             "descriptionLabel": "Note (optional)"
         },
         "list": {
             "title": "Transactions",
-            "empty": "No transactions yet."
+            "empty": "No transactions yet.",
+            "uncategorized": "Uncategorized"
         }
     }
 }

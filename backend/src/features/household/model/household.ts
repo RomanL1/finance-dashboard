@@ -7,7 +7,6 @@ export type HouseholdRole = (typeof HOUSEHOLD_ROLES)[number];
 export interface Household {
     id: Id;
     name: string;
-    currency: string;
     onboardingComplete: boolean;
     createdAt: Date;
 }

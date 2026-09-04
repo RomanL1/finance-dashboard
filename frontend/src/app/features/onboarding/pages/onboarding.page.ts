@@ -12,7 +12,6 @@ import { MatStep, MatStepLabel, MatStepper } from '@angular/material/stepper';
 import { APP_PATHS } from '../../../config/paths.config';
 import { ButtonComponent } from '../../../components/button/button.component';
 import { HouseholdFormComponent } from '../dumb_components/household-form/household-form.component';
-import { CurrencyFormComponent } from '../dumb_components/currency-form/currency-form.component';
 import { CategoryPickerComponent } from '../dumb_components/category-picker/category-picker.component';
 import { AccountFormComponent } from '../../account/dumb_components/account-form/account-form.component';
 import type { CreateAccountDto } from '../../account/account.types';
@@ -21,7 +20,7 @@ import {
     OnboardingStateService,
     type OnboardingDraft,
 } from '../services/onboarding-state.service';
-import type { CategorySelection, Currency } from '../onboarding.types';
+import type { CategorySelection } from '../onboarding.types';
 
 @Component({
     selector: 'app-onboarding-page',
@@ -30,7 +29,6 @@ import type { CategorySelection, Currency } from '../onboarding.types';
         MatStep,
         MatStepLabel,
         HouseholdFormComponent,
-        CurrencyFormComponent,
         CategoryPickerComponent,
         AccountFormComponent,
         ButtonComponent,
@@ -52,26 +50,6 @@ import type { CategorySelection, Currency } from '../onboarding.types';
                         [errorMessage]="error()"
                         (submitted)="onHouseholdNameSubmit($event)"
                     />
-                </mat-step>
-
-                <mat-step [completed]="!!draft().currency">
-                    <ng-template matStepLabel>{{
-                        'onboarding.steps.currency' | translate
-                    }}</ng-template>
-                    <app-currency-form
-                        [initialCurrency]="draft().currency ?? null"
-                        [busy]="busy()"
-                        [errorMessage]="error()"
-                        (submitted)="onCurrencySubmit($event)"
-                    />
-                    <app-button
-                        type="button"
-                        variant="outlined"
-                        class="mt-2 block"
-                        (clicked)="goBack()"
-                    >
-                        {{ 'onboarding.back' | translate }}
-                    </app-button>
                 </mat-step>
 
                 <mat-step [completed]="!!draft().categories">
@@ -104,17 +82,14 @@ import type { CategorySelection, Currency } from '../onboarding.types';
                     <ng-template matStepLabel>{{
                         'onboarding.steps.accounts' | translate
                     }}</ng-template>
-                    @if (draft().currency; as currency) {
-                        <p>
-                            {{ 'onboarding.accounts.description' | translate }}
-                        </p>
-                        <app-account-form
-                            [defaultCurrency]="currency"
-                            [busy]="busy()"
-                            [errorMessage]="error()"
-                            (submitted)="onAccountSubmit($event)"
-                        />
-                    }
+                    <p>
+                        {{ 'onboarding.accounts.description' | translate }}
+                    </p>
+                    <app-account-form
+                        [busy]="busy()"
+                        [errorMessage]="error()"
+                        (submitted)="onAccountSubmit($event)"
+                    />
                     <app-button
                         type="button"
                         variant="outlined"
@@ -154,8 +129,7 @@ export class OnboardingPage {
     }
 
     private resumeIndexFor(draft: OnboardingDraft): number {
-        if (draft.categories) return 3;
-        if (draft.currency) return 2;
+        if (draft.categories) return 2;
         if (draft.name) return 1;
         return 0;
     }
@@ -178,22 +152,13 @@ export class OnboardingPage {
         }
     }
 
-    onHouseholdNameSubmit(name: string): void {
-        this.error.set(null);
-        this.onboardingState.setHousehold(name);
-        this.goToStep(1);
-    }
-
-    async onCurrencySubmit(currency: Currency): Promise<void> {
-        const name = this.draft().name;
-        if (!name) return;
-
+    async onHouseholdNameSubmit(name: string): Promise<void> {
         this.busy.set(true);
         this.error.set(null);
         try {
-            await this.onboardingService.validateHousehold(name, currency);
-            this.onboardingState.setCurrency(currency);
-            this.goToStep(2);
+            await this.onboardingService.validateHousehold(name);
+            this.onboardingState.setHousehold(name);
+            this.goToStep(1);
         } catch (e) {
             this.error.set(
                 e instanceof Error
@@ -213,7 +178,7 @@ export class OnboardingPage {
         try {
             await this.onboardingService.validateCategories(categoryNames);
             this.onboardingState.setCategories(selection);
-            this.goToStep(3);
+            this.goToStep(2);
         } catch (e) {
             this.error.set(
                 e instanceof Error
@@ -227,7 +192,7 @@ export class OnboardingPage {
 
     async onAccountSubmit(dto: CreateAccountDto): Promise<void> {
         const draft = this.draft();
-        if (!draft.name || !draft.currency || !draft.categories) return;
+        if (!draft.name || !draft.categories) return;
 
         this.busy.set(true);
         this.error.set(null);
@@ -235,7 +200,6 @@ export class OnboardingPage {
             await this.onboardingService.validateAccounts([dto]);
             await this.onboardingService.submit({
                 name: draft.name,
-                currency: draft.currency,
                 categoryNames: this.resolveCategoryNames(draft.categories),
                 accounts: [dto],
             });
