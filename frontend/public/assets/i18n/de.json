@@ -96,7 +96,8 @@
             "title": "Transaktion hinzufügen",
             "cancel": "Abbrechen",
             "save": "Speichern",
-            "failed": "Transaktion konnte nicht gespeichert werden."
+            "failed": "Transaktion konnte nicht gespeichert werden.",
+            "editTitle": "Transaktion bearbeiten"
         },
         "form": {
             "typeLabel": "Art",
@@ -114,7 +115,15 @@
         "list": {
             "title": "Transaktionen",
             "empty": "Noch keine Transaktionen.",
-            "uncategorized": "Ohne Kategorie"
+            "uncategorized": "Ohne Kategorie",
+            "actions": "Aktionen",
+            "edit": "Bearbeiten",
+            "delete": "Löschen"
+        },
+        "delete": {
+            "title": "Transaktion löschen?",
+            "message": "Die Transaktion wird entfernt und der Kontostand angepasst.",
+            "confirm": "Löschen"
         }
     }
 }

@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
 import {
     transactionCreateTransaction,
+    transactionDeleteTransaction,
     transactionGetTransactions,
+    transactionUpdateTransaction,
 } from '../../../core/api';
 import type { CreateTransactionDto, TransactionDto } from '../../../core/api';
 import type { TransactionDefaults } from '../transaction.types';
@@ -29,6 +31,26 @@ export class TransactionService {
         });
         this.rememberLastUsed(body);
         return response.data;
+    }
+
+    async update(
+        householdId: string,
+        transactionId: string,
+        body: CreateTransactionDto,
+    ): Promise<TransactionDto> {
+        const response = await transactionUpdateTransaction({
+            path: { householdId, transactionId },
+            body,
+            throwOnError: true,
+        });
+        return response.data;
+    }
+
+    async delete(householdId: string, transactionId: string): Promise<void> {
+        await transactionDeleteTransaction({
+            path: { householdId, transactionId },
+            throwOnError: true,
+        });
     }
 
     /** Account and category of the last saved transaction, so the next entry is one tap shorter. */

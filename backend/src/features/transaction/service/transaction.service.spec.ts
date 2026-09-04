@@ -3,7 +3,7 @@ import {
     NotFoundError,
     ValidationError,
 } from '../../../shared/kernel/index.js';
-import { balanceDelta, type CreateTransaction } from '../model/transaction.js';
+import type { CreateTransaction } from '../model/transaction.js';
 import type { TransactionRepository } from '../repository/transaction.repository.js';
 import { TransactionService } from './transaction.service.js';
 
@@ -27,16 +27,15 @@ function makeRepo(overrides: Partial<TransactionRepository> = {}) {
             .mockImplementation((entity: CreateTransaction) =>
                 Promise.resolve({ ...entity, createdAt: new Date() }),
             ),
+        updateTransaction: vi
+            .fn()
+            .mockImplementation((_h: string, entity: CreateTransaction) =>
+                Promise.resolve({ ...entity, createdAt: new Date() }),
+            ),
+        deleteTransaction: vi.fn().mockResolvedValue(true),
         ...overrides,
     } as unknown as TransactionRepository;
 }
-
-describe('balanceDelta', () => {
-    it('expense subtracts, income adds', () => {
-        expect(balanceDelta({ type: 'expense', amount: 5 })).toBe(-5);
-        expect(balanceDelta({ type: 'income', amount: 5 })).toBe(5);
-    });
-});
 
 describe('TransactionService.create', () => {
     it('trims title, nulls blank description, persists', async () => {
@@ -90,5 +89,45 @@ describe('TransactionService.create', () => {
         await expect(
             new TransactionService(noCategory).create('h-1', input),
         ).rejects.toBeInstanceOf(NotFoundError);
+    });
+});
+
+describe('TransactionService.update', () => {
+    it('keeps the id, validates references, replaces every field', async () => {
+        const repo = makeRepo();
+        const updated = await new TransactionService(repo).update(
+            'h-1',
+            'tx-1',
+            input,
+        );
+
+        expect(updated.id).toBe('tx-1');
+        expect(updated.title).toBe('Groceries');
+        expect(repo.accountExists).toHaveBeenCalledWith('h-1', 'acc-1');
+        expect(repo.updateTransaction).toHaveBeenCalledWith(
+            'h-1',
+            expect.objectContaining({ id: 'tx-1', amount: 1250 }),
+        );
+    });
+
+    it('throws NotFound when the row is outside the household', async () => {
+        const repo = makeRepo({
+            updateTransaction: vi.fn().mockResolvedValue(null),
+        });
+        await expect(
+            new TransactionService(repo).update('h-1', 'tx-1', input),
+        ).rejects.toBeInstanceOf(NotFoundError);
+    });
+});
+
+describe('TransactionService.delete', () => {
+    it('throws NotFound when nothing was deleted', async () => {
+        const repo = makeRepo({
+            deleteTransaction: vi.fn().mockResolvedValue(false),
+        });
+        await expect(
+            new TransactionService(repo).delete('h-1', 'tx-1'),
+        ).rejects.toBeInstanceOf(NotFoundError);
+        expect(repo.deleteTransaction).toHaveBeenCalledWith('h-1', 'tx-1');
     });
 });

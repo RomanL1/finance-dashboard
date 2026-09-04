@@ -1,6 +1,18 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    HttpCode,
+    HttpStatus,
+    Param,
+    Patch,
+    Post,
+    UseGuards,
+} from '@nestjs/common';
 import {
     ApiCookieAuth,
+    ApiNoContentResponse,
     ApiOkResponse,
     ApiParam,
     ApiTags,
@@ -12,6 +24,7 @@ import {
 } from '../model/transaction.dto.js';
 import { toTransactionDto, toTransactionsDto } from './transaction.mapper.js';
 import { type Id } from '../../../shared/kernel/index.js';
+import type { CreateTransactionInput } from '../model/transaction.js';
 import { HouseholdMemberGuard } from '../../household/guard/household-member.guard.js';
 
 @ApiTags('transaction')
@@ -37,15 +50,55 @@ export class TransactionController {
         @Body() dto: CreateTransactionDto,
     ): Promise<TransactionDto> {
         return toTransactionDto(
-            await this.transactions.create(householdId, {
-                accountId: dto.accountId,
-                categoryId: dto.categoryId,
-                type: dto.type,
-                amount: dto.amount,
-                title: dto.title,
-                description: dto.description,
-                date: new Date(dto.date),
-            }),
+            await this.transactions.create(householdId, toInput(dto)),
         );
     }
+
+    @Patch(':transactionId')
+    @ApiParam({
+        name: 'transactionId',
+        description: 'Transaction id',
+        type: String,
+    })
+    @ApiOkResponse({ type: TransactionDto })
+    async updateTransaction(
+        @Param('householdId') householdId: Id,
+        @Param('transactionId') transactionId: Id,
+        @Body() dto: CreateTransactionDto,
+    ): Promise<TransactionDto> {
+        return toTransactionDto(
+            await this.transactions.update(
+                householdId,
+                transactionId,
+                toInput(dto),
+            ),
+        );
+    }
+
+    @Delete(':transactionId')
+    @ApiParam({
+        name: 'transactionId',
+        description: 'Transaction id',
+        type: String,
+    })
+    @HttpCode(HttpStatus.NO_CONTENT)
+    @ApiNoContentResponse({ description: 'Transaction successfully deleted' })
+    async deleteTransaction(
+        @Param('householdId') householdId: Id,
+        @Param('transactionId') transactionId: Id,
+    ): Promise<void> {
+        await this.transactions.delete(householdId, transactionId);
+    }
+}
+
+function toInput(dto: CreateTransactionDto): CreateTransactionInput {
+    return {
+        accountId: dto.accountId,
+        categoryId: dto.categoryId,
+        type: dto.type,
+        amount: dto.amount,
+        title: dto.title,
+        description: dto.description,
+        date: new Date(dto.date),
+    };
 }

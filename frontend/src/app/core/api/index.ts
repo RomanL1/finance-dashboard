@@ -15,7 +15,9 @@ export {
     onboardingValidateHousehold,
     type Options,
     transactionCreateTransaction,
+    transactionDeleteTransaction,
     transactionGetTransactions,
+    transactionUpdateTransaction,
 } from './sdk.gen';
 export type {
     AccountCreateAccountData,
@@ -70,8 +72,14 @@ export type {
     TransactionCreateTransactionData,
     TransactionCreateTransactionResponse,
     TransactionCreateTransactionResponses,
+    TransactionDeleteTransactionData,
+    TransactionDeleteTransactionResponse,
+    TransactionDeleteTransactionResponses,
     TransactionDto,
     TransactionGetTransactionsData,
     TransactionGetTransactionsResponse,
     TransactionGetTransactionsResponses,
+    TransactionUpdateTransactionData,
+    TransactionUpdateTransactionResponse,
+    TransactionUpdateTransactionResponses,
 } from './types.gen';

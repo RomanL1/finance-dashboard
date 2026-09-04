@@ -96,7 +96,8 @@
             "title": "Add transaction",
             "cancel": "Cancel",
             "save": "Save",
-            "failed": "Could not save the transaction."
+            "failed": "Could not save the transaction.",
+            "editTitle": "Edit transaction"
         },
         "form": {
             "typeLabel": "Type",
@@ -114,7 +115,15 @@
         "list": {
             "title": "Transactions",
             "empty": "No transactions yet.",
-            "uncategorized": "Uncategorized"
+            "uncategorized": "Uncategorized",
+            "actions": "Transaction actions",
+            "edit": "Edit",
+            "delete": "Delete"
+        },
+        "delete": {
+            "title": "Delete transaction?",
+            "message": "This removes the transaction and adjusts the account balance.",
+            "confirm": "Delete"
         }
     }
 }

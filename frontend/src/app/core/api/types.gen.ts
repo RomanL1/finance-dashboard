@@ -189,13 +189,13 @@ export type CategoryDeleteCategoryData = {
     body?: never;
     path: {
         /**
-         * Category id
-         */
-        categoryId: string;
-        /**
          * Household id
          */
         householdId: string;
+        /**
+         * Category id
+         */
+        categoryId: string;
     };
     query?: never;
     url: '/api/households/{householdId}/categories/{categoryId}';
@@ -215,13 +215,13 @@ export type CategoryUpdateCategoryData = {
     body: CreateCategoryDto;
     path: {
         /**
-         * Category id
-         */
-        categoryId: string;
-        /**
          * Household id
          */
         householdId: string;
+        /**
+         * Category id
+         */
+        categoryId: string;
     };
     query?: never;
     url: '/api/households/{householdId}/categories/{categoryId}';
@@ -388,3 +388,52 @@ export type TransactionCreateTransactionResponses = {
 
 export type TransactionCreateTransactionResponse =
     TransactionCreateTransactionResponses[keyof TransactionCreateTransactionResponses];
+
+export type TransactionDeleteTransactionData = {
+    body?: never;
+    path: {
+        /**
+         * Household id
+         */
+        householdId: string;
+        /**
+         * Transaction id
+         */
+        transactionId: string;
+    };
+    query?: never;
+    url: '/api/households/{householdId}/transactions/{transactionId}';
+};
+
+export type TransactionDeleteTransactionResponses = {
+    /**
+     * Transaction successfully deleted
+     */
+    204: void;
+};
+
+export type TransactionDeleteTransactionResponse =
+    TransactionDeleteTransactionResponses[keyof TransactionDeleteTransactionResponses];
+
+export type TransactionUpdateTransactionData = {
+    body: CreateTransactionDto;
+    path: {
+        /**
+         * Household id
+         */
+        householdId: string;
+        /**
+         * Transaction id
+         */
+        transactionId: string;
+    };
+    query?: never;
+    url: '/api/households/{householdId}/transactions/{transactionId}';
+};
+
+export type TransactionUpdateTransactionResponses = {
+    200: TransactionDto;
+};
+
+export type TransactionUpdateTransactionResponse =
+    TransactionUpdateTransactionResponses[keyof TransactionUpdateTransactionResponses];

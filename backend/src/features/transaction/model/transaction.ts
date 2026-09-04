@@ -33,13 +33,6 @@ export interface CreateTransactionInput {
     date: Date;
 }
 
-/** Signed effect on the account balance. */
-export function balanceDelta(
-    t: Pick<CreateTransaction, 'type' | 'amount'>,
-): number {
-    return t.type === 'income' ? t.amount : -t.amount;
-}
-
 /** Domain rules for a new transaction, independent of how it is persisted. */
 export function buildTransaction(
     input: CreateTransactionInput,

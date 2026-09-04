@@ -12,8 +12,6 @@ export const financeAccount = sqliteTable('finance_account', {
     currency: text('currency').notNull(),
     /** Minor units (cents), fixed starting balance. */
     initialValue: integer('initial_value').notNull(),
-    /** Minor units (cents), current balance. Equals initialValue at creation. */
-    amount: integer('amount').notNull(),
     startDate: integer('start_date', { mode: 'timestamp' }).notNull(),
 
     ...timestamps,

@@ -27,10 +27,9 @@ import type {
 } from '../../transaction.types';
 
 /** Local wall-clock time as `YYYY-MM-DDTHH:mm`, what `<input type="datetime-local">` expects. */
-function nowLocalDateTime(): string {
-    const now = new Date();
-    const offsetMs = now.getTimezoneOffset() * 60_000;
-    return new Date(now.getTime() - offsetMs).toISOString().slice(0, 16);
+function toLocalDateTime(instant: Date): string {
+    const offsetMs = instant.getTimezoneOffset() * 60_000;
+    return new Date(instant.getTime() - offsetMs).toISOString().slice(0, 16);
 }
 
 /** Fields only; the owning dialog renders the actions and calls `submit()`. */
@@ -60,18 +59,18 @@ function nowLocalDateTime(): string {
                 class="w-full"
                 [attr.aria-label]="'transaction.form.typeLabel' | translate"
             >
-                <mat-button-toggle value="expense" class="flex-1">{{
-                    'transaction.form.expense' | translate
-                }}</mat-button-toggle>
-                <mat-button-toggle value="income" class="income flex-1">{{
-                    'transaction.form.income' | translate
-                }}</mat-button-toggle>
+                <mat-button-toggle value="expense" class="flex-1"
+                    >{{ 'transaction.form.expense' | translate }}
+                </mat-button-toggle>
+                <mat-button-toggle value="income" class="income flex-1"
+                    >{{ 'transaction.form.income' | translate }}
+                </mat-button-toggle>
             </mat-button-toggle-group>
 
             <mat-form-field>
-                <mat-label>{{
-                    'transaction.form.amountLabel' | translate
-                }}</mat-label>
+                <mat-label
+                    >{{ 'transaction.form.amountLabel' | translate }}
+                </mat-label>
                 <input
                     matInput
                     type="number"
@@ -79,63 +78,62 @@ function nowLocalDateTime(): string {
                     step="0.01"
                     min="0.01"
                     formControlName="amount"
+                    cdkFocusInitial
                 />
                 @if (form.controls.amount.invalid) {
-                    <mat-error>{{
-                        'transaction.form.amountRequired' | translate
-                    }}</mat-error>
+                    <mat-error
+                        >{{ 'transaction.form.amountRequired' | translate }}
+                    </mat-error>
                 }
             </mat-form-field>
 
             <mat-form-field>
-                <mat-label>{{
-                    'transaction.form.titleLabel' | translate
-                }}</mat-label>
+                <mat-label
+                    >{{ 'transaction.form.accountLabel' | translate }}
+                </mat-label>
+                <mat-select formControlName="accountId">
+                    @for (account of accounts(); track account.id) {
+                        <mat-option [value]="account.id"
+                            >{{ account.description }} ({{ account.currency }})
+                        </mat-option>
+                    }
+                </mat-select>
+            </mat-form-field>
+
+            <mat-form-field>
+                <mat-label
+                    >{{ 'transaction.form.categoryLabel' | translate }}
+                </mat-label>
+                <mat-select formControlName="categoryId">
+                    <mat-option [value]="null"
+                        >{{ 'transaction.form.noCategory' | translate }}
+                    </mat-option>
+                    @for (category of categories(); track category.id) {
+                        <mat-option [value]="category.id"
+                            >{{ category.name }}
+                        </mat-option>
+                    }
+                </mat-select>
+            </mat-form-field>
+
+            <mat-form-field>
+                <mat-label
+                    >{{ 'transaction.form.titleLabel' | translate }}
+                </mat-label>
                 <input matInput formControlName="title" autocomplete="off" />
             </mat-form-field>
 
             <mat-form-field>
-                <mat-label>{{
-                    'transaction.form.categoryLabel' | translate
-                }}</mat-label>
-                <mat-select formControlName="categoryId">
-                    <mat-option [value]="null">{{
-                        'transaction.form.noCategory' | translate
-                    }}</mat-option>
-                    @for (category of categories(); track category.id) {
-                        <mat-option [value]="category.id">{{
-                            category.name
-                        }}</mat-option>
-                    }
-                </mat-select>
-            </mat-form-field>
-
-            <mat-form-field>
-                <mat-label>{{
-                    'transaction.form.accountLabel' | translate
-                }}</mat-label>
-                <mat-select formControlName="accountId">
-                    @for (account of accounts(); track account.id) {
-                        <mat-option [value]="account.id"
-                            >{{ account.description }} ({{
-                                account.currency
-                            }})</mat-option
-                        >
-                    }
-                </mat-select>
-            </mat-form-field>
-
-            <mat-form-field>
-                <mat-label>{{
-                    'transaction.form.dateLabel' | translate
-                }}</mat-label>
+                <mat-label
+                    >{{ 'transaction.form.dateLabel' | translate }}
+                </mat-label>
                 <input matInput type="datetime-local" formControlName="date" />
             </mat-form-field>
 
             <mat-form-field>
-                <mat-label>{{
-                    'transaction.form.descriptionLabel' | translate
-                }}</mat-label>
+                <mat-label
+                    >{{ 'transaction.form.descriptionLabel' | translate }}
+                </mat-label>
                 <textarea
                     matInput
                     rows="2"
@@ -175,15 +173,25 @@ export class TransactionFormComponent {
             nonNullable: true,
             validators: [Validators.required],
         }),
-        date: new FormControl(nowLocalDateTime(), {
+        date: new FormControl(toLocalDateTime(new Date()), {
             nonNullable: true,
             validators: [Validators.required],
         }),
         description: new FormControl('', { nonNullable: true }),
     });
 
-    /** Preselect last-used account and category; fall back to the only account. */
+    /** Preselect last-used account and category; fall back to the only account. Editing prefills the rest. */
     constructor() {
+        effect(() => {
+            const d = this.defaults();
+            this.form.patchValue({
+                ...(d.type && { type: d.type }),
+                ...(d.amount != null && { amount: d.amount / 100 }),
+                ...(d.title != null && { title: d.title }),
+                ...(d.description != null && { description: d.description }),
+                ...(d.date && { date: toLocalDateTime(new Date(d.date)) }),
+            });
+        });
         effect(() => {
             const accounts = this.accounts();
             const defaults = this.defaults();

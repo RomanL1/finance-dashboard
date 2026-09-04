@@ -9,7 +9,6 @@ export interface CreateAccount {
     description: string;
     currency: string;
     initialValue: number;
-    amount: number;
     startDate: Date;
 }
 
@@ -20,6 +19,7 @@ export interface Account {
     description: string;
     currency: string;
     initialValue: number;
+    /** Current balance: initialValue plus the signed sum of its transactions. Computed, never stored. */
     amount: number;
     startDate: Date;
     createdAt: Date;
@@ -43,7 +43,6 @@ export function buildAccount(input: CreateAccountInput): CreateAccount {
         description,
         currency: input.currency,
         initialValue: input.initialValue,
-        amount: input.initialValue,
         startDate: input.startDate,
     };
 }

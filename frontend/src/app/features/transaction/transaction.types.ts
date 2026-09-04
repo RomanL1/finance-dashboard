@@ -7,17 +7,15 @@ import type {
 
 export type { CreateTransactionDto, TransactionDto };
 
-/** Preselected form values; ids that no longer exist are ignored by the form. */
-export interface TransactionDefaults {
-    accountId?: string;
-    categoryId?: string | null;
-}
+/** Prefilled form values: last-used ids for a new entry, the full row when editing. Unknown ids are ignored. */
+export type TransactionDefaults = Partial<CreateTransactionDto>;
 
-/** What the add-transaction dialog needs from its opener. */
+/** What the transaction dialog needs from its opener. `transaction` set = edit mode. */
 export interface TransactionDialogData {
     householdId: string;
     accounts: AccountDto[];
     categories: CategoryDto[];
+    transaction?: TransactionDto;
 }
 
 /** Flattened for display: ids resolved to names and currency. */

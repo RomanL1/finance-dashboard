@@ -23,6 +23,7 @@ function makeRepo(overrides: Partial<AccountRepository> = {}) {
             .mockImplementation((entity: CreateAccount, householdId: string) =>
                 Promise.resolve({
                     ...entity,
+                    amount: entity.initialValue,
                     householdId,
                     createdAt: new Date('2026-01-01'),
                 }),
@@ -66,7 +67,6 @@ describe('AccountService', () => {
                     description: 'Checking',
                     currency: 'USD',
                     initialValue: 5000,
-                    amount: 5000,
                     startDate: new Date('2026-01-01'),
                 },
                 'household-1',

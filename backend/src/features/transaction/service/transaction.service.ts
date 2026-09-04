@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { TransactionRepository } from '../repository/transaction.repository.js';
 import {
     buildTransaction,
+    CreateTransaction,
     CreateTransactionInput,
     Transaction,
 } from '../model/transaction.js';
@@ -22,6 +23,36 @@ export class TransactionService {
         input: CreateTransactionInput,
     ): Promise<Transaction> {
         const entity = buildTransaction(input);
+        await this.assertReferences(householdId, entity);
+        return this.transactions.createTransaction(entity);
+    }
+
+    /** Full replace: every field comes from the input, only the id survives. */
+    async update(
+        householdId: Id,
+        id: Id,
+        input: CreateTransactionInput,
+    ): Promise<Transaction> {
+        const entity = { ...buildTransaction(input), id };
+        await this.assertReferences(householdId, entity);
+        const updated = await this.transactions.updateTransaction(
+            householdId,
+            entity,
+        );
+        if (!updated) throw new NotFoundError('Transaction', id);
+        return updated;
+    }
+
+    async delete(householdId: Id, id: Id): Promise<void> {
+        if (!(await this.transactions.deleteTransaction(householdId, id))) {
+            throw new NotFoundError('Transaction', id);
+        }
+    }
+
+    private async assertReferences(
+        householdId: Id,
+        entity: CreateTransaction,
+    ): Promise<void> {
         if (
             !(await this.transactions.accountExists(
                 householdId,
@@ -39,7 +70,5 @@ export class TransactionService {
         ) {
             throw new NotFoundError('Category', entity.categoryId);
         }
-        // ponytail: balance is a mutable counter adjusted here. Update/delete endpoints must reverse it in the same tx, or switch to initialValue - sum(transactions).
-        return this.transactions.createTransaction(entity);
     }
 }

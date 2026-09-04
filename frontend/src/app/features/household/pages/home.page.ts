@@ -67,6 +67,8 @@ import {
                 @if (transactions.value()) {
                     <app-transaction-list
                         [rows]="transactionRows()"
+                        (edit)="openTransactionDialog(h.id, $event)"
+                        (remove)="deleteTransaction(h.id, $event)"
                         class="mt-6 block"
                     />
                 }
@@ -127,7 +129,8 @@ export class HomePage {
         private readonly router: Router,
     ) {}
 
-    openTransactionDialog(householdId: string): void {
+    /** With `transactionId` the dialog edits that row instead of creating one. */
+    openTransactionDialog(householdId: string, transactionId?: string): void {
         const ref = this.dialogs.open<
             TransactionDialogComponent,
             TransactionDialogData,
@@ -136,13 +139,34 @@ export class HomePage {
             householdId,
             accounts: this.accounts.value() ?? [],
             categories: this.categories.value() ?? [],
+            transaction: this.transactions
+                .value()
+                ?.find((t) => t.id === transactionId),
         });
-        ref.afterClosed().subscribe((created) => {
-            if (!created) return;
-            this.transactions.reload();
-            /** Balance changed server-side. */
-            this.accounts.reload();
+        ref.afterClosed().subscribe((saved) => {
+            if (saved) this.reloadAfterTransactionChange();
         });
+    }
+
+    async deleteTransaction(
+        householdId: string,
+        transactionId: string,
+    ): Promise<void> {
+        const confirmed = await this.dialogs.confirm({
+            title: 'transaction.delete.title',
+            message: 'transaction.delete.message',
+            confirm: 'transaction.delete.confirm',
+            cancel: 'transaction.dialog.cancel',
+        });
+        if (!confirmed) return;
+        await this.transactionService.delete(householdId, transactionId);
+        this.reloadAfterTransactionChange();
+    }
+
+    private reloadAfterTransactionChange(): void {
+        this.transactions.reload();
+        /** Balance is derived from transactions server-side. */
+        this.accounts.reload();
     }
 
     async signOut(): Promise<void> {

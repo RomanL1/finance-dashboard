@@ -35,7 +35,14 @@ import type {
         TranslatePipe,
     ],
     template: `
-        <h2 mat-dialog-title>{{ 'transaction.dialog.title' | translate }}</h2>
+        <h2 mat-dialog-title>
+            {{
+                (data.transaction
+                    ? 'transaction.dialog.editTitle'
+                    : 'transaction.dialog.title'
+                ) | translate
+            }}
+        </h2>
         <mat-dialog-content>
             <app-transaction-form
                 [formId]="formId"
@@ -48,7 +55,7 @@ import type {
                 <p role="alert" class="mt-2 text-red-700">{{ error() }}</p>
             }
         </mat-dialog-content>
-        <mat-dialog-actions align="end">
+        <mat-dialog-actions align="end" class="gap-2">
             <app-button variant="text" mat-dialog-close>
                 {{ 'transaction.dialog.cancel' | translate }}
             </app-button>
@@ -79,18 +86,21 @@ export class TransactionDialogComponent {
         private readonly transactions: TransactionService,
         private readonly translate: TranslateService,
     ) {
-        this.defaults = transactions.lastUsed();
+        this.defaults = data.transaction ?? transactions.lastUsed();
     }
 
     async save(dto: CreateTransactionDto): Promise<void> {
         this.busy.set(true);
         this.error.set(null);
         try {
-            const created = await this.transactions.create(
-                this.data.householdId,
-                dto,
-            );
-            this.dialogRef.close(created);
+            const saved = this.data.transaction
+                ? await this.transactions.update(
+                      this.data.householdId,
+                      this.data.transaction.id,
+                      dto,
+                  )
+                : await this.transactions.create(this.data.householdId, dto);
+            this.dialogRef.close(saved);
         } catch {
             this.error.set(this.translate.instant('transaction.dialog.failed'));
         } finally {

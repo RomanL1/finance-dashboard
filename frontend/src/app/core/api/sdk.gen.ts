@@ -35,8 +35,12 @@ import type {
     OnboardingValidateHouseholdResponses,
     TransactionCreateTransactionData,
     TransactionCreateTransactionResponses,
+    TransactionDeleteTransactionData,
+    TransactionDeleteTransactionResponses,
     TransactionGetTransactionsData,
     TransactionGetTransactionsResponses,
+    TransactionUpdateTransactionData,
+    TransactionUpdateTransactionResponses,
 } from './types.gen';
 
 export type Options<
@@ -374,6 +378,60 @@ export const transactionCreateTransaction = <
             },
         ],
         url: '/api/households/{householdId}/transactions',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers,
+        },
+    });
+
+export const transactionDeleteTransaction = <
+    ThrowOnError extends boolean = false,
+>(
+    options: Options<TransactionDeleteTransactionData, ThrowOnError>,
+): RequestResult<
+    TransactionDeleteTransactionResponses,
+    unknown,
+    ThrowOnError
+> =>
+    (options.client ?? client).delete<
+        TransactionDeleteTransactionResponses,
+        unknown,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/{householdId}/transactions/{transactionId}',
+        ...options,
+    });
+
+export const transactionUpdateTransaction = <
+    ThrowOnError extends boolean = false,
+>(
+    options: Options<TransactionUpdateTransactionData, ThrowOnError>,
+): RequestResult<
+    TransactionUpdateTransactionResponses,
+    unknown,
+    ThrowOnError
+> =>
+    (options.client ?? client).patch<
+        TransactionUpdateTransactionResponses,
+        unknown,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/{householdId}/transactions/{transactionId}',
         ...options,
         headers: {
             'Content-Type': 'application/json',

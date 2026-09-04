@@ -61,7 +61,6 @@ describe('OnboardingService', () => {
             description: 'Checking',
             currency: 'CHF',
             initialValue: 100000,
-            amount: 100000,
         });
     });
 
