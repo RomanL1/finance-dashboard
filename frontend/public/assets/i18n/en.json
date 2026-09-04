@@ -97,5 +97,30 @@
             "DEBT_PAYMENTS": "Debt Payments",
             "MISC": "Miscellaneous"
         }
+    },
+    "transaction": {
+        "dialog": {
+            "title": "Add transaction",
+            "cancel": "Cancel",
+            "save": "Save",
+            "failed": "Could not save the transaction."
+        },
+        "form": {
+            "typeLabel": "Type",
+            "expense": "Expense",
+            "income": "Income",
+            "amountLabel": "Amount",
+            "amountRequired": "Enter an amount greater than 0",
+            "titleLabel": "Title",
+            "titleRequired": "Title is required",
+            "categoryLabel": "Category",
+            "accountLabel": "Account",
+            "dateLabel": "Date",
+            "descriptionLabel": "Note (optional)"
+        },
+        "list": {
+            "title": "Transactions",
+            "empty": "No transactions yet."
+        }
     }
 }

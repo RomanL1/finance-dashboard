@@ -1,3 +1,22 @@
 /* You can add global styles to this file, and also import other style files */
 
 @import 'tailwindcss';
+
+/* Dialogs: full-screen sheet on phones, centered card from 640px up. Media queries, not
+   open-time breakpoints, so a resized window re-flows a dialog that is already open. */
+@media (max-width: 639px) {
+    .cdk-overlay-pane.app-dialog {
+        width: 100vw;
+        height: 100dvh;
+    }
+    .app-dialog .mat-mdc-dialog-content {
+        max-height: none;
+        flex: 1;
+    }
+}
+@media (min-width: 640px) {
+    .cdk-overlay-pane.app-dialog {
+        width: 480px;
+        max-width: calc(100vw - 2rem) !important; /* MatDialog writes maxWidth inline */
+    }
+}

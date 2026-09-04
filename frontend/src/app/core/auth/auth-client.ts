@@ -1,8 +1,9 @@
 import { createAuthClient } from 'better-auth/client';
 
-/** better-auth client against the backend's /api/auth endpoints. Cookies carry the session. */
+/** better-auth client against the backend's /api/auth endpoints. Cookies carry the session.
+ *  Relative baseURL: dev-server proxy.conf.json forwards /api to the backend. */
 export const authClient = createAuthClient({
-    baseURL: 'http://localhost:3000',
+    baseURL: '',
     basePath: '/api/auth',
     fetchOptions: { credentials: 'include' },
 });

@@ -18,6 +18,7 @@ import {
             [type]="type()"
             [matButton]="variant()"
             [disabled]="disabled()"
+            [attr.form]="formId()"
             (click)="clicked.emit($event)"
             [attr.aria-label]="ariaLabel()"
         >
@@ -27,6 +28,8 @@ import {
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ButtonComponent {
+    /** Native `form` attribute: submits a form the button is not nested in. */
+    readonly formId = input<string | null>(null);
     readonly variant = input<MatButtonAppearance>('filled');
     readonly type = input<'button' | 'submit'>('button');
     readonly disabled = input<boolean>(false);

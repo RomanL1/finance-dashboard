@@ -97,5 +97,30 @@
             "DEBT_PAYMENTS": "Schuldenrückzahlung",
             "MISC": "Sonstiges"
         }
+    },
+    "transaction": {
+        "dialog": {
+            "title": "Transaktion hinzufügen",
+            "cancel": "Abbrechen",
+            "save": "Speichern",
+            "failed": "Transaktion konnte nicht gespeichert werden."
+        },
+        "form": {
+            "typeLabel": "Art",
+            "expense": "Ausgabe",
+            "income": "Einnahme",
+            "amountLabel": "Betrag",
+            "amountRequired": "Betrag muss grösser als 0 sein",
+            "titleLabel": "Titel",
+            "titleRequired": "Titel ist erforderlich",
+            "categoryLabel": "Kategorie",
+            "accountLabel": "Konto",
+            "dateLabel": "Datum",
+            "descriptionLabel": "Notiz (optional)"
+        },
+        "list": {
+            "title": "Transaktionen",
+            "empty": "Noch keine Transaktionen."
+        }
     }
 }

@@ -60,7 +60,13 @@
                             "buildTarget": "finance-dashboard:build:development"
                         }
                     },
-                    "defaultConfiguration": "development"
+                    "defaultConfiguration": "development",
+                    "options": {
+                        "allowedHosts": [
+                            "liberally-rutilant-christinia.ngrok-free.dev"
+                        ],
+                        "proxyConfig": "proxy.conf.json"
+                    }
                 },
                 "test": {
                     "builder": "@angular/build:unit-test"
