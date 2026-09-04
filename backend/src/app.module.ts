@@ -5,6 +5,7 @@ import { DbModule } from './shared/infra/db/db.module.js';
 import { CategoryModule } from './features/category/category.module.js';
 import { AccountModule } from './features/account/account.module.js';
 import { OnboardingModule } from './features/onboarding/onboarding.module.js';
+import { TransactionModule } from './features/transaction/transaction.module.js';
 
 @Module({
     imports: [
@@ -14,6 +15,7 @@ import { OnboardingModule } from './features/onboarding/onboarding.module.js';
         CategoryModule,
         AccountModule,
         OnboardingModule,
+        TransactionModule,
     ],
 })
 export class AppModule {}

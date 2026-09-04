@@ -21,7 +21,8 @@ src/shared/kernel/  DomainError family, Id helpers — no Nest, no drizzle impor
 - Services throw `NotFoundError` / `ForbiddenError` / `ConflictError` / `ValidationError` from `shared/kernel`; `DomainExceptionFilter` maps them to HTTP.
 - Persistence stays behind repositories. Inject the client with `@Inject(DRIZZLE) db: Db`.
 - Tables live in `features/{feature}/model/{feature}.schema.ts` and are re-exported from `shared/infra/db/schema.ts` (drizzle-kit + better-auth read that barrel). After changing tables: `bun run db:generate && bun run db:migrate`.
-- Every entity belongs to a household (user story M2). Scope repository queries by `householdId`.
+- Every entity belongs to a household (user story M2), directly or through its parent (transaction → account → household). Scope repository queries by `householdId`, joining the parent when needed. No redundant `householdId` columns on child tables.
+- Table relations form a tree. No cyclic foreign keys.
 - Routes are protected by default. `@Public()` to opt out, `@CurrentUser()` to get the session user.
 - ESM with `.js` extensions in relative imports. Never `import type` an injectable.
 - Unit-test services with a fake repository (`*.spec.ts` next to the file). e2e specs in `test/` boot `AppModule` + `setupApp` against in-memory sqlite.

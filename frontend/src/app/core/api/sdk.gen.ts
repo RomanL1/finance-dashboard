@@ -33,6 +33,10 @@ import type {
     OnboardingValidateCategoriesResponses,
     OnboardingValidateHouseholdData,
     OnboardingValidateHouseholdResponses,
+    TransactionCreateTransactionData,
+    TransactionCreateTransactionResponses,
+    TransactionGetTransactionsData,
+    TransactionGetTransactionsResponses,
 } from './types.gen';
 
 export type Options<
@@ -320,6 +324,56 @@ export const onboardingValidateAccounts = <
             },
         ],
         url: '/api/households/onboarding/validate-accounts',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers,
+        },
+    });
+
+export const transactionGetTransactions = <
+    ThrowOnError extends boolean = false,
+>(
+    options: Options<TransactionGetTransactionsData, ThrowOnError>,
+): RequestResult<TransactionGetTransactionsResponses, unknown, ThrowOnError> =>
+    (options.client ?? client).get<
+        TransactionGetTransactionsResponses,
+        unknown,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/{householdId}/transactions',
+        ...options,
+    });
+
+export const transactionCreateTransaction = <
+    ThrowOnError extends boolean = false,
+>(
+    options: Options<TransactionCreateTransactionData, ThrowOnError>,
+): RequestResult<
+    TransactionCreateTransactionResponses,
+    unknown,
+    ThrowOnError
+> =>
+    (options.client ?? client).post<
+        TransactionCreateTransactionResponses,
+        unknown,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/{householdId}/transactions',
         ...options,
         headers: {
             'Content-Type': 'application/json',

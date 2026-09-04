@@ -108,6 +108,40 @@ export type OnboardingAccountsDto = {
     accounts: Array<OnboardingAccountDto>;
 };
 
+export type TransactionDto = {
+    id: string;
+    accountId: string;
+    categoryId: string;
+    type: 'expense' | 'income';
+    /**
+     * Minor units (cents), positive; sign comes from type
+     */
+    amount: number;
+    title: string;
+    description: string | null;
+    date: string;
+    createdAt: string;
+};
+
+export type CreateTransactionDto = {
+    /**
+     * Account id within the household
+     */
+    accountId: string;
+    /**
+     * Category id within the household
+     */
+    categoryId: string;
+    type: 'expense' | 'income';
+    /**
+     * Minor units (cents)
+     */
+    amount: number;
+    title: string;
+    description?: string | null;
+    date: string;
+};
+
 export type HouseholdMineData = {
     body?: never;
     path?: never;
@@ -325,3 +359,41 @@ export type OnboardingValidateAccountsResponses = {
 
 export type OnboardingValidateAccountsResponse =
     OnboardingValidateAccountsResponses[keyof OnboardingValidateAccountsResponses];
+
+export type TransactionGetTransactionsData = {
+    body?: never;
+    path: {
+        /**
+         * Household id
+         */
+        householdId: string;
+    };
+    query?: never;
+    url: '/api/households/{householdId}/transactions';
+};
+
+export type TransactionGetTransactionsResponses = {
+    200: Array<TransactionDto>;
+};
+
+export type TransactionGetTransactionsResponse =
+    TransactionGetTransactionsResponses[keyof TransactionGetTransactionsResponses];
+
+export type TransactionCreateTransactionData = {
+    body: CreateTransactionDto;
+    path: {
+        /**
+         * Household id
+         */
+        householdId: string;
+    };
+    query?: never;
+    url: '/api/households/{householdId}/transactions';
+};
+
+export type TransactionCreateTransactionResponses = {
+    200: TransactionDto;
+};
+
+export type TransactionCreateTransactionResponse =
+    TransactionCreateTransactionResponses[keyof TransactionCreateTransactionResponses];

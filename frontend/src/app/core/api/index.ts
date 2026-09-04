@@ -14,6 +14,8 @@ export {
     onboardingValidateCategories,
     onboardingValidateHousehold,
     type Options,
+    transactionCreateTransaction,
+    transactionGetTransactions,
 } from './sdk.gen';
 export type {
     AccountCreateAccountData,
@@ -43,6 +45,7 @@ export type {
     CompleteOnboardingDto,
     CreateAccountDto,
     CreateCategoryDto,
+    CreateTransactionDto,
     DefaultCategoryDto,
     HouseholdDto,
     HouseholdMineData,
@@ -64,4 +67,11 @@ export type {
     OnboardingValidateHouseholdData,
     OnboardingValidateHouseholdResponse,
     OnboardingValidateHouseholdResponses,
+    TransactionCreateTransactionData,
+    TransactionCreateTransactionResponse,
+    TransactionCreateTransactionResponses,
+    TransactionDto,
+    TransactionGetTransactionsData,
+    TransactionGetTransactionsResponse,
+    TransactionGetTransactionsResponses,
 } from './types.gen';
