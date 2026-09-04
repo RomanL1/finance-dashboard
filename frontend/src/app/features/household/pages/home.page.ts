@@ -2,6 +2,8 @@ import {
     ChangeDetectionStrategy,
     Component,
     computed,
+    inject,
+    LOCALE_ID,
     resource,
 } from '@angular/core';
 import { Router } from '@angular/router';
@@ -21,7 +23,7 @@ import { TransactionListComponent } from '../../transaction/dumb_components/tran
 import { TransactionDialogComponent } from '../../transaction/smart_components/transaction-dialog/transaction-dialog.component';
 import { TransactionService } from '../../transaction/services/transaction.service';
 import {
-    toTransactionRows,
+    toTransactionGroups,
     type TransactionDialogData,
     type TransactionDto,
 } from '../../transaction/transaction.types';
@@ -66,7 +68,7 @@ import {
                 }
                 @if (transactions.value()) {
                     <app-transaction-list
-                        [rows]="transactionRows()"
+                        [groups]="transactionGroups()"
                         (edit)="openTransactionDialog(h.id, $event)"
                         (remove)="deleteTransaction(h.id, $event)"
                         class="mt-6 block"
@@ -111,11 +113,16 @@ export class HomePage {
         loader: ({ params }) => this.transactionService.list(params),
     });
 
-    readonly transactionRows = computed(() =>
-        toTransactionRows(
+    private readonly locale = inject(LOCALE_ID);
+
+    /** Grouped at load time: "today" is not re-evaluated at midnight until the next reload. */
+    readonly transactionGroups = computed(() =>
+        toTransactionGroups(
             this.transactions.value() ?? [],
             this.accounts.value() ?? [],
             this.categories.value() ?? [],
+            new Date(),
+            this.locale,
         ),
     );
 

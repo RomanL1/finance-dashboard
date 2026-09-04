@@ -118,7 +118,13 @@
             "uncategorized": "Ohne Kategorie",
             "actions": "Aktionen",
             "edit": "Bearbeiten",
-            "delete": "Löschen"
+            "delete": "Löschen",
+            "group": {
+                "upcoming": "Bevorstehend ({{count}})",
+                "today": "Heute",
+                "week": "Diese Woche",
+                "year": "Früher dieses Jahr"
+            }
         },
         "delete": {
             "title": "Transaktion löschen?",

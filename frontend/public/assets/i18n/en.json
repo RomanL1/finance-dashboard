@@ -118,7 +118,13 @@
             "uncategorized": "Uncategorized",
             "actions": "Transaction actions",
             "edit": "Edit",
-            "delete": "Delete"
+            "delete": "Delete",
+            "group": {
+                "upcoming": "Upcoming ({{count}})",
+                "today": "Today",
+                "week": "This week",
+                "year": "Earlier this year"
+            }
         },
         "delete": {
             "title": "Delete transaction?",
