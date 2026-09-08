@@ -20,6 +20,8 @@
   ("2026-09-01", 4.5, [evaluate technologies for frontend and backend, initialized repository and set up backend & frontend]),
   ("2026-09-02", 5.0, [setup first feature slice for categories & mocking auth with minimal frontend]),
   ("2026-09-03", 6.0, [change styling to angular material, add translations, add default categories, implement onboarding workflow including account and currency]),
+  ("2026-09-04", 6.0, [add transactions list overview and crud functionality, add settings page, manage categories part 1]),
+  ("2026-09-08", 2.0, [finish manage categories]),
 )
 
 // Automatically calculate total hours
