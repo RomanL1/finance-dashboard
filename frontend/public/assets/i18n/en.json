@@ -115,6 +115,38 @@
             "SAVINGS_INVESTMENTS": "Savings & Investments",
             "DEBT_PAYMENTS": "Debt Payments",
             "MISC": "Miscellaneous"
+        },
+        "form": {
+            "nameLabel": "Name",
+            "nameRequired": "Name is required",
+            "submit": "Add category"
+        },
+        "list": {
+            "empty": "No categories yet."
+        },
+        "dialog": {
+            "title": "Add category",
+            "editTitle": "Rename category",
+            "cancel": "Cancel",
+            "save": "Save",
+            "failed": "Could not save the category.",
+            "duplicate": "A category with this name already exists."
+        },
+        "manage": {
+            "actions": "Category actions",
+            "edit": "Rename",
+            "delete": "Delete",
+            "transactionCount": "{{count}} transactions"
+        },
+        "delete": {
+            "confirmTitle": "Delete category?",
+            "confirmMessage": "No transactions use this category.",
+            "confirm": "Delete",
+            "title": "Delete “{{name}}”?",
+            "message": "{{count}} transactions use this category. Remove the category from them, or move them to another category.",
+            "transferLabel": "Move to",
+            "uncategorize": "Remove from transactions",
+            "transfer": "Move and delete"
         }
     },
     "transaction": {
@@ -168,6 +200,10 @@
         "accounts": {
             "title": "Accounts",
             "add": "Add account"
+        },
+        "categories": {
+            "title": "Categories",
+            "add": "Add category"
         }
     }
 }

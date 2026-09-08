@@ -1,11 +1,24 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class CategoryDto {
     @ApiProperty() id!: string;
     @ApiProperty() name!: string;
     @ApiProperty() createdAt!: string;
+    @ApiProperty({ description: 'Transactions assigned to this category' })
+    transactionCount!: number;
+}
+
+export class DeleteCategoryQueryDto {
+    @ApiPropertyOptional({
+        description:
+            'Reassign the transactions to this category before deleting. Omitted: they become uncategorized.',
+    })
+    @IsOptional()
+    @IsString()
+    @IsNotEmpty()
+    transferTo?: string;
 }
 
 export class CreateCategoryDto {

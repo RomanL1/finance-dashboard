@@ -8,6 +8,7 @@ import {
     Param,
     Patch,
     Post,
+    Query,
     UseGuards,
 } from '@nestjs/common';
 import {
@@ -18,7 +19,11 @@ import {
     ApiTags,
 } from '@nestjs/swagger';
 import { CategoryService } from '../service/category.service.js';
-import { CategoryDto, CreateCategoryDto } from '../model/category.dto.js';
+import {
+    CategoryDto,
+    CreateCategoryDto,
+    DeleteCategoryQueryDto,
+} from '../model/category.dto.js';
 import { toCategoriesDto, toCategoryDto } from './category.mapper.js';
 import { type Id } from '../../../shared/kernel/index.js';
 import { HouseholdMemberGuard } from '../../household/guard/household-member.guard.js';
@@ -63,6 +68,7 @@ export class CategoryController {
         );
     }
 
+    /** Transactions are uncategorized, or moved to `transferTo` when given. */
     @Delete(':categoryId')
     @ApiParam({ name: 'categoryId', description: 'Category id', type: String })
     @HttpCode(HttpStatus.NO_CONTENT)
@@ -70,7 +76,10 @@ export class CategoryController {
     async deleteCategory(
         @Param('householdId') householdId: Id,
         @Param('categoryId') categoryId: Id,
+        @Query() query: DeleteCategoryQueryDto,
     ): Promise<void> {
-        await this.categories.delete(householdId, categoryId);
+        await this.categories.delete(householdId, categoryId, {
+            transferTo: query.transferTo,
+        });
     }
 }

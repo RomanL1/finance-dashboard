@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, resource } from '@angular/core';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../../core/auth/auth.service';
 import { APP_PATHS } from '../../../config/paths.config';
@@ -15,12 +16,23 @@ import type {
     AccountDto,
     UpdateAccountDto,
 } from '../../account/account.types';
+import { CategoryService } from '../../category/services/category.service';
+import { CategoryManageListComponent } from '../../category/dumb_components/category-manage-list/category-manage-list.component';
+import { CategoryDeleteDialogComponent } from '../../category/dumb_components/category-delete-dialog/category-delete-dialog.component';
+import { CategoryDialogComponent } from '../../category/smart_components/category-dialog/category-dialog.component';
+import type {
+    CategoryDeleteChoice,
+    CategoryDeleteDialogData,
+    CategoryDialogData,
+    CategoryDto,
+} from '../../category/category.types';
 
 @Component({
     selector: 'app-settings-page',
     imports: [
         ButtonComponent,
         AccountManageListComponent,
+        CategoryManageListComponent,
         MatProgressSpinner,
         TranslatePipe,
     ],
@@ -38,7 +50,11 @@ import type {
                     {{ 'settings.signOut' | translate }}
                 </app-button>
             </header>
-            @if (household.isLoading() || accounts.isLoading()) {
+            @if (
+                household.isLoading() ||
+                accounts.isLoading() ||
+                categories.isLoading()
+            ) {
                 <mat-spinner class="mx-auto" diameter="40" />
             } @else if (household.value(); as h) {
                 <section>
@@ -64,6 +80,27 @@ import type {
                         />
                     }
                 </section>
+                <section class="mt-8">
+                    <div class="mb-2 flex items-center justify-between">
+                        <h2 class="text-lg font-semibold">
+                            {{ 'settings.categories.title' | translate }}
+                        </h2>
+                        <app-button
+                            type="button"
+                            variant="tonal"
+                            (clicked)="openCategoryDialog(h.id)"
+                        >
+                            {{ 'settings.categories.add' | translate }}
+                        </app-button>
+                    </div>
+                    @if (categories.value(); as cats) {
+                        <app-category-manage-list
+                            [categories]="cats"
+                            (edit)="openCategoryDialog(h.id, $event)"
+                            (remove)="deleteCategory(h.id, $event)"
+                        />
+                    }
+                </section>
             }
         </main>
     `,
@@ -79,10 +116,16 @@ export class SettingsPage {
         loader: ({ params }) => this.accountService.list(params),
     });
 
+    readonly categories = resource({
+        params: () => this.household.value()?.id,
+        loader: ({ params }) => this.categoryService.list(params),
+    });
+
     constructor(
         private readonly auth: AuthService,
         private readonly householdService: HouseholdService,
         private readonly accountService: AccountService,
+        private readonly categoryService: CategoryService,
         private readonly dialogs: DialogService,
         private readonly router: Router,
     ) {}
@@ -141,6 +184,60 @@ export class SettingsPage {
         this.accounts.reload();
     }
 
+    openCategoryDialog(householdId: string, categoryId?: string): void {
+        const ref = this.dialogs.open<
+            CategoryDialogComponent,
+            CategoryDialogData,
+            CategoryDto
+        >(CategoryDialogComponent, {
+            householdId,
+            category: this.findCategory(categoryId),
+        });
+        ref.afterClosed().subscribe((saved) => {
+            if (saved) this.categories.reload();
+        });
+    }
+
+    /**
+     * No transactions: plain confirm. Otherwise the user picks whether they become
+     * uncategorized or move to another category.
+     */
+    async deleteCategory(
+        householdId: string,
+        categoryId: string,
+    ): Promise<void> {
+        const category = this.findCategory(categoryId);
+        if (!category) return;
+
+        let transferTo: string | undefined;
+        if (category.transactionCount === 0) {
+            const confirmed = await this.dialogs.confirm({
+                title: 'category.delete.confirmTitle',
+                message: 'category.delete.confirmMessage',
+                confirm: 'category.delete.confirm',
+                cancel: 'category.dialog.cancel',
+            });
+            if (!confirmed) return;
+        } else {
+            const ref = this.dialogs.open<
+                CategoryDeleteDialogComponent,
+                CategoryDeleteDialogData,
+                CategoryDeleteChoice
+            >(CategoryDeleteDialogComponent, {
+                category,
+                others: (this.categories.value() ?? []).filter(
+                    (c) => c.id !== categoryId,
+                ),
+            });
+            const choice = await firstValueFrom(ref.afterClosed());
+            if (!choice) return;
+            transferTo = choice.transferTo ?? undefined;
+        }
+
+        await this.categoryService.delete(householdId, categoryId, transferTo);
+        this.categories.reload();
+    }
+
     async signOut(): Promise<void> {
         await this.auth.signOut();
         await this.router.navigate(['/' + APP_PATHS.LOGIN]);
@@ -148,5 +245,9 @@ export class SettingsPage {
 
     private find(accountId?: string): AccountDto | undefined {
         return this.accounts.value()?.find((a) => a.id === accountId);
+    }
+
+    private findCategory(categoryId?: string): CategoryDto | undefined {
+        return this.categories.value()?.find((c) => c.id === categoryId);
     }
 }

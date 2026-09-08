@@ -115,6 +115,38 @@
             "SAVINGS_INVESTMENTS": "Sparen & Investieren",
             "DEBT_PAYMENTS": "Schuldenrückzahlung",
             "MISC": "Sonstiges"
+        },
+        "form": {
+            "nameLabel": "Name",
+            "nameRequired": "Name ist erforderlich",
+            "submit": "Kategorie hinzufügen"
+        },
+        "list": {
+            "empty": "Noch keine Kategorien."
+        },
+        "dialog": {
+            "title": "Kategorie hinzufügen",
+            "editTitle": "Kategorie umbenennen",
+            "cancel": "Abbrechen",
+            "save": "Speichern",
+            "failed": "Kategorie konnte nicht gespeichert werden.",
+            "duplicate": "Eine Kategorie mit diesem Namen existiert bereits."
+        },
+        "manage": {
+            "actions": "Kategorieaktionen",
+            "edit": "Umbenennen",
+            "delete": "Löschen",
+            "transactionCount": "{{count}} Buchungen"
+        },
+        "delete": {
+            "confirmTitle": "Kategorie löschen?",
+            "confirmMessage": "Keine Buchungen verwenden diese Kategorie.",
+            "confirm": "Löschen",
+            "title": "„{{name}}“ löschen?",
+            "message": "{{count}} Buchungen verwenden diese Kategorie. Kategorie daraus entfernen oder Buchungen in eine andere Kategorie verschieben.",
+            "transferLabel": "Verschieben nach",
+            "uncategorize": "Aus Buchungen entfernen",
+            "transfer": "Verschieben und löschen"
         }
     },
     "transaction": {
@@ -168,6 +200,10 @@
         "accounts": {
             "title": "Konten",
             "add": "Konto hinzufügen"
+        },
+        "categories": {
+            "title": "Kategorien",
+            "add": "Kategorie hinzufügen"
         }
     }
 }

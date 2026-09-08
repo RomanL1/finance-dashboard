@@ -22,7 +22,7 @@ const ACCOUNTS: AccountDto[] = [
     },
 ];
 const CATEGORIES: CategoryDto[] = [
-    { id: 'c1', name: 'Groceries', createdAt: '' },
+    { id: 'c1', name: 'Groceries', createdAt: '', transactionCount: 0 },
 ];
 
 function tx(

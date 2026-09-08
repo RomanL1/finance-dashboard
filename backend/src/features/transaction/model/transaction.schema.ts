@@ -32,5 +32,6 @@ export const transaction = sqliteTable(
             table.accountId,
             table.date,
         ),
+        index('transaction_category_id_idx').on(table.categoryId),
     ],
 );

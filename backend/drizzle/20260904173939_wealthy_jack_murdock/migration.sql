@@ -1,0 +1,1 @@
+CREATE INDEX `transaction_category_id_idx` ON `transaction` (`category_id`);

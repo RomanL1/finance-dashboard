@@ -6,6 +6,7 @@ import {
     CreateOrUpdateCategory,
     defaultCategories,
     DefaultCategory,
+    DeleteCategoryOptions,
 } from '../model/category.js';
 import {
     ConflictError,
@@ -91,8 +92,32 @@ export class CategoryService {
         return updated;
     }
 
-    async delete(householdId: Id, id: Id): Promise<void> {
-        const deleted = await this.categories.deleteCategory(householdId, id);
+    /** Transfer target must be a different category of the same household. */
+    async delete(
+        householdId: Id,
+        id: Id,
+        options: DeleteCategoryOptions = {},
+    ): Promise<void> {
+        if (options.transferTo) {
+            if (options.transferTo === id) {
+                throw new ValidationError(
+                    'Cannot transfer transactions to the category being deleted',
+                );
+            }
+            const target = await this.categories.findById(
+                householdId,
+                options.transferTo,
+            );
+            if (!target) {
+                throw new NotFoundError('Category', options.transferTo);
+            }
+        }
+
+        const deleted = await this.categories.deleteCategory(
+            householdId,
+            id,
+            options,
+        );
         if (!deleted) {
             throw new NotFoundError('Category', id);
         }

@@ -158,4 +158,107 @@ describe('category (e2e)', () => {
             .set('Cookie', cookie)
             .expect(404);
     });
+
+    describe('with transactions', () => {
+        let accountId: string;
+        let fromId: string;
+        let toId: string;
+        const url = () => `/api/households/${householdId}/categories`;
+
+        const createCategory = async (name: string): Promise<string> => {
+            const res = await request(app.getHttpServer())
+                .post(url())
+                .set('Cookie', cookie)
+                .send({ name })
+                .expect(201);
+            return res.body.id;
+        };
+        const addTransaction = (categoryId: string) =>
+            request(app.getHttpServer())
+                .post(`/api/households/${householdId}/transactions`)
+                .set('Cookie', cookie)
+                .send({
+                    accountId,
+                    categoryId,
+                    type: 'expense',
+                    amount: 100,
+                    date: '2026-01-15T12:30:00.000Z',
+                })
+                .expect(201);
+        const countOf = async (id: string): Promise<number | undefined> => {
+            const res = await request(app.getHttpServer())
+                .get(url())
+                .set('Cookie', cookie)
+                .expect(200);
+            return res.body.find((c: { id: string }) => c.id === id)
+                ?.transactionCount;
+        };
+        const transactionCategories = async (): Promise<(string | null)[]> => {
+            const res = await request(app.getHttpServer())
+                .get(`/api/households/${householdId}/transactions`)
+                .set('Cookie', cookie)
+                .expect(200);
+            return res.body.map(
+                (t: { categoryId: string | null }) => t.categoryId,
+            );
+        };
+
+        beforeAll(async () => {
+            const accounts = await request(app.getHttpServer())
+                .get(`/api/households/${householdId}/accounts`)
+                .set('Cookie', cookie)
+                .expect(200);
+            accountId = accounts.body[0].id;
+        });
+
+        it('GET lists categories sorted by name with their transaction count', async () => {
+            fromId = await createCategory('Zoo');
+            toId = await createCategory('Aquarium');
+            await addTransaction(fromId);
+            await addTransaction(fromId);
+
+            const res = await request(app.getHttpServer())
+                .get(url())
+                .set('Cookie', cookie)
+                .expect(200);
+            const names = res.body.map((c: { name: string }) => c.name);
+            expect(names).toEqual([...names].sort());
+            expect(await countOf(fromId)).toBe(2);
+            expect(await countOf(toId)).toBe(0);
+        });
+
+        it('DELETE rejects transferring to the deleted category itself', async () => {
+            await request(app.getHttpServer())
+                .delete(`${url()}/${fromId}?transferTo=${fromId}`)
+                .set('Cookie', cookie)
+                .expect(400);
+        });
+
+        it('DELETE returns 404 for an unknown transfer target', async () => {
+            await request(app.getHttpServer())
+                .delete(`${url()}/${fromId}?transferTo=nope`)
+                .set('Cookie', cookie)
+                .expect(404);
+            expect(await countOf(fromId)).toBe(2);
+        });
+
+        it('DELETE with transferTo moves the transactions', async () => {
+            await request(app.getHttpServer())
+                .delete(`${url()}/${fromId}?transferTo=${toId}`)
+                .set('Cookie', cookie)
+                .expect(204);
+            expect(await countOf(fromId)).toBeUndefined();
+            expect(await countOf(toId)).toBe(2);
+            expect(await transactionCategories()).toEqual([toId, toId]);
+        });
+
+        it('DELETE without transferTo uncategorizes the transactions', async () => {
+            await request(app.getHttpServer())
+                .delete(`${url()}/${toId}`)
+                .set('Cookie', cookie)
+                .expect(204);
+            expect(await countOf(toId)).toBeUndefined();
+            expect(await transactionCategories()).toEqual([null, null]);
+        });
+    });
 });

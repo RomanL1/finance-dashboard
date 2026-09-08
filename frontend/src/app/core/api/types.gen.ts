@@ -16,6 +16,10 @@ export type CategoryDto = {
     id: string;
     name: string;
     createdAt: string;
+    /**
+     * Transactions assigned to this category
+     */
+    transactionCount: number;
 };
 
 export type CreateCategoryDto = {
@@ -208,7 +212,12 @@ export type CategoryDeleteCategoryData = {
          */
         categoryId: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Reassign the transactions to this category before deleting. Omitted: they become uncategorized.
+         */
+        transferTo?: string;
+    };
     url: '/api/households/{householdId}/categories/{categoryId}';
 };
 

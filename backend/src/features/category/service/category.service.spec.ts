@@ -12,6 +12,7 @@ const dummyCategory: Category = {
     id: 'cat-1',
     name: 'Groceries',
     createdAt: new Date('2026-01-01'),
+    transactionCount: 0,
 };
 
 function makeRepo(overrides: Partial<CategoryRepository> = {}) {
@@ -26,6 +27,7 @@ function makeRepo(overrides: Partial<CategoryRepository> = {}) {
                     id: entity.id,
                     name: entity.name,
                     createdAt: new Date('2026-01-01'),
+                    transactionCount: 0,
                 }),
             ),
         renameCategory: vi
@@ -36,6 +38,7 @@ function makeRepo(overrides: Partial<CategoryRepository> = {}) {
                         id: entity.id,
                         name: entity.name,
                         createdAt: new Date('2026-01-01'),
+                        transactionCount: 0,
                     }),
             ),
         deleteCategory: vi.fn().mockResolvedValue(true),
@@ -182,6 +185,7 @@ describe('CategoryService', () => {
                 id: 'cat-2',
                 name: 'Rent',
                 createdAt: new Date('2026-01-01'),
+                transactionCount: 0,
             };
             const repo = makeRepo({
                 findById: vi.fn().mockResolvedValue(dummyCategory),
@@ -207,7 +211,49 @@ describe('CategoryService', () => {
             expect(repo.deleteCategory).toHaveBeenCalledWith(
                 'household-1',
                 'cat-1',
+                {},
             );
+        });
+
+        it('transfers transactions to another category of the household', async () => {
+            const target: Category = { ...dummyCategory, id: 'cat-2' };
+            const repo = makeRepo({
+                findById: vi.fn().mockResolvedValue(target),
+            });
+            const service = new CategoryService(repo);
+
+            await service.delete('household-1', 'cat-1', {
+                transferTo: 'cat-2',
+            });
+
+            expect(repo.findById).toHaveBeenCalledWith('household-1', 'cat-2');
+            expect(repo.deleteCategory).toHaveBeenCalledWith(
+                'household-1',
+                'cat-1',
+                { transferTo: 'cat-2' },
+            );
+        });
+
+        it('throws ValidationError when transferring to the deleted category itself', async () => {
+            const repo = makeRepo();
+            const service = new CategoryService(repo);
+
+            await expect(
+                service.delete('household-1', 'cat-1', { transferTo: 'cat-1' }),
+            ).rejects.toBeInstanceOf(ValidationError);
+            expect(repo.deleteCategory).not.toHaveBeenCalled();
+        });
+
+        it('throws NotFoundError when transfer target is not in the household', async () => {
+            const repo = makeRepo({
+                findById: vi.fn().mockResolvedValue(null),
+            });
+            const service = new CategoryService(repo);
+
+            await expect(
+                service.delete('household-1', 'cat-1', { transferTo: 'cat-9' }),
+            ).rejects.toBeInstanceOf(NotFoundError);
+            expect(repo.deleteCategory).not.toHaveBeenCalled();
         });
 
         it('throws NotFoundError when category does not exist in household', async () => {

@@ -13,6 +13,14 @@ export interface Category {
     id: Id;
     name: string;
     createdAt: Date;
+    /** Transactions currently assigned to this category. Drives the delete flow in the UI. */
+    transactionCount: number;
+}
+
+/** What happens to a deleted category's transactions. */
+export interface DeleteCategoryOptions {
+    /** Reassign transactions to this category. Omitted: they become uncategorized. */
+    transferTo?: Id;
 }
 
 export interface DefaultCategory {
