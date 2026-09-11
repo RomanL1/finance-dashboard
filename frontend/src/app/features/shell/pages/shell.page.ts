@@ -1,7 +1,12 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 import { MatTabLink, MatTabNav, MatTabNavPanel } from '@angular/material/tabs';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import {
+    type IsActiveMatchOptions,
+    RouterLink,
+    RouterLinkActive,
+    RouterOutlet,
+} from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { APP_PATHS } from '../../../config/paths.config';
 
@@ -50,7 +55,7 @@ import { APP_PATHS } from '../../../config/paths.config';
                         [routerLink]="'/' + tab.path"
                         routerLinkActive
                         #rla="routerLinkActive"
-                        [routerLinkActiveOptions]="{ exact: true }"
+                        [routerLinkActiveOptions]="activeOptions"
                         [active]="rla.isActive"
                     >
                         <!-- One active indicator per idiom: a pill behind the icon on phones (navigation bar),
@@ -93,6 +98,14 @@ import { APP_PATHS } from '../../../config/paths.config';
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ShellPage {
+    /** Exact path match, but query params (home period filter) must not drop the active tab. */
+    protected readonly activeOptions: IsActiveMatchOptions = {
+        paths: 'exact',
+        queryParams: 'ignored',
+        matrixParams: 'ignored',
+        fragment: 'ignored',
+    };
+
     readonly tabs = [
         { path: APP_PATHS.HOME, icon: 'home', label: 'nav.home' },
         { path: APP_PATHS.SETTINGS, icon: 'settings', label: 'nav.settings' },
