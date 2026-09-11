@@ -179,9 +179,7 @@
         display: none;
     }
 }
+/* Label color is set on the link content itself (see shell.page.ts), not via Material's text-label token. */
 .app-nav-bar .mat-mdc-tab-link .mdc-tab__text-label {
-    color: var(--mat-sys-on-surface-variant);
-}
-.app-nav-bar .mat-mdc-tab-link.mdc-tab--active .mdc-tab__text-label {
-    color: var(--mat-sys-on-surface);
+    color: inherit;
 }

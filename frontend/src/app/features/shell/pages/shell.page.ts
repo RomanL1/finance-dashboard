@@ -46,26 +46,33 @@ import { APP_PATHS } from '../../../config/paths.config';
                 @for (tab of tabs; track tab.path) {
                     <a
                         mat-tab-link
+                        class="group"
                         [routerLink]="'/' + tab.path"
                         routerLinkActive
                         #rla="routerLinkActive"
                         [routerLinkActiveOptions]="{ exact: true }"
                         [active]="rla.isActive"
                     >
+                        <!-- One active indicator per idiom: a pill behind the icon on phones (navigation bar),
+                             Material's sliding underline from md up (tab row). The pill scales in and out along
+                             the same path and dips on touch-down so the tap answers before the route does. -->
                         <span
-                            class="flex flex-col items-center gap-0.5 md:flex-row md:gap-2"
+                            class="flex flex-col items-center gap-0.5 transition-colors duration-150 md:flex-row md:gap-2 motion-reduce:transition-none"
+                            [class]="
+                                rla.isActive
+                                    ? 'text-on-surface md:text-primary'
+                                    : 'text-on-surface-variant'
+                            "
                         >
                             <span
-                                class="app-nav-pill flex h-8 w-16 items-center justify-center rounded-full transition-colors duration-150 md:h-auto md:w-auto motion-reduce:transition-none"
-                                [class.bg-secondary-container]="rla.isActive"
+                                class="flex items-center justify-center rounded-full transition-[background-color,transform] duration-150 ease-out max-md:h-8 max-md:w-16 max-md:group-active:scale-[0.92] motion-reduce:transition-none"
+                                [class]="
+                                    rla.isActive
+                                        ? 'max-md:bg-secondary-container max-md:text-on-secondary-container'
+                                        : 'max-md:scale-[0.85]'
+                                "
                             >
-                                <mat-icon
-                                    [class.text-on-secondary-container]="
-                                        rla.isActive
-                                    "
-                                >
-                                    {{ tab.icon }}
-                                </mat-icon>
+                                <mat-icon>{{ tab.icon }}</mat-icon>
                             </span>
                             <span class="type-label-medium md:type-label-large">
                                 {{ tab.label | translate }}
