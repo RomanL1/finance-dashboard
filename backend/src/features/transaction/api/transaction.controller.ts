@@ -8,6 +8,7 @@ import {
     Param,
     Patch,
     Post,
+    Query,
     UseGuards,
 } from '@nestjs/common';
 import {
@@ -20,6 +21,8 @@ import {
 import { TransactionService } from '../service/transaction.service.js';
 import {
     CreateTransactionDto,
+    CurrencyStatsDto,
+    StatsQueryDto,
     TransactionDto,
 } from '../model/transaction.dto.js';
 import { toTransactionDto, toTransactionsDto } from './transaction.mapper.js';
@@ -41,6 +44,19 @@ export class TransactionController {
         @Param('householdId') householdId: Id,
     ): Promise<TransactionDto[]> {
         return toTransactionsDto(await this.transactions.getAll(householdId));
+    }
+
+    /** Declared before the `:transactionId` routes so `stats` is never read as an id. */
+    @Get('stats')
+    @ApiOkResponse({ type: [CurrencyStatsDto] })
+    async getStats(
+        @Param('householdId') householdId: Id,
+        @Query() query: StatsQueryDto,
+    ): Promise<CurrencyStatsDto[]> {
+        return this.transactions.getStats(householdId, {
+            from: new Date(query.from),
+            to: new Date(query.to),
+        });
     }
 
     @Post()

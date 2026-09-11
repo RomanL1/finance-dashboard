@@ -23,6 +23,33 @@ export interface Transaction extends CreateTransaction {
     createdAt: Date;
 }
 
+/** Half-open interval: `from` inclusive, `to` exclusive. */
+export interface DateRange {
+    from: Date;
+    to: Date;
+}
+
+/** Sums per currency over a date range, minor units. Accounts with different currencies never mix. */
+export interface CurrencyStats {
+    currency: string;
+    income: number;
+    expenses: number;
+    /** `income - expenses` */
+    net: number;
+}
+
+export function assertValidRange(range: DateRange): void {
+    if (
+        Number.isNaN(range.from.getTime()) ||
+        Number.isNaN(range.to.getTime())
+    ) {
+        throw new ValidationError('Range dates must be valid');
+    }
+    if (range.to <= range.from) {
+        throw new ValidationError('Range end must be after its start');
+    }
+}
+
 export interface CreateTransactionInput {
     accountId: Id;
     categoryId?: Id | null;

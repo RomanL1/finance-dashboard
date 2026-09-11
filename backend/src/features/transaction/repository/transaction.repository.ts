@@ -1,8 +1,13 @@
 import { DRIZZLE } from '../../../shared/infra/db/db.module.js';
 import type { Db } from '../../../shared/infra/db/db.js';
 import { Inject, Injectable } from '@nestjs/common';
-import { and, desc, eq, inArray } from 'drizzle-orm';
-import { CreateTransaction, Transaction } from '../model/transaction.js';
+import { and, desc, eq, gte, inArray, lt, sql } from 'drizzle-orm';
+import {
+    CreateTransaction,
+    CurrencyStats,
+    DateRange,
+    Transaction,
+} from '../model/transaction.js';
 import { Id } from '../../../shared/kernel/index.js';
 import { transaction } from '../model/transaction.schema.js';
 import { financeAccount } from '../../account/model/account.schema.js';
@@ -41,6 +46,36 @@ export class TransactionRepository {
             .from(transaction)
             .where(this.inHousehold(householdId))
             .orderBy(desc(transaction.date));
+    }
+
+    /** Grouped by the account's currency; archived accounts count, their history is still history. */
+    async sumByCurrency(
+        householdId: Id,
+        range: DateRange,
+    ): Promise<CurrencyStats[]> {
+        const income = sql<number>`coalesce(sum(case when ${transaction.type} = 'income' then ${transaction.amount} else 0 end), 0)`;
+        const expenses = sql<number>`coalesce(sum(case when ${transaction.type} = 'expense' then ${transaction.amount} else 0 end), 0)`;
+        const rows = await this.db
+            .select({
+                currency: financeAccount.currency,
+                income: income.mapWith(Number),
+                expenses: expenses.mapWith(Number),
+            })
+            .from(transaction)
+            .innerJoin(
+                financeAccount,
+                eq(transaction.accountId, financeAccount.id),
+            )
+            .where(
+                and(
+                    eq(financeAccount.householdId, householdId),
+                    gte(transaction.date, range.from),
+                    lt(transaction.date, range.to),
+                ),
+            )
+            .groupBy(financeAccount.currency)
+            .orderBy(financeAccount.currency);
+        return rows.map((r) => ({ ...r, net: r.income - r.expenses }));
     }
 
     async accountExists(householdId: Id, accountId: Id): Promise<boolean> {

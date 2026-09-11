@@ -33,6 +33,7 @@ function makeRepo(overrides: Partial<TransactionRepository> = {}) {
                 Promise.resolve({ ...entity, createdAt: new Date() }),
             ),
         deleteTransaction: vi.fn().mockResolvedValue(true),
+        sumByCurrency: vi.fn().mockResolvedValue([]),
         ...overrides,
     } as unknown as TransactionRepository;
 }
@@ -129,5 +130,42 @@ describe('TransactionService.delete', () => {
             new TransactionService(repo).delete('h-1', 'tx-1'),
         ).rejects.toBeInstanceOf(NotFoundError);
         expect(repo.deleteTransaction).toHaveBeenCalledWith('h-1', 'tx-1');
+    });
+});
+
+describe('TransactionService.getStats', () => {
+    it('passes a valid range through to the repository', async () => {
+        const repo = makeRepo({
+            sumByCurrency: vi
+                .fn()
+                .mockResolvedValue([
+                    { currency: 'CHF', income: 100, expenses: 40, net: 60 },
+                ]),
+        });
+        const range = {
+            from: new Date('2026-09-01'),
+            to: new Date('2026-10-01'),
+        };
+
+        const stats = await new TransactionService(repo).getStats('h-1', range);
+
+        expect(stats).toEqual([
+            { currency: 'CHF', income: 100, expenses: 40, net: 60 },
+        ]);
+        expect(repo.sumByCurrency).toHaveBeenCalledWith('h-1', range);
+    });
+
+    it('rejects an empty or inverted range', async () => {
+        const service = new TransactionService(makeRepo());
+        const day = new Date('2026-09-01');
+        await expect(
+            service.getStats('h-1', { from: day, to: day }),
+        ).rejects.toBeInstanceOf(ValidationError);
+        await expect(
+            service.getStats('h-1', {
+                from: new Date('2026-10-01'),
+                to: day,
+            }),
+        ).rejects.toBeInstanceOf(ValidationError);
     });
 });

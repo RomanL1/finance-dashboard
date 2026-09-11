@@ -80,3 +80,28 @@ export class CreateTransactionDto {
     @IsISO8601()
     date!: string;
 }
+
+export class StatsQueryDto {
+    @ApiProperty({
+        description: 'Range start (inclusive)',
+        example: '2026-09-01T00:00:00.000Z',
+    })
+    @IsISO8601()
+    from!: string;
+
+    @ApiProperty({
+        description: 'Range end (exclusive)',
+        example: '2026-10-01T00:00:00.000Z',
+    })
+    @IsISO8601()
+    to!: string;
+}
+
+/** One entry per currency that has at least one transaction in the range. */
+export class CurrencyStatsDto {
+    @ApiProperty({ example: 'CHF' }) currency!: string;
+    @ApiProperty({ description: 'Minor units (cents)' }) income!: number;
+    @ApiProperty({ description: 'Minor units (cents)' }) expenses!: number;
+    @ApiProperty({ description: 'Minor units (cents), income - expenses' })
+    net!: number;
+}

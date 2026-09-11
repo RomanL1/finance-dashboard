@@ -1,9 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { TransactionRepository } from '../repository/transaction.repository.js';
 import {
+    assertValidRange,
     buildTransaction,
     CreateTransaction,
     CreateTransactionInput,
+    CurrencyStats,
+    DateRange,
     Transaction,
 } from '../model/transaction.js';
 import { Id, NotFoundError } from '../../../shared/kernel/index.js';
@@ -16,6 +19,15 @@ export class TransactionService {
 
     async getAll(householdId: Id): Promise<Transaction[]> {
         return this.transactions.listByHouseholdId(householdId);
+    }
+
+    /** Future-dated entries inside the range count: the range is the only filter. */
+    async getStats(
+        householdId: Id,
+        range: DateRange,
+    ): Promise<CurrencyStats[]> {
+        assertValidRange(range);
+        return this.transactions.sumByCurrency(householdId, range);
     }
 
     async create(
