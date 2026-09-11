@@ -6,7 +6,7 @@
 @use '@angular/material' as mat;
 
 html {
-    height: 100%;
+    min-height: 100%;
     @include mat.theme(
         (
             color: (
@@ -20,10 +20,8 @@ html {
 }
 
 body {
-    // Default the application to a light color theme. This can be changed to
-    // `dark` to enable the dark color theme, or to `light dark` to defer to the
-    // user's system settings.
-    color-scheme: light;
+    // Follows the user's system setting. Every app color below is a `light-dark()` pair.
+    color-scheme: light dark;
 
     // Set a default background, font and text colors for the application using
     // Angular Material's system-level CSS variables. Learn more about these
@@ -32,7 +30,36 @@ body {
     color: var(--mat-sys-on-surface);
     font: var(--mat-sys-body-medium);
 
-    // Reset the user agent margin.
+    // Reset the user agent margin. The authenticated shell scrolls its own content panel,
+    // so the document never scrolls; no overscroll keeps iOS from rubber-banding it anyway.
     margin: 0;
-    height: 100%;
+    min-height: 100%;
+    overscroll-behavior: none;
+}
+
+// App-level semantic tokens next to Material's `--mat-sys-*`. Money direction (income /
+// expense) and the account badge palette have no Material equivalent. Values are
+// `light-dark()` pairs so they follow the `color-scheme` set on `body`.
+:root {
+    // Green trio, mirrors the M3 tonal roles: color (40/80), container (90/30), on-container (10/90).
+    --app-income: light-dark(#1f7a3d, #7fdb96);
+    --app-income-container: light-dark(#b3f0c1, #0d5226);
+    --app-on-income-container: light-dark(#00210c, #b3f0c1);
+
+    // Red trio, reuses the Material error role so it matches dialogs and form errors.
+    --app-expense: var(--mat-sys-error);
+    --app-expense-container: var(--mat-sys-error-container);
+    --app-on-expense-container: var(--mat-sys-on-error-container);
+
+    // Eight account hues, spaced ~45° apart in OKLCH. Same lightness/chroma per scheme so
+    // every badge has the same visual weight. Badge text is `--app-on-account`.
+    --app-account-1: light-dark(oklch(0.52 0.17 20), oklch(0.74 0.14 20));
+    --app-account-2: light-dark(oklch(0.55 0.15 60), oklch(0.76 0.13 60));
+    --app-account-3: light-dark(oklch(0.52 0.15 110), oklch(0.74 0.13 110));
+    --app-account-4: light-dark(oklch(0.52 0.15 150), oklch(0.74 0.13 150));
+    --app-account-5: light-dark(oklch(0.52 0.13 200), oklch(0.74 0.12 200));
+    --app-account-6: light-dark(oklch(0.52 0.17 250), oklch(0.74 0.13 250));
+    --app-account-7: light-dark(oklch(0.52 0.17 300), oklch(0.74 0.13 300));
+    --app-account-8: light-dark(oklch(0.52 0.17 340), oklch(0.74 0.13 340));
+    --app-on-account: light-dark(#ffffff, #1b1b1f);
 }

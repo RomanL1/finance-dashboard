@@ -19,13 +19,8 @@
     },
     "home": {
         "greeting": "Hello {{name}}",
-        "noHouseholdFound": "No household found."
-    },
-    "household": {
-        "card": {
-            "household": "Household",
-            "role": "Role"
-        }
+        "noHouseholdFound": "No household found.",
+        "add": "Add"
     },
     "onboarding": {
         "title": "Welcome",
@@ -86,7 +81,8 @@
             "archive": "Archive",
             "unarchive": "Unarchive",
             "archivedSince": "Archived since {{date}}",
-            "delete": "Delete"
+            "delete": "Delete",
+            "archived": "Archived"
         },
         "archive": {
             "title": "Archive account?",
@@ -97,6 +93,11 @@
             "title": "Delete account?",
             "message": "This permanently deletes the account and all of its transactions. This cannot be undone.",
             "confirm": "Delete"
+        },
+        "badge": "Account {{number}}",
+        "chips": {
+            "title": "Accounts",
+            "label": "Account balances"
         }
     },
     "category": {
@@ -136,7 +137,7 @@
             "actions": "Category actions",
             "edit": "Rename",
             "delete": "Delete",
-            "transactionCount": "{{count}} transactions"
+            "transactions": "transactions"
         },
         "delete": {
             "confirmTitle": "Delete category?",
@@ -182,7 +183,8 @@
                 "today": "Today",
                 "week": "This week",
                 "year": "Earlier this year"
-            }
+            },
+            "emptyHint": "Tap + to add your first one."
         },
         "delete": {
             "title": "Delete transaction?",
@@ -204,6 +206,36 @@
         "categories": {
             "title": "Categories",
             "add": "Add category"
+        },
+        "household": {
+            "title": "Household",
+            "name": "Name",
+            "role": "Your role",
+            "roles": {
+                "owner": "Owner",
+                "member": "Member"
+            }
+        },
+        "appearance": {
+            "title": "Appearance",
+            "system": "System",
+            "light": "Light",
+            "dark": "Dark"
+        }
+    },
+    "stats": {
+        "income": "Income",
+        "expenses": "Expenses",
+        "net": "Net",
+        "spentRatio": "{{percent}}% of income spent",
+        "period": {
+            "label": "Period",
+            "week": "Week",
+            "month": "Month",
+            "year": "Year",
+            "previous": "Previous period",
+            "next": "Next period",
+            "today": "Jump to current period"
         }
     }
 }

@@ -54,7 +54,9 @@ import type { CategoryDto, CreateCategoryDto } from '../../category.types';
             </mat-form-field>
 
             @if (errorMessage()) {
-                <p role="alert" class="text-red-700">{{ errorMessage() }}</p>
+                <p role="alert" class="type-body-medium text-error">
+                    {{ errorMessage() }}
+                </p>
             }
 
             @if (!formId()) {

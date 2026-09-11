@@ -19,13 +19,8 @@
     },
     "home": {
         "greeting": "Hallo {{name}}",
-        "noHouseholdFound": "Kein Haushalt gefunden."
-    },
-    "household": {
-        "card": {
-            "household": "Haushalt",
-            "role": "Rolle"
-        }
+        "noHouseholdFound": "Kein Haushalt gefunden.",
+        "add": "Hinzufügen"
     },
     "onboarding": {
         "title": "Willkommen",
@@ -86,7 +81,8 @@
             "archive": "Archivieren",
             "unarchive": "Wiederherstellen",
             "archivedSince": "Archiviert seit {{date}}",
-            "delete": "Löschen"
+            "delete": "Löschen",
+            "archived": "Archiviert"
         },
         "archive": {
             "title": "Konto archivieren?",
@@ -97,6 +93,11 @@
             "title": "Konto löschen?",
             "message": "Das Konto und alle seine Buchungen werden dauerhaft gelöscht. Dies kann nicht rückgängig gemacht werden.",
             "confirm": "Löschen"
+        },
+        "badge": "Konto {{number}}",
+        "chips": {
+            "title": "Konten",
+            "label": "Kontostände"
         }
     },
     "category": {
@@ -136,7 +137,7 @@
             "actions": "Kategorieaktionen",
             "edit": "Umbenennen",
             "delete": "Löschen",
-            "transactionCount": "{{count}} Buchungen"
+            "transactions": "Transaktionen"
         },
         "delete": {
             "confirmTitle": "Kategorie löschen?",
@@ -182,7 +183,8 @@
                 "today": "Heute",
                 "week": "Diese Woche",
                 "year": "Früher dieses Jahr"
-            }
+            },
+            "emptyHint": "Tippe auf +, um die erste zu erfassen."
         },
         "delete": {
             "title": "Transaktion löschen?",
@@ -204,6 +206,36 @@
         "categories": {
             "title": "Kategorien",
             "add": "Kategorie hinzufügen"
+        },
+        "household": {
+            "title": "Haushalt",
+            "name": "Name",
+            "role": "Deine Rolle",
+            "roles": {
+                "owner": "Inhaber:in",
+                "member": "Mitglied"
+            }
+        },
+        "appearance": {
+            "title": "Darstellung",
+            "system": "System",
+            "light": "Hell",
+            "dark": "Dunkel"
+        }
+    },
+    "stats": {
+        "income": "Einnahmen",
+        "expenses": "Ausgaben",
+        "net": "Saldo",
+        "spentRatio": "{{percent}}% der Einnahmen ausgegeben",
+        "period": {
+            "label": "Zeitraum",
+            "week": "Woche",
+            "month": "Monat",
+            "year": "Jahr",
+            "previous": "Vorheriger Zeitraum",
+            "next": "Nächster Zeitraum",
+            "today": "Zum aktuellen Zeitraum"
         }
     }
 }

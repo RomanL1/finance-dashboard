@@ -39,6 +39,10 @@ export type DefaultCategoryDto = {
 export type AccountDto = {
     id: string;
     householdId: string;
+    /**
+     * Per-household running number, starts at 1
+     */
+    number: number;
     description: string;
     currency: string;
     /**
@@ -127,6 +131,22 @@ export type TransactionDto = {
     description: string | null;
     date: string;
     createdAt: string;
+};
+
+export type CurrencyStatsDto = {
+    currency: string;
+    /**
+     * Minor units (cents)
+     */
+    income: number;
+    /**
+     * Minor units (cents)
+     */
+    expenses: number;
+    /**
+     * Minor units (cents), income - expenses
+     */
+    net: number;
 };
 
 export type CreateTransactionDto = {
@@ -454,6 +474,34 @@ export type TransactionCreateTransactionResponses = {
 
 export type TransactionCreateTransactionResponse =
     TransactionCreateTransactionResponses[keyof TransactionCreateTransactionResponses];
+
+export type TransactionGetStatsData = {
+    body?: never;
+    path: {
+        /**
+         * Household id
+         */
+        householdId: string;
+    };
+    query: {
+        /**
+         * Range start (inclusive)
+         */
+        from: string;
+        /**
+         * Range end (exclusive)
+         */
+        to: string;
+    };
+    url: '/api/households/{householdId}/transactions/stats';
+};
+
+export type TransactionGetStatsResponses = {
+    200: Array<CurrencyStatsDto>;
+};
+
+export type TransactionGetStatsResponse =
+    TransactionGetStatsResponses[keyof TransactionGetStatsResponses];
 
 export type TransactionDeleteTransactionData = {
     body?: never;

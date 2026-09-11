@@ -8,6 +8,7 @@ import {
 import {
     PreloadAllModules,
     provideRouter,
+    withComponentInputBinding,
     withPreloading,
 } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
@@ -24,7 +25,11 @@ export const appConfig: ApplicationConfig = {
     providers: [
         provideBrowserGlobalErrorListeners(),
         /** Fetch lazy chunks right after boot so tab switches do not wait on the network. */
-        provideRouter(routes, withPreloading(PreloadAllModules)),
+        provideRouter(
+            routes,
+            withPreloading(PreloadAllModules),
+            withComponentInputBinding(),
+        ),
         provideHttpClient(),
         provideTranslateService({
             loader: provideTranslateHttpLoader({

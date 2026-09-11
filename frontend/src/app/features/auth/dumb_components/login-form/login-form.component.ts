@@ -99,7 +99,11 @@ import type { LoginCredentials } from '../../auth.types';
             </mat-form-field>
 
             @if (errorMessage()) {
-                <p id="login-error" role="alert" class="text-red-700">
+                <p
+                    id="login-error"
+                    role="alert"
+                    class="type-body-medium text-error"
+                >
                     {{ errorMessage() }}
                 </p>
             }

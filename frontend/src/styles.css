@@ -1,6 +1,128 @@
-/* You can add global styles to this file, and also import other style files */
-
 @import 'tailwindcss';
+
+/* Tailwind color names that resolve to Material system tokens. Templates use
+   `bg-surface-low`, `text-on-surface-variant`, `text-income` instead of raw palette
+   colors, so the app follows the Material theme and dark mode for free.
+   Rule: no `gray-*`, `red-*`, `green-*` (or any Tailwind palette color) inside `src/app`. */
+@theme inline {
+    --color-surface: var(--mat-sys-surface);
+    --color-surface-dim: var(--mat-sys-surface-dim);
+    --color-surface-lowest: var(--mat-sys-surface-container-lowest);
+    --color-surface-low: var(--mat-sys-surface-container-low);
+    --color-surface-container: var(--mat-sys-surface-container);
+    --color-surface-high: var(--mat-sys-surface-container-high);
+    --color-surface-highest: var(--mat-sys-surface-container-highest);
+    --color-on-surface: var(--mat-sys-on-surface);
+    --color-on-surface-variant: var(--mat-sys-on-surface-variant);
+    --color-outline: var(--mat-sys-outline);
+    --color-outline-variant: var(--mat-sys-outline-variant);
+    --color-primary: var(--mat-sys-primary);
+    --color-on-primary: var(--mat-sys-on-primary);
+    --color-primary-container: var(--mat-sys-primary-container);
+    --color-on-primary-container: var(--mat-sys-on-primary-container);
+    --color-secondary-container: var(--mat-sys-secondary-container);
+    --color-on-secondary-container: var(--mat-sys-on-secondary-container);
+    --color-error: var(--mat-sys-error);
+    --color-on-error-container: var(--mat-sys-on-error-container);
+    --color-error-container: var(--mat-sys-error-container);
+    --color-income: var(--app-income);
+    --color-income-container: var(--app-income-container);
+    --color-on-income-container: var(--app-on-income-container);
+    --color-expense: var(--app-expense);
+    --color-expense-container: var(--app-expense-container);
+    --color-on-expense-container: var(--app-on-expense-container);
+    --color-on-account: var(--app-on-account);
+
+    /* Material shape tokens. */
+    --radius-m3-sm: var(--mat-sys-corner-small);
+    --radius-m3-md: var(--mat-sys-corner-medium);
+    --radius-m3-lg: var(--mat-sys-corner-large);
+    --radius-m3-xl: var(--mat-sys-corner-extra-large);
+}
+
+/* Material type scale as utilities: `font` shorthand carries family, size, weight, leading. */
+@utility type-display-small {
+    font: var(--mat-sys-display-small);
+    letter-spacing: var(--mat-sys-display-small-tracking);
+}
+@utility type-headline-small {
+    font: var(--mat-sys-headline-small);
+    letter-spacing: var(--mat-sys-headline-small-tracking);
+}
+@utility type-headline-medium {
+    font: var(--mat-sys-headline-medium);
+    letter-spacing: var(--mat-sys-headline-medium-tracking);
+}
+@utility type-title-large {
+    font: var(--mat-sys-title-large);
+    letter-spacing: var(--mat-sys-title-large-tracking);
+}
+@utility type-title-medium {
+    font: var(--mat-sys-title-medium);
+    letter-spacing: var(--mat-sys-title-medium-tracking);
+}
+@utility type-title-small {
+    font: var(--mat-sys-title-small);
+    letter-spacing: var(--mat-sys-title-small-tracking);
+}
+@utility type-body-large {
+    font: var(--mat-sys-body-large);
+    letter-spacing: var(--mat-sys-body-large-tracking);
+}
+@utility type-body-medium {
+    font: var(--mat-sys-body-medium);
+    letter-spacing: var(--mat-sys-body-medium-tracking);
+}
+@utility type-body-small {
+    font: var(--mat-sys-body-small);
+    letter-spacing: var(--mat-sys-body-small-tracking);
+}
+@utility type-label-large {
+    font: var(--mat-sys-label-large);
+    letter-spacing: var(--mat-sys-label-large-tracking);
+}
+@utility type-label-medium {
+    font: var(--mat-sys-label-medium);
+    letter-spacing: var(--mat-sys-label-medium-tracking);
+}
+@utility type-label-small {
+    font: var(--mat-sys-label-small);
+    letter-spacing: var(--mat-sys-label-small-tracking);
+}
+
+/* Light motion: enter/leave fades for Angular's `animate.enter` / `animate.leave`.
+   Under reduced motion the classes still apply (Angular waits for their animations),
+   but the transition is instant. */
+.fade-in {
+    animation: app-fade-in 200ms ease-out;
+}
+.fade-out {
+    animation: app-fade-out 150ms ease-in forwards;
+}
+@keyframes app-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+@keyframes app-fade-out {
+    to {
+        opacity: 0;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .fade-in,
+    .fade-out {
+        animation-duration: 1ms;
+    }
+    .animate-pulse {
+        animation: none;
+    }
+}
 
 /* Dialogs: full-screen sheet on phones, centered card from 640px up. Media queries, not
    open-time breakpoints, so a resized window re-flows a dialog that is already open. */
@@ -17,6 +139,49 @@
 @media (min-width: 640px) {
     .cdk-overlay-pane.app-dialog {
         width: 480px;
-        max-width: calc(100vw - 2rem) !important; /* MatDialog writes maxWidth inline */
+        max-width: calc(
+            100vw - 2rem
+        ) !important; /* MatDialog writes maxWidth inline */
     }
+}
+
+/* Bottom navigation bar in the M3 "navigation bar" shape on phones: icon above label,
+   active pill behind the icon, no underline indicator. Kept compact (64px) so it does not
+   eat into the viewport together with the browser's own toolbar; the safe-area inset keeps
+   it above the home indicator. From `md` up the same links sit in a plain tab row under the
+   header, where Material's own indicator is kept. */
+@media (max-width: 767px) {
+    /* iOS Firefox paints only the page background behind its translucent toolbar and clips
+       fixed elements at the layout viewport, so the body takes the nav colour and the content
+       panel restores `surface` on top. */
+    body {
+        background-color: var(--mat-sys-surface-container);
+    }
+    .app-nav-bar {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+    .app-nav-bar .mat-mdc-tab-links,
+    .app-nav-bar .mat-mdc-tab-link {
+        height: 64px;
+    }
+    .app-nav-bar .mat-mdc-tab-link {
+        padding: 0;
+        min-width: 0;
+    }
+    .app-nav-bar .mat-mdc-tab-link .mdc-tab__content {
+        height: auto;
+    }
+    .app-nav-bar .mdc-tab-indicator {
+        display: none;
+    }
+    .app-nav-bar .mat-mdc-tab-link .mdc-tab__ripple::before,
+    .app-nav-bar .mat-mdc-tab-link .mat-ripple {
+        display: none;
+    }
+}
+.app-nav-bar .mat-mdc-tab-link .mdc-tab__text-label {
+    color: var(--mat-sys-on-surface-variant);
+}
+.app-nav-bar .mat-mdc-tab-link.mdc-tab--active .mdc-tab__text-label {
+    color: var(--mat-sys-on-surface);
 }

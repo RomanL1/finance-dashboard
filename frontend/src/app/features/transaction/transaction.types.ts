@@ -26,8 +26,13 @@ export interface TransactionRow {
     date: string;
     /** Display-ready timestamp; precision depends on the group ("14:05", "Tue 14:05", "03.09. 14:05"). */
     when: string;
+    /** Null when uncategorized or the category was deleted. Drives the avatar color. */
+    categoryId: string | null;
     /** Null when uncategorized or the category was deleted. */
     category: string | null;
+    /** Badge number and short name of the account, so multi-account households can tell rows apart. */
+    accountNumber: number;
+    accountName: string;
     /** Falls back to the category name; null only when both are missing. */
     title: string | null;
     currency: string;
@@ -82,7 +87,7 @@ export function toTransactionGroups(
     now: Date,
     locale: string,
 ): TransactionGroup[] {
-    const currencyByAccount = new Map(accounts.map((a) => [a.id, a.currency]));
+    const accountById = new Map(accounts.map((a) => [a.id, a]));
     const nameByCategory = new Map(categories.map((c) => [c.id, c.name]));
     const groups: TransactionGroup[] = [];
 
@@ -103,13 +108,17 @@ export function toTransactionGroups(
         }
         const category =
             (t.categoryId && nameByCategory.get(t.categoryId)) || null;
+        const account = accountById.get(t.accountId);
         group.rows.push({
             id: t.id,
             date: t.date,
             when: formatDate(date, FORMAT[bucket.kind], locale),
+            categoryId: category ? t.categoryId : null,
             category,
             title: t.title || category,
-            currency: currencyByAccount.get(t.accountId) ?? '',
+            accountNumber: account?.number ?? 0,
+            accountName: account?.description ?? '',
+            currency: account?.currency ?? '',
             amount: t.type === 'income' ? t.amount : -t.amount,
         });
     }

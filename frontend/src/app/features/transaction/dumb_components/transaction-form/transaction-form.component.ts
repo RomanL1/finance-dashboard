@@ -146,12 +146,10 @@ function toLocalDateTime(instant: Date): string {
         </form>
     `,
     styles: `
-        /* Same green as income rows in the list. */
+        /* Same green as income amounts everywhere else. */
         .income {
-            --mat-button-toggle-text-color: var(--color-green-700);
-            --mat-button-toggle-selected-state-text-color: var(
-                --color-green-700
-            );
+            --mat-button-toggle-text-color: var(--app-income);
+            --mat-button-toggle-selected-state-text-color: var(--app-income);
         }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush,

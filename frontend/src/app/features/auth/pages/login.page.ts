@@ -19,7 +19,7 @@ import type { LoginCredentials } from '../auth.types';
                 [errorMessage]="error()"
                 (submitted)="onLogin($event)"
             />
-            <p class="mt-4 text-sm text-slate-600">
+            <p class="mt-4 type-body-medium text-on-surface-variant">
                 {{ 'auth.login.demo' | translate }}
             </p>
         </main>

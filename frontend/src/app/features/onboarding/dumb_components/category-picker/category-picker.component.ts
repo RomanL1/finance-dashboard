@@ -79,7 +79,7 @@ const LOCKED_DEFAULT_KEY = 'MISC';
                 </div>
             </div>
 
-            <hr class="border-t border-slate-200" />
+            <hr class="border-t border-outline-variant" />
 
             <div class="flex flex-col gap-3">
                 <form
@@ -110,7 +110,7 @@ const LOCKED_DEFAULT_KEY = 'MISC';
                     <div class="flex flex-wrap gap-2">
                         @for (name of customNames(); track name) {
                             <span
-                                class="inline-flex items-center gap-1 rounded-full bg-slate-100 py-1 pl-3 pr-1 text-sm"
+                                class="inline-flex items-center gap-1 rounded-full bg-surface-high py-1 pl-3 pr-1 type-label-large text-on-surface"
                             >
                                 {{ name }}
                                 <app-icon-button
@@ -129,7 +129,9 @@ const LOCKED_DEFAULT_KEY = 'MISC';
             </div>
 
             @if (errorMessage()) {
-                <p role="alert" class="text-red-700">{{ errorMessage() }}</p>
+                <p role="alert" class="type-body-medium text-error">
+                    {{ errorMessage() }}
+                </p>
             }
 
             <app-button

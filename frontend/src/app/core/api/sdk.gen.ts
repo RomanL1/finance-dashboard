@@ -41,6 +41,8 @@ import type {
     TransactionCreateTransactionResponses,
     TransactionDeleteTransactionData,
     TransactionDeleteTransactionResponses,
+    TransactionGetStatsData,
+    TransactionGetStatsResponses,
     TransactionGetTransactionsData,
     TransactionGetTransactionsResponses,
     TransactionUpdateTransactionData,
@@ -429,6 +431,25 @@ export const transactionCreateTransaction = <
             'Content-Type': 'application/json',
             ...options.headers,
         },
+    });
+
+export const transactionGetStats = <ThrowOnError extends boolean = false>(
+    options: Options<TransactionGetStatsData, ThrowOnError>,
+): RequestResult<TransactionGetStatsResponses, unknown, ThrowOnError> =>
+    (options.client ?? client).get<
+        TransactionGetStatsResponses,
+        unknown,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/{householdId}/transactions/stats',
+        ...options,
     });
 
 export const transactionDeleteTransaction = <

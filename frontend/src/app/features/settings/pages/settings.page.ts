@@ -1,5 +1,15 @@
 import { ChangeDetectionStrategy, Component, resource } from '@angular/core';
+import {
+    MatButtonToggle,
+    MatButtonToggleGroup,
+} from '@angular/material/button-toggle';
+import { MatIcon } from '@angular/material/icon';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import {
+    ThemeService,
+    type ThemePreference,
+} from '../../../core/theme/theme.service';
+import { SectionHeaderComponent } from '../../../components/section-header/section-header.component';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -34,12 +44,16 @@ import type {
         AccountManageListComponent,
         CategoryManageListComponent,
         MatProgressSpinner,
+        MatButtonToggleGroup,
+        MatButtonToggle,
+        MatIcon,
+        SectionHeaderComponent,
         TranslatePipe,
     ],
     template: `
-        <main class="mx-auto max-w-lg p-4">
-            <header class="mb-6 flex items-center justify-between">
-                <h1 class="text-2xl font-semibold">
+        <main class="mx-auto max-w-lg space-y-6 p-4">
+            <header class="flex items-center justify-between gap-4">
+                <h1 class="type-headline-small text-on-surface">
                     {{ 'settings.title' | translate }}
                 </h1>
                 <app-button
@@ -50,6 +64,31 @@ import type {
                     {{ 'settings.signOut' | translate }}
                 </app-button>
             </header>
+            <section>
+                <app-section-header
+                    [title]="'settings.appearance.title' | translate"
+                />
+                <mat-button-toggle-group
+                    class="w-full"
+                    hideSingleSelectionIndicator
+                    [value]="theme.preference()"
+                    (change)="theme.set($event.value)"
+                    [attr.aria-label]="'settings.appearance.title' | translate"
+                >
+                    @for (option of themeOptions; track option.value) {
+                        <mat-button-toggle
+                            class="flex-1"
+                            [value]="option.value"
+                        >
+                            <mat-icon class="mr-1">{{ option.icon }}</mat-icon>
+                            {{
+                                'settings.appearance.' + option.value
+                                    | translate
+                            }}
+                        </mat-button-toggle>
+                    }
+                </mat-button-toggle-group>
+            </section>
             @if (
                 household.isLoading() ||
                 accounts.isLoading() ||
@@ -58,10 +97,32 @@ import type {
                 <mat-spinner class="mx-auto" diameter="40" />
             } @else if (household.value(); as h) {
                 <section>
-                    <div class="mb-2 flex items-center justify-between">
-                        <h2 class="text-lg font-semibold">
-                            {{ 'settings.accounts.title' | translate }}
-                        </h2>
+                    <app-section-header
+                        [title]="'settings.household.title' | translate"
+                    />
+                    <dl
+                        class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 rounded-m3-lg bg-surface-low p-4"
+                    >
+                        <dt class="type-label-large text-on-surface-variant">
+                            {{ 'settings.household.name' | translate }}
+                        </dt>
+                        <dd class="type-body-large text-on-surface">
+                            {{ h.name }}
+                        </dd>
+                        <dt class="type-label-large text-on-surface-variant">
+                            {{ 'settings.household.role' | translate }}
+                        </dt>
+                        <dd class="type-body-large text-on-surface">
+                            {{
+                                'settings.household.roles.' + h.role | translate
+                            }}
+                        </dd>
+                    </dl>
+                </section>
+                <section>
+                    <app-section-header
+                        [title]="'settings.accounts.title' | translate"
+                    >
                         <app-button
                             type="button"
                             variant="tonal"
@@ -69,7 +130,7 @@ import type {
                         >
                             {{ 'settings.accounts.add' | translate }}
                         </app-button>
-                    </div>
+                    </app-section-header>
                     @if (accounts.value(); as accts) {
                         <app-account-manage-list
                             [accounts]="accts"
@@ -80,11 +141,10 @@ import type {
                         />
                     }
                 </section>
-                <section class="mt-8">
-                    <div class="mb-2 flex items-center justify-between">
-                        <h2 class="text-lg font-semibold">
-                            {{ 'settings.categories.title' | translate }}
-                        </h2>
+                <section>
+                    <app-section-header
+                        [title]="'settings.categories.title' | translate"
+                    >
                         <app-button
                             type="button"
                             variant="tonal"
@@ -92,7 +152,7 @@ import type {
                         >
                             {{ 'settings.categories.add' | translate }}
                         </app-button>
-                    </div>
+                    </app-section-header>
                     @if (categories.value(); as cats) {
                         <app-category-manage-list
                             [categories]="cats"
@@ -107,6 +167,15 @@ import type {
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SettingsPage {
+    protected readonly themeOptions: {
+        value: ThemePreference;
+        icon: string;
+    }[] = [
+        { value: 'system', icon: 'brightness_auto' },
+        { value: 'light', icon: 'light_mode' },
+        { value: 'dark', icon: 'dark_mode' },
+    ];
+
     readonly household = resource({
         loader: () => this.householdService.getHousehold(),
     });
@@ -128,6 +197,7 @@ export class SettingsPage {
         private readonly categoryService: CategoryService,
         private readonly dialogs: DialogService,
         private readonly router: Router,
+        protected readonly theme: ThemeService,
     ) {}
 
     openAccountDialog(householdId: string, accountId?: string): void {

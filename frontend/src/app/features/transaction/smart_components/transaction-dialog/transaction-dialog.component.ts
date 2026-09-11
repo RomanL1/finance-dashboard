@@ -60,7 +60,9 @@ import type {
                 <mat-spinner class="mx-auto" diameter="40" />
             }
             @if (error()) {
-                <p role="alert" class="mt-2 text-red-700">{{ error() }}</p>
+                <p role="alert" class="mt-2 type-body-medium text-error">
+                    {{ error() }}
+                </p>
             }
         </mat-dialog-content>
         <mat-dialog-actions align="end" class="gap-2">

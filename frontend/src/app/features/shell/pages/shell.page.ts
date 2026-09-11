@@ -1,11 +1,17 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 import { MatTabLink, MatTabNav, MatTabNavPanel } from '@angular/material/tabs';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { APP_PATHS } from '../../../config/paths.config';
 
-/** Authenticated layout: app header on top, tab bar bottom on phones and under the header from `md` up. */
+/**
+ * Authenticated layout: M3 top app bar, navigation bar at the bottom on phones and a tab row
+ * under the header from `md` up. The shell fills the viewport and only the content panel
+ * scrolls: the document itself never scrolls, so nothing is painted behind the translucent
+ * bottom toolbar of iOS Firefox (which clips fixed elements there but shows document content).
+ * Sticky elements inside pages offset from the panel's top edge (see transaction-list.component.ts).
+ */
 @Component({
     selector: 'app-shell-page',
     imports: [
@@ -18,17 +24,23 @@ import { APP_PATHS } from '../../../config/paths.config';
         MatIcon,
         TranslatePipe,
     ],
+    host: { class: 'flex h-dvh flex-col' },
     template: `
         <header
-            class="fixed top-0 right-0 left-0 z-10 flex h-12 items-center justify-center bg-[var(--mat-sys-primary)] text-[var(--mat-sys-on-primary)] shadow-sm"
+            class="flex h-14 shrink-0 touch-none items-center px-4 transition-colors duration-150 motion-reduce:transition-none"
+            [class]="
+                scrolled() ? 'bg-surface-container shadow-sm' : 'bg-surface'
+            "
         >
-            <span class="text-sm font-medium tracking-[0.2em] uppercase">
+            <span class="type-title-large text-on-surface">
                 {{ 'app.title' | translate }}
             </span>
         </header>
-        <!-- Wrapper positions: Material's own position rule beats Tailwind utilities on the nav host. -->
+        <!-- Wrapper positions: Material's own position rule beats Tailwind utilities on the nav host.
+             touch-none: a pan that starts on the bars must not fall through to the document. -->
         <div
-            class="fixed right-0 bottom-0 left-0 z-10 border-t border-gray-300 bg-white md:top-12 md:bottom-auto md:border-t-0 md:border-b"
+            class="app-nav-bar order-3 shrink-0 touch-none bg-surface-container md:order-2 md:bg-surface"
+            [class.md:shadow-sm]="scrolled()"
         >
             <nav mat-tab-nav-bar [tabPanel]="panel" [mat-stretch-tabs]="true">
                 @for (tab of tabs; track tab.path) {
@@ -40,13 +52,34 @@ import { APP_PATHS } from '../../../config/paths.config';
                         [routerLinkActiveOptions]="{ exact: true }"
                         [active]="rla.isActive"
                     >
-                        <mat-icon class="mr-1">{{ tab.icon }}</mat-icon>
-                        {{ tab.label | translate }}
+                        <span
+                            class="flex flex-col items-center gap-0.5 md:flex-row md:gap-2"
+                        >
+                            <span
+                                class="app-nav-pill flex h-8 w-16 items-center justify-center rounded-full transition-colors duration-150 md:h-auto md:w-auto motion-reduce:transition-none"
+                                [class.bg-secondary-container]="rla.isActive"
+                            >
+                                <mat-icon
+                                    [class.text-on-secondary-container]="
+                                        rla.isActive
+                                    "
+                                >
+                                    {{ tab.icon }}
+                                </mat-icon>
+                            </span>
+                            <span class="type-label-medium md:type-label-large">
+                                {{ tab.label | translate }}
+                            </span>
+                        </span>
                     </a>
                 }
             </nav>
         </div>
-        <mat-tab-nav-panel #panel class="block pt-12 pb-16 md:pt-28 md:pb-0">
+        <mat-tab-nav-panel
+            #panel
+            class="order-2 block min-h-0 flex-1 overflow-y-auto bg-surface md:order-3"
+            (scroll)="onScroll($event)"
+        >
             <router-outlet />
         </mat-tab-nav-panel>
     `,
@@ -57,4 +90,11 @@ export class ShellPage {
         { path: APP_PATHS.HOME, icon: 'home', label: 'nav.home' },
         { path: APP_PATHS.SETTINGS, icon: 'settings', label: 'nav.settings' },
     ];
+
+    /** Scroll-edge: the header only separates from content once something is under it. */
+    protected readonly scrolled = signal(false);
+
+    protected onScroll(event: Event): void {
+        this.scrolled.set((event.target as HTMLElement).scrollTop > 0);
+    }
 }

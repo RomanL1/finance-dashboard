@@ -12,6 +12,7 @@ const ACCOUNTS: AccountDto[] = [
     {
         id: 'a1',
         householdId: 'h',
+        number: 1,
         description: 'Main',
         currency: 'CHF',
         initialValue: 0,
@@ -69,13 +70,18 @@ describe('toTransactionGroups', () => {
             id: 't1',
             date: new Date(2026, 8, 4, 9, 30).toISOString(),
             when: '09:30',
+            categoryId: 'c1',
             category: 'Groceries',
             title: 't1',
+            accountNumber: 1,
+            accountName: 'Main',
             currency: 'CHF',
             amount: -1250,
         });
         expect(group.rows[1].amount).toBe(500000);
         expect(group.rows[1].category).toBeNull();
+        // A deleted category id must not drive a color either.
+        expect(group.rows[1].categoryId).toBeNull();
     });
 
     it('falls back to the category name when the title is missing', () => {
