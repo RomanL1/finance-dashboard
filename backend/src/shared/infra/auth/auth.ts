@@ -11,6 +11,10 @@ export const auth = betterAuth({
     trustedOrigins: env.auth.trustedOrigins,
     database: drizzleAdapter(db, { provider: 'sqlite', schema }),
     emailAndPassword: { enabled: true },
+    // Behind the compose nginx proxy the client IP arrives via X-Forwarded-For (rate limiting).
+    advanced: {
+        ipAddress: { ipAddressHeaders: ['x-forwarded-for', 'x-real-ip'] },
+    },
 });
 
 export type Auth = typeof auth;

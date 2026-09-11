@@ -14,7 +14,8 @@ export const DEMO_USER = {
     name: 'Demo User',
 } as const;
 
-export async function seed(): Promise<void> {
+/** Creates the demo user if missing and leaves everything else untouched. Used on boot (SEED_DEMO=true). */
+export async function ensureDemoUser(): Promise<typeof user.$inferSelect> {
     let [demoUser] = await db
         .select()
         .from(user)
@@ -27,13 +28,18 @@ export async function seed(): Promise<void> {
             .where(eq(user.email, DEMO_USER.email));
         console.log(`created user ${DEMO_USER.email}`);
     }
+    return demoUser!;
+}
+
+export async function seed(): Promise<void> {
+    const demoUser = await ensureDemoUser();
 
     // Drop any household from a previous seed run so the demo user is
     // always in a fresh, pre-onboarding state. Cascades to householdMember.
     const [membership] = await db
         .select()
         .from(householdMember)
-        .where(eq(householdMember.userId, demoUser!.id));
+        .where(eq(householdMember.userId, demoUser.id));
     if (membership) {
         await db
             .delete(household)

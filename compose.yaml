@@ -1,0 +1,41 @@
+# Production bundle: `docker compose up` builds both images locally and starts the stack
+# at http://localhost:${APP_PORT:-8080}. Rebuild after code changes with `docker compose up --build`.
+# Demo login: demo@finance.local / demo-password. Override defaults via a root .env file (see .env.example).
+services:
+  api:
+    build: ./backend
+    environment:
+      SEED_DEMO: ${SEED_DEMO:-true}
+      # Unset -> insecure default + loud warning in the api log. Set it before exposing the instance.
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-}
+      # Public origin as seen by the browser (nginx forwards Host).
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:${APP_PORT:-8080}}
+      TRUSTED_ORIGINS: ${TRUSTED_ORIGINS:-http://localhost:${APP_PORT:-8080},http://127.0.0.1:${APP_PORT:-8080}}
+    volumes:
+      - db-data:/data
+    healthcheck:
+      test: ["CMD", "bun", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+
+  web:
+    build: ./frontend
+    environment:
+      API_UPSTREAM: api:3000
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO", "/dev/null", "http://127.0.0.1:8080/"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  db-data:

@@ -1,0 +1,8 @@
+node_modules
+dist
+coverage
+local.db
+.env
+*.tsbuildinfo
+test
+openapi.json

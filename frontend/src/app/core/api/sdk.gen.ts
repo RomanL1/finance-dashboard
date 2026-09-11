@@ -27,6 +27,8 @@ import type {
     CategoryGetCategoriesResponses,
     CategoryUpdateCategoryData,
     CategoryUpdateCategoryResponses,
+    HealthHealthData,
+    HealthHealthResponses,
     HouseholdMineData,
     HouseholdMineResponses,
     OnboardingOnboardData,
@@ -68,6 +70,15 @@ export type Options<
         ? Record<string, unknown>
         : ClientMeta;
 };
+
+export const healthHealth = <ThrowOnError extends boolean = false>(
+    options?: Options<HealthHealthData, ThrowOnError>,
+): RequestResult<HealthHealthResponses, unknown, ThrowOnError> =>
+    (options?.client ?? client).get<
+        HealthHealthResponses,
+        unknown,
+        ThrowOnError
+    >({ url: '/api/health', ...options });
 
 export const householdMine = <ThrowOnError extends boolean = false>(
     options?: Options<HouseholdMineData, ThrowOnError>,
