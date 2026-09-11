@@ -4,6 +4,7 @@ import { Account } from '../model/account.js';
 export function toAccountDto({
     id,
     householdId,
+    number,
     description,
     currency,
     initialValue,
@@ -15,6 +16,7 @@ export function toAccountDto({
     const dto = new AccountDto();
     dto.id = id;
     dto.householdId = householdId;
+    dto.number = number;
     dto.description = description;
     dto.currency = currency;
     dto.initialValue = initialValue;

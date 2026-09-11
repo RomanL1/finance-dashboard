@@ -17,6 +17,8 @@ export interface CreateAccount {
 export interface Account {
     id: Id;
     householdId: Id;
+    /** Per-household running number starting at 1. Assigned by the repository. */
+    number: number;
     description: string;
     currency: string;
     initialValue: number;

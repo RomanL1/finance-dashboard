@@ -4,7 +4,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { and, eq, inArray, sql } from 'drizzle-orm';
 import { Account, CreateAccount, UpdateAccount } from '../model/account.js';
 import { Id } from '../../../shared/kernel/index.js';
-import { financeAccount } from '../model/account.schema.js';
+import { financeAccount, nextAccountNumber } from '../model/account.schema.js';
 import { transaction } from '../../transaction/model/transaction.schema.js';
 
 @Injectable()
@@ -21,6 +21,7 @@ export class AccountRepository {
     private readonly columns = {
         id: financeAccount.id,
         householdId: financeAccount.householdId,
+        number: financeAccount.number,
         description: financeAccount.description,
         currency: financeAccount.currency,
         initialValue: financeAccount.initialValue,
@@ -45,6 +46,7 @@ export class AccountRepository {
             .insert(financeAccount)
             .values({
                 householdId: householdId,
+                number: nextAccountNumber(householdId),
                 ...entity,
             })
             .returning();

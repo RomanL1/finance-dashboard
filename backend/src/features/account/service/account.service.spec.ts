@@ -10,6 +10,7 @@ import { AccountService } from './account.service.js';
 const dummyAccount: Account = {
     id: 'acc-1',
     householdId: 'household-1',
+    number: 1,
     description: 'Checking',
     currency: 'CHF',
     initialValue: 10000,
@@ -36,6 +37,7 @@ function makeRepo(overrides: Partial<AccountRepository> = {}) {
                     ...entity,
                     amount: entity.initialValue,
                     householdId,
+                    number: 1,
                     createdAt: new Date('2026-01-01'),
                 }),
             ),

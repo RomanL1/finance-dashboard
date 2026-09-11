@@ -8,7 +8,10 @@ import {
     householdMember,
 } from '../../household/model/household.schema.js';
 import { category } from '../../category/model/category.schema.js';
-import { financeAccount } from '../../account/model/account.schema.js';
+import {
+    financeAccount,
+    nextAccountNumber,
+} from '../../account/model/account.schema.js';
 import type { Household } from '../../household/model/household.js';
 import type { CreateOrUpdateCategory } from '../../category/model/category.js';
 import type { CreateAccount } from '../../account/model/account.js';
@@ -42,10 +45,13 @@ export class OnboardingRepository {
             ...input.categories.map((entity) =>
                 this.db.insert(category).values({ householdId, ...entity }),
             ),
+            // Each insert evaluates `max + 1` after the previous one, so a batch numbers 1..n in order.
             ...input.accounts.map((entity) =>
-                this.db
-                    .insert(financeAccount)
-                    .values({ householdId, ...entity }),
+                this.db.insert(financeAccount).values({
+                    householdId,
+                    number: nextAccountNumber(householdId),
+                    ...entity,
+                }),
             ),
         ];
 

@@ -14,6 +14,8 @@ import { SUPPORTED_CURRENCIES } from '../../../shared/kernel/index.js';
 export class AccountDto {
     @ApiProperty() id!: string;
     @ApiProperty() householdId!: string;
+    @ApiProperty({ description: 'Per-household running number, starts at 1' })
+    number!: number;
     @ApiProperty() description!: string;
     @ApiProperty({ example: 'CHF' }) currency!: string;
     @ApiProperty({ description: 'Minor units (cents)' }) initialValue!: number;
