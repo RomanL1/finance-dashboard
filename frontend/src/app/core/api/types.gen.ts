@@ -242,13 +242,13 @@ export type CategoryDeleteCategoryData = {
     body?: never;
     path: {
         /**
-         * Category id
-         */
-        categoryId: string;
-        /**
          * Household id
          */
         householdId: string;
+        /**
+         * Category id
+         */
+        categoryId: string;
     };
     query?: {
         /**
@@ -273,13 +273,13 @@ export type CategoryUpdateCategoryData = {
     body: CreateCategoryDto;
     path: {
         /**
-         * Category id
-         */
-        categoryId: string;
-        /**
          * Household id
          */
         householdId: string;
+        /**
+         * Category id
+         */
+        categoryId: string;
     };
     query?: never;
     url: '/api/households/{householdId}/categories/{categoryId}';
@@ -348,13 +348,13 @@ export type AccountDeleteAccountData = {
     body?: never;
     path: {
         /**
-         * Account id
-         */
-        accountId: string;
-        /**
          * Household id
          */
         householdId: string;
+        /**
+         * Account id
+         */
+        accountId: string;
     };
     query?: never;
     url: '/api/households/{householdId}/accounts/{accountId}';
@@ -371,13 +371,13 @@ export type AccountUpdateAccountData = {
     body: UpdateAccountDto;
     path: {
         /**
-         * Account id
-         */
-        accountId: string;
-        /**
          * Household id
          */
         householdId: string;
+        /**
+         * Account id
+         */
+        accountId: string;
     };
     query?: never;
     url: '/api/households/{householdId}/accounts/{accountId}';
@@ -525,13 +525,13 @@ export type TransactionDeleteTransactionData = {
     body?: never;
     path: {
         /**
-         * Transaction id
-         */
-        transactionId: string;
-        /**
          * Household id
          */
         householdId: string;
+        /**
+         * Transaction id
+         */
+        transactionId: string;
     };
     query?: never;
     url: '/api/households/{householdId}/transactions/{transactionId}';
@@ -551,13 +551,13 @@ export type TransactionUpdateTransactionData = {
     body: CreateTransactionDto;
     path: {
         /**
-         * Transaction id
-         */
-        transactionId: string;
-        /**
          * Household id
          */
         householdId: string;
+        /**
+         * Transaction id
+         */
+        transactionId: string;
     };
     query?: never;
     url: '/api/households/{householdId}/transactions/{transactionId}';
