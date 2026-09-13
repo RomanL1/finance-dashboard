@@ -18,6 +18,9 @@ export const env = {
     dbFileName: required('DB_FILE_NAME'),
     /** Create the demo user on boot (see db/seed.ts). */
     seedDemo: process.env.SEED_DEMO === 'true',
+    /** Frankfurter-compatible rate provider (https://api.frankfurter.dev/v2/openapi.json). Self-hostable. */
+    exchangeRateApiUrl:
+        process.env.EXCHANGE_RATE_API_URL ?? 'https://api.frankfurter.dev/v2',
     auth: {
         secret: process.env.BETTER_AUTH_SECRET || INSECURE_DEFAULT_SECRET,
         baseUrl: process.env.BETTER_AUTH_URL ?? 'http://localhost:3000',

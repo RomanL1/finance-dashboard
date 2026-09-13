@@ -1,5 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { ConflictError, newId, type Id } from '../../../shared/kernel/index.js';
+import {
+    ConflictError,
+    newId,
+    SUPPORTED_CURRENCIES,
+    ValidationError,
+    type Id,
+    type SupportedCurrency,
+} from '../../../shared/kernel/index.js';
 import type { Household } from '../../household/model/household.js';
 import { HouseholdService } from '../../household/service/household.service.js';
 import {
@@ -43,6 +50,8 @@ export class OnboardingService {
             id: newId(),
             name: input.name,
             onboardingComplete: true,
+            // The first account's currency is the household's default reporting currency.
+            baseCurrency: baseCurrencyOf(input.accounts),
             createdAt: new Date(),
         };
 
@@ -55,4 +64,16 @@ export class OnboardingService {
 
         return household;
     }
+}
+
+function baseCurrencyOf(accounts: CreateAccountInput[]): SupportedCurrency {
+    const first = accounts[0]?.currency;
+    if (!isSupportedCurrency(first)) {
+        throw new ValidationError('Onboarding needs at least one account');
+    }
+    return first;
+}
+
+function isSupportedCurrency(value: unknown): value is SupportedCurrency {
+    return (SUPPORTED_CURRENCIES as readonly unknown[]).includes(value);
 }

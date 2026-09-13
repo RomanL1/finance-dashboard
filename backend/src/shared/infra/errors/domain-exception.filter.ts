@@ -12,6 +12,7 @@ const STATUS: Record<DomainErrorKind, HttpStatus> = {
     forbidden: HttpStatus.FORBIDDEN,
     conflict: HttpStatus.CONFLICT,
     validation: HttpStatus.BAD_REQUEST,
+    unavailable: HttpStatus.SERVICE_UNAVAILABLE,
 };
 
 /** Translates domain errors thrown by services into HTTP responses. Services stay HTTP-agnostic. */

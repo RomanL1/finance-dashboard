@@ -45,6 +45,7 @@ describe('OnboardingService', () => {
         expect(household).toMatchObject({
             name: 'Home',
             onboardingComplete: true,
+            baseCurrency: 'CHF',
         });
         expect(repo.insertHousehold).toHaveBeenCalledTimes(1);
 

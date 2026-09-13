@@ -2,9 +2,13 @@ import { Inject, Injectable } from '@nestjs/common';
 import { and, eq } from 'drizzle-orm';
 import { DRIZZLE } from '../../../shared/infra/db/db.module.js';
 import type { Db } from '../../../shared/infra/db/db.js';
-import type { Id } from '../../../shared/kernel/index.js';
+import type { Id, SupportedCurrency } from '../../../shared/kernel/index.js';
 import { household, householdMember } from '../model/household.schema.js';
-import type { Household, HouseholdMembership } from '../model/household.js';
+import type {
+    Household,
+    HouseholdMembership,
+    UpdateHouseholdInput,
+} from '../model/household.js';
 
 @Injectable()
 export class HouseholdRepository {
@@ -17,6 +21,26 @@ export class HouseholdRepository {
             .where(eq(household.id, id))
             .limit(1);
         return row ?? null;
+    }
+
+    async update(
+        id: Id,
+        changes: UpdateHouseholdInput,
+    ): Promise<Household | null> {
+        const [row] = await this.db
+            .update(household)
+            .set(changes)
+            .where(eq(household.id, id))
+            .returning();
+        return row ?? null;
+    }
+
+    /** Every base currency in use; the exchange-rate sync fetches one series per entry. */
+    async listBaseCurrencies(): Promise<SupportedCurrency[]> {
+        const rows = await this.db
+            .selectDistinct({ baseCurrency: household.baseCurrency })
+            .from(household);
+        return rows.map((r) => r.baseCurrency);
     }
 
     async findMembershipByUserId(

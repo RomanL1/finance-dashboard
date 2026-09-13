@@ -6,6 +6,7 @@ import {
 } from 'drizzle-orm/sqlite-core';
 import { user } from '../../../shared/infra/auth/auth.schema.js';
 import { timestamps } from '../../../shared/infra/db/timestamp.schema.js';
+import { SUPPORTED_CURRENCIES } from '../../../shared/kernel/currency.js';
 
 export const HOUSEHOLD_ROLES = ['owner', 'member'] as const;
 
@@ -15,6 +16,10 @@ export const household = sqliteTable('household', {
     onboardingComplete: integer('onboarding_complete', { mode: 'boolean' })
         .notNull()
         .default(false),
+    /** Currency that multi-currency figures (analytics) are converted into. Set from the first account at onboarding. */
+    baseCurrency: text('base_currency', { enum: SUPPORTED_CURRENCIES })
+        .notNull()
+        .default('CHF'),
 
     ...timestamps,
 });

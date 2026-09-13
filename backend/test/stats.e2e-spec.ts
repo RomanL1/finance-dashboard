@@ -3,10 +3,15 @@ import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import { AppModule } from '../src/app.module.js';
 import { setupApp } from '../src/shared/infra/app.setup.js';
+import { db } from '../src/shared/infra/db/db.js';
 import { DEMO_USER } from '../src/shared/infra/db/seed.js';
+import { exchangeRate } from '../src/shared/infra/db/schema.js';
 import { prepareTestDb } from './setup-db.js';
 
-/** Stats are per currency over a half-open range; future entries inside the range count. */
+/**
+ * Stats are converted into the base currency over a half-open range; future entries inside the range count.
+ * The provider is unreachable here (see vitest.config.e2e.ts): rates are seeded into the mirror.
+ */
 describe('transaction stats (e2e)', () => {
     let app: INestApplication;
     let cookie: string;
@@ -84,28 +89,40 @@ describe('transaction stats (e2e)', () => {
         await add(chfAccountId, 'expense', 800, '2099-09-28T12:00:00.000Z'); // far future, outside
         await add(chfAccountId, 'expense', 300, '2026-09-29T12:00:00.000Z'); // future within month
         await add(chfAccountId, 'income', 999, '2026-10-01T00:00:00.000Z'); // on `to`: excluded
-        await add(eurAccountId, 'expense', 2500, '2026-09-10T12:00:00.000Z');
+        await add(eurAccountId, 'expense', 2500, '2026-09-10T12:00:00.000Z'); // 1 CHF = 2 EUR → 1250
+        await db
+            .insert(exchangeRate)
+            .values([
+                { base: 'CHF', quote: 'EUR', date: '2026-09-01', rate: 2 },
+            ]);
     });
 
     afterAll(() => app?.close());
 
-    it('sums per currency inside [from, to)', async () => {
+    it('sums inside [from, to) in the base currency', async () => {
         const res = await stats(
             '2026-09-01T00:00:00.000Z',
             '2026-10-01T00:00:00.000Z',
         ).expect(200);
-        expect(res.body).toEqual([
-            { currency: 'CHF', income: 5000, expenses: 1500, net: 3500 },
-            { currency: 'EUR', income: 0, expenses: 2500, net: -2500 },
-        ]);
+        expect(res.body).toEqual({
+            currency: 'CHF',
+            income: 5000,
+            expenses: 2750,
+            net: 2250,
+        });
     });
 
-    it('returns an empty list when nothing falls in the range', async () => {
+    it('returns zeros when nothing falls in the range', async () => {
         const res = await stats(
             '2020-01-01T00:00:00.000Z',
             '2020-02-01T00:00:00.000Z',
         ).expect(200);
-        expect(res.body).toEqual([]);
+        expect(res.body).toEqual({
+            currency: 'CHF',
+            income: 0,
+            expenses: 0,
+            net: 0,
+        });
     });
 
     it('rejects an inverted range with 400', async () => {

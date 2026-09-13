@@ -20,6 +20,7 @@ import {
 } from '@nestjs/swagger';
 import { TransactionService } from '../service/transaction.service.js';
 import {
+    CategoryStatsDto,
     CreateTransactionDto,
     CurrencyStatsDto,
     StatsQueryDto,
@@ -48,12 +49,24 @@ export class TransactionController {
 
     /** Declared before the `:transactionId` routes so `stats` is never read as an id. */
     @Get('stats')
-    @ApiOkResponse({ type: [CurrencyStatsDto] })
+    @ApiOkResponse({ type: CurrencyStatsDto })
     async getStats(
         @Param('householdId') householdId: Id,
         @Query() query: StatsQueryDto,
-    ): Promise<CurrencyStatsDto[]> {
+    ): Promise<CurrencyStatsDto> {
         return this.transactions.getStats(householdId, {
+            from: new Date(query.from),
+            to: new Date(query.to),
+        });
+    }
+
+    @Get('stats/categories')
+    @ApiOkResponse({ type: CategoryStatsDto })
+    async getCategoryStats(
+        @Param('householdId') householdId: Id,
+        @Query() query: StatsQueryDto,
+    ): Promise<CategoryStatsDto> {
+        return this.transactions.getCategoryStats(householdId, {
             from: new Date(query.from),
             to: new Date(query.to),
         });

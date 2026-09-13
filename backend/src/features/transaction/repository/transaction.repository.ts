@@ -3,8 +3,9 @@ import type { Db } from '../../../shared/infra/db/db.js';
 import { Inject, Injectable } from '@nestjs/common';
 import { and, desc, eq, gte, inArray, lt, sql } from 'drizzle-orm';
 import {
+    CategoryDayExpense,
     CreateTransaction,
-    CurrencyStats,
+    CurrencyDaySums,
     DateRange,
     Transaction,
 } from '../model/transaction.js';
@@ -49,15 +50,18 @@ export class TransactionRepository {
     }
 
     /** Grouped by the account's currency; archived accounts count, their history is still history. */
-    async sumByCurrency(
+    /** Income and expense sums per (currency, UTC day) in the range. */
+    async sumByCurrencyAndDay(
         householdId: Id,
         range: DateRange,
-    ): Promise<CurrencyStats[]> {
+    ): Promise<CurrencyDaySums[]> {
+        const day = sql<string>`date(${transaction.date}, 'unixepoch')`;
         const income = sql<number>`coalesce(sum(case when ${transaction.type} = 'income' then ${transaction.amount} else 0 end), 0)`;
         const expenses = sql<number>`coalesce(sum(case when ${transaction.type} = 'expense' then ${transaction.amount} else 0 end), 0)`;
-        const rows = await this.db
+        return this.db
             .select({
                 currency: financeAccount.currency,
+                day,
                 income: income.mapWith(Number),
                 expenses: expenses.mapWith(Number),
             })
@@ -73,9 +77,40 @@ export class TransactionRepository {
                     lt(transaction.date, range.to),
                 ),
             )
-            .groupBy(financeAccount.currency)
-            .orderBy(financeAccount.currency);
-        return rows.map((r) => ({ ...r, net: r.income - r.expenses }));
+            .groupBy(financeAccount.currency, day);
+    }
+
+    /** Expense sums per (currency, category, UTC day) in the range. Uncategorized rows carry null ids. */
+    async sumExpensesByCategoryAndDay(
+        householdId: Id,
+        range: DateRange,
+    ): Promise<CategoryDayExpense[]> {
+        const day = sql<string>`date(${transaction.date}, 'unixepoch')`;
+        const expenses = sql<number>`sum(${transaction.amount})`;
+        const rows = await this.db
+            .select({
+                currency: financeAccount.currency,
+                categoryId: transaction.categoryId,
+                categoryName: category.name,
+                day,
+                expenses: expenses.mapWith(Number),
+            })
+            .from(transaction)
+            .innerJoin(
+                financeAccount,
+                eq(transaction.accountId, financeAccount.id),
+            )
+            .leftJoin(category, eq(transaction.categoryId, category.id))
+            .where(
+                and(
+                    eq(financeAccount.householdId, householdId),
+                    eq(transaction.type, 'expense'),
+                    gte(transaction.date, range.from),
+                    lt(transaction.date, range.to),
+                ),
+            )
+            .groupBy(financeAccount.currency, transaction.categoryId, day);
+        return rows;
     }
 
     async accountExists(householdId: Id, accountId: Id): Promise<boolean> {

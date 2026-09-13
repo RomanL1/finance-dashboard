@@ -97,11 +97,35 @@ export class StatsQueryDto {
     to!: string;
 }
 
-/** One entry per currency that has at least one transaction in the range. */
+/** Sums over the range, every amount converted into the household base currency at its day's rate. */
 export class CurrencyStatsDto {
-    @ApiProperty({ example: 'CHF' }) currency!: string;
+    @ApiProperty({ example: 'CHF', description: 'Household base currency' })
+    currency!: string;
     @ApiProperty({ description: 'Minor units (cents)' }) income!: number;
     @ApiProperty({ description: 'Minor units (cents)' }) expenses!: number;
     @ApiProperty({ description: 'Minor units (cents), income - expenses' })
     net!: number;
+}
+
+export class CategoryExpenseDto {
+    @ApiProperty({ nullable: true, type: String }) categoryId!: string | null;
+    @ApiProperty({
+        nullable: true,
+        type: String,
+        description: 'Null for uncategorized entries',
+    })
+    categoryName!: string | null;
+    @ApiProperty({ description: 'Minor units (cents) of `currency`' })
+    expenses!: number;
+}
+
+/** Expenses per category, every amount converted into the household base currency at its day's rate. */
+export class CategoryStatsDto {
+    @ApiProperty({ example: 'CHF', description: 'Household base currency' })
+    currency!: string;
+    @ApiProperty({
+        type: [CategoryExpenseDto],
+        description: 'Sorted by expenses, descending',
+    })
+    categories!: CategoryExpenseDto[];
 }

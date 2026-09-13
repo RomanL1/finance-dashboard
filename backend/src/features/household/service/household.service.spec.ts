@@ -1,4 +1,8 @@
-import { ForbiddenError, NotFoundError } from '../../../shared/kernel/index.js';
+import {
+    ForbiddenError,
+    NotFoundError,
+    ValidationError,
+} from '../../../shared/kernel/index.js';
 import type { HouseholdMembership } from '../model/household.js';
 import type { HouseholdRepository } from '../repository/household.repository.js';
 import { HouseholdService } from './household.service.js';
@@ -11,6 +15,7 @@ const membership = (
         id: 'h1',
         name: 'Home',
         onboardingComplete: false,
+        baseCurrency: 'CHF',
         createdAt: new Date('2026-01-01'),
     },
 });
@@ -20,6 +25,12 @@ function makeRepo(overrides: Partial<HouseholdRepository> = {}) {
         findById: vi.fn().mockResolvedValue(null),
         findMembershipByUserId: vi.fn().mockResolvedValue(null),
         findMembership: vi.fn().mockResolvedValue(null),
+        update: vi.fn().mockImplementation((_id: string, changes: object) =>
+            Promise.resolve({
+                ...membership('owner').household,
+                ...changes,
+            }),
+        ),
         ...overrides,
     } as unknown as HouseholdRepository;
 }
@@ -90,5 +101,57 @@ describe('HouseholdService', () => {
         await expect(
             new HouseholdService(repo).assertMember('h1', 'u1'),
         ).rejects.toBeInstanceOf(ForbiddenError);
+    });
+
+    describe('update', () => {
+        it('lets the owner change name and base currency', async () => {
+            const repo = makeRepo({
+                findMembership: vi.fn().mockResolvedValue(membership('owner')),
+            });
+            const result = await new HouseholdService(repo).update('h1', 'u1', {
+                name: '  Casa  ',
+                baseCurrency: 'EUR',
+            });
+            expect(repo.update).toHaveBeenCalledWith('h1', {
+                name: 'Casa',
+                baseCurrency: 'EUR',
+            });
+            expect(result.household).toMatchObject({
+                name: 'Casa',
+                baseCurrency: 'EUR',
+            });
+            expect(result.role).toBe('owner');
+        });
+
+        it('rejects members', async () => {
+            const repo = makeRepo({
+                findMembership: vi.fn().mockResolvedValue(membership('member')),
+            });
+            await expect(
+                new HouseholdService(repo).update('h1', 'u1', {
+                    baseCurrency: 'EUR',
+                }),
+            ).rejects.toBeInstanceOf(ForbiddenError);
+            expect(repo.update).not.toHaveBeenCalled();
+        });
+
+        it('rejects a blank name', async () => {
+            const repo = makeRepo({
+                findMembership: vi.fn().mockResolvedValue(membership('owner')),
+            });
+            await expect(
+                new HouseholdService(repo).update('h1', 'u1', { name: '   ' }),
+            ).rejects.toBeInstanceOf(ValidationError);
+        });
+
+        it('is a no-op without changes', async () => {
+            const repo = makeRepo({
+                findMembership: vi.fn().mockResolvedValue(membership('owner')),
+            });
+            await expect(
+                new HouseholdService(repo).update('h1', 'u1', {}),
+            ).resolves.toEqual(membership('owner'));
+            expect(repo.update).not.toHaveBeenCalled();
+        });
     });
 });

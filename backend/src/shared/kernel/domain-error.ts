@@ -1,5 +1,5 @@
 export type DomainErrorKind =
-    'not_found' | 'forbidden' | 'conflict' | 'validation';
+    'not_found' | 'forbidden' | 'conflict' | 'validation' | 'unavailable';
 
 export abstract class DomainError extends Error {
     abstract readonly kind: DomainErrorKind;
@@ -33,6 +33,14 @@ export class ConflictError extends DomainError {
 
 export class ValidationError extends DomainError {
     readonly kind = 'validation';
+    constructor(message: string) {
+        super(message);
+    }
+}
+
+/** A dependency the operation needs (an external provider, cached data) is not there right now. */
+export class UnavailableError extends DomainError {
+    readonly kind = 'unavailable';
     constructor(message: string) {
         super(message);
     }
