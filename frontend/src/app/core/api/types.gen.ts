@@ -13,7 +13,16 @@ export type HouseholdDto = {
     name: string;
     role: 'owner' | 'member';
     onboardingComplete: boolean;
+    /**
+     * Currency that analytics convert every amount into
+     */
+    baseCurrency: 'CHF' | 'EUR' | 'USD' | 'GBP';
     createdAt: string;
+};
+
+export type UpdateHouseholdDto = {
+    name?: string;
+    baseCurrency?: 'CHF' | 'EUR' | 'USD' | 'GBP';
 };
 
 export type CategoryDto = {
@@ -138,6 +147,9 @@ export type TransactionDto = {
 };
 
 export type CurrencyStatsDto = {
+    /**
+     * Household base currency
+     */
     currency: string;
     /**
      * Minor units (cents)
@@ -151,6 +163,29 @@ export type CurrencyStatsDto = {
      * Minor units (cents), income - expenses
      */
     net: number;
+};
+
+export type CategoryExpenseDto = {
+    categoryId: string | null;
+    /**
+     * Null for uncategorized entries
+     */
+    categoryName: string | null;
+    /**
+     * Minor units (cents) of `currency`
+     */
+    expenses: number;
+};
+
+export type CategoryStatsDto = {
+    /**
+     * Household base currency
+     */
+    currency: string;
+    /**
+     * Sorted by expenses, descending
+     */
+    categories: Array<CategoryExpenseDto>;
 };
 
 export type CreateTransactionDto = {
@@ -199,6 +234,25 @@ export type HouseholdMineResponses = {
 
 export type HouseholdMineResponse =
     HouseholdMineResponses[keyof HouseholdMineResponses];
+
+export type HouseholdUpdateHouseholdData = {
+    body: UpdateHouseholdDto;
+    path: {
+        /**
+         * Household id
+         */
+        householdId: string;
+    };
+    query?: never;
+    url: '/api/households/{householdId}';
+};
+
+export type HouseholdUpdateHouseholdResponses = {
+    200: HouseholdDto;
+};
+
+export type HouseholdUpdateHouseholdResponse =
+    HouseholdUpdateHouseholdResponses[keyof HouseholdUpdateHouseholdResponses];
 
 export type CategoryGetCategoriesData = {
     body?: never;
@@ -515,11 +569,39 @@ export type TransactionGetStatsData = {
 };
 
 export type TransactionGetStatsResponses = {
-    200: Array<CurrencyStatsDto>;
+    200: CurrencyStatsDto;
 };
 
 export type TransactionGetStatsResponse =
     TransactionGetStatsResponses[keyof TransactionGetStatsResponses];
+
+export type TransactionGetCategoryStatsData = {
+    body?: never;
+    path: {
+        /**
+         * Household id
+         */
+        householdId: string;
+    };
+    query: {
+        /**
+         * Range start (inclusive)
+         */
+        from: string;
+        /**
+         * Range end (exclusive)
+         */
+        to: string;
+    };
+    url: '/api/households/{householdId}/transactions/stats/categories';
+};
+
+export type TransactionGetCategoryStatsResponses = {
+    200: CategoryStatsDto;
+};
+
+export type TransactionGetCategoryStatsResponse =
+    TransactionGetCategoryStatsResponses[keyof TransactionGetCategoryStatsResponses];
 
 export type TransactionDeleteTransactionData = {
     body?: never;

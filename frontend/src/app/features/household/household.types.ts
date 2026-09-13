@@ -1,3 +1,6 @@
-import type { HouseholdMineResponse } from '../../core/api/types.gen';
+import type {
+    HouseholdMineResponse,
+    UpdateHouseholdDto,
+} from '../../core/api/types.gen';
 
-export type { HouseholdMineResponse };
+export type { HouseholdMineResponse, UpdateHouseholdDto };

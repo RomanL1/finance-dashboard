@@ -7,7 +7,6 @@ import {
     periodRange,
     shiftPeriod,
     toPeriodParams,
-    withEmptyCurrencies,
 } from './stats.types';
 
 registerLocaleData(localeDe);
@@ -95,19 +94,5 @@ describe('period url params', () => {
             periodOf('month', NOW),
         );
         expect(parsePeriodParams('week', '2026-13-40', NOW).kind).toBe('week');
-    });
-});
-
-describe('withEmptyCurrencies', () => {
-    it('adds zero rows for missing currencies and sorts', () => {
-        expect(
-            withEmptyCurrencies(
-                [{ currency: 'EUR', income: 1, expenses: 2, net: -1 }],
-                ['CHF', 'EUR'],
-            ),
-        ).toEqual([
-            { currency: 'CHF', income: 0, expenses: 0, net: 0 },
-            { currency: 'EUR', income: 1, expenses: 2, net: -1 },
-        ]);
     });
 });

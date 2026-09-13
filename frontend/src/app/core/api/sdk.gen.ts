@@ -31,6 +31,8 @@ import type {
     HealthHealthResponses,
     HouseholdMineData,
     HouseholdMineResponses,
+    HouseholdUpdateHouseholdData,
+    HouseholdUpdateHouseholdResponses,
     OnboardingOnboardData,
     OnboardingOnboardResponses,
     OnboardingValidateAccountsData,
@@ -43,6 +45,8 @@ import type {
     TransactionCreateTransactionResponses,
     TransactionDeleteTransactionData,
     TransactionDeleteTransactionResponses,
+    TransactionGetCategoryStatsData,
+    TransactionGetCategoryStatsResponses,
     TransactionGetStatsData,
     TransactionGetStatsResponses,
     TransactionGetTransactionsData,
@@ -97,6 +101,29 @@ export const householdMine = <ThrowOnError extends boolean = false>(
         ],
         url: '/api/households/me',
         ...options,
+    });
+
+export const householdUpdateHousehold = <ThrowOnError extends boolean = false>(
+    options: Options<HouseholdUpdateHouseholdData, ThrowOnError>,
+): RequestResult<HouseholdUpdateHouseholdResponses, unknown, ThrowOnError> =>
+    (options.client ?? client).patch<
+        HouseholdUpdateHouseholdResponses,
+        unknown,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/{householdId}',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers,
+        },
     });
 
 export const categoryGetCategories = <ThrowOnError extends boolean = false>(
@@ -460,6 +487,27 @@ export const transactionGetStats = <ThrowOnError extends boolean = false>(
             },
         ],
         url: '/api/households/{householdId}/transactions/stats',
+        ...options,
+    });
+
+export const transactionGetCategoryStats = <
+    ThrowOnError extends boolean = false,
+>(
+    options: Options<TransactionGetCategoryStatsData, ThrowOnError>,
+): RequestResult<TransactionGetCategoryStatsResponses, unknown, ThrowOnError> =>
+    (options.client ?? client).get<
+        TransactionGetCategoryStatsResponses,
+        unknown,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/{householdId}/transactions/stats/categories',
         ...options,
     });
 

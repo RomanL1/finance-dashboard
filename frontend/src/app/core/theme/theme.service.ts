@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { effect, inject, Injectable, signal } from '@angular/core';
+import { computed, effect, inject, Injectable, signal } from '@angular/core';
 
 export type ThemePreference = 'system' | 'light' | 'dark';
 
@@ -14,8 +14,18 @@ const PREFERENCES: ThemePreference[] = ['system', 'light', 'dark'];
 export class ThemeService {
     private readonly document = inject(DOCUMENT);
     readonly preference = signal<ThemePreference>(this.restore());
+    private readonly systemDark = signal(this.matchDark()?.matches ?? false);
+    /** What is actually on screen. Canvas drawings cannot use `light-dark()`, so they read this. */
+    readonly resolved = computed<'light' | 'dark'>(() => {
+        const preference = this.preference();
+        if (preference !== 'system') return preference;
+        return this.systemDark() ? 'dark' : 'light';
+    });
 
     constructor() {
+        this.matchDark()?.addEventListener('change', (event) =>
+            this.systemDark.set(event.matches),
+        );
         effect(() => {
             const preference = this.preference();
             this.document.body.style.colorScheme =
@@ -30,6 +40,12 @@ export class ThemeService {
 
     set(preference: ThemePreference): void {
         this.preference.set(preference);
+    }
+
+    private matchDark(): MediaQueryList | undefined {
+        return typeof window === 'undefined' || !window.matchMedia
+            ? undefined
+            : window.matchMedia('(prefers-color-scheme: dark)');
     }
 
     private restore(): ThemePreference {

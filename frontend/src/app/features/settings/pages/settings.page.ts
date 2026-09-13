@@ -4,6 +4,9 @@ import {
     MatButtonToggleGroup,
 } from '@angular/material/button-toggle';
 import { MatIcon } from '@angular/material/icon';
+import { MatFormField } from '@angular/material/form-field';
+import { MatOption } from '@angular/material/core';
+import { MatSelect } from '@angular/material/select';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import {
     ThemeService,
@@ -17,6 +20,7 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { APP_PATHS } from '../../../config/paths.config';
 import { ButtonComponent } from '../../../components/button/button.component';
 import { DialogService } from '../../../components/dialog/dialog.service';
+import { CURRENCIES, type Currency } from '../../../core/constants/currencies';
 import { HouseholdService } from '../../household/services/household.service';
 import { AccountService } from '../../account/services/account.service';
 import { AccountManageListComponent } from '../../account/dumb_components/account-manage-list/account-manage-list.component';
@@ -47,6 +51,9 @@ import type {
         MatButtonToggleGroup,
         MatButtonToggle,
         MatIcon,
+        MatFormField,
+        MatSelect,
+        MatOption,
         SectionHeaderComponent,
         TranslatePipe,
     ],
@@ -117,6 +124,48 @@ import type {
                                 'settings.household.roles.' + h.role | translate
                             }}
                         </dd>
+                        <dt class="type-label-large text-on-surface-variant">
+                            {{ 'settings.household.baseCurrency' | translate }}
+                        </dt>
+                        <dd class="type-body-large text-on-surface">
+                            @if (h.role === 'owner') {
+                                <!-- Owners pick; the change is saved on selection, there is nothing else to fill in. -->
+                                <mat-form-field
+                                    class="w-32"
+                                    subscriptSizing="dynamic"
+                                >
+                                    <mat-select
+                                        [attr.aria-label]="
+                                            'settings.household.baseCurrency'
+                                                | translate
+                                        "
+                                        [value]="h.baseCurrency"
+                                        (selectionChange)="
+                                            setBaseCurrency(h.id, $event.value)
+                                        "
+                                    >
+                                        @for (
+                                            currency of currencies;
+                                            track currency
+                                        ) {
+                                            <mat-option [value]="currency">{{
+                                                currency
+                                            }}</mat-option>
+                                        }
+                                    </mat-select>
+                                </mat-form-field>
+                            } @else {
+                                {{ h.baseCurrency }}
+                            }
+                        </dd>
+                        <dd
+                            class="type-body-small col-span-2 text-on-surface-variant"
+                        >
+                            {{
+                                'settings.household.baseCurrencyHint'
+                                    | translate
+                            }}
+                        </dd>
                     </dl>
                 </section>
                 <section>
@@ -176,6 +225,8 @@ export class SettingsPage {
         { value: 'dark', icon: 'dark_mode' },
     ];
 
+    protected readonly currencies = CURRENCIES;
+
     readonly household = resource({
         loader: () => this.householdService.getHousehold(),
     });
@@ -199,6 +250,14 @@ export class SettingsPage {
         private readonly router: Router,
         protected readonly theme: ThemeService,
     ) {}
+
+    async setBaseCurrency(
+        householdId: string,
+        baseCurrency: Currency,
+    ): Promise<void> {
+        await this.householdService.update(householdId, { baseCurrency });
+        this.household.reload();
+    }
 
     openAccountDialog(householdId: string, accountId?: string): void {
         const ref = this.dialogs.open<

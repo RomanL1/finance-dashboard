@@ -1,6 +1,9 @@
 import { Injectable } from '@angular/core';
-import { householdMine } from '../../../core/api';
-import type { HouseholdMineResponse } from '../household.types';
+import { householdMine, householdUpdateHousehold } from '../../../core/api';
+import type {
+    HouseholdMineResponse,
+    UpdateHouseholdDto,
+} from '../household.types';
 
 @Injectable({ providedIn: 'root' })
 export class HouseholdService {
@@ -22,5 +25,19 @@ export class HouseholdService {
     async getHouseholdOrNull(): Promise<HouseholdMineResponse | null> {
         const response = await householdMine();
         return response.data ?? null;
+    }
+
+    /** Owners only. The session cache takes the response so every tab sees the change. */
+    async update(
+        householdId: string,
+        changes: UpdateHouseholdDto,
+    ): Promise<HouseholdMineResponse> {
+        const response = await householdUpdateHousehold({
+            path: { householdId },
+            body: changes,
+            throwOnError: true,
+        });
+        this.cached = Promise.resolve(response.data);
+        return response.data;
     }
 }

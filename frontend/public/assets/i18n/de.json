@@ -194,6 +194,7 @@
     },
     "nav": {
         "home": "Start",
+        "analytics": "Analyse",
         "settings": "Einstellungen"
     },
     "settings": {
@@ -214,7 +215,9 @@
             "roles": {
                 "owner": "Inhaber:in",
                 "member": "Mitglied"
-            }
+            },
+            "baseCurrency": "Basiswährung",
+            "baseCurrencyHint": "Die Analyse rechnet alle Beträge in diese Währung um."
         },
         "appearance": {
             "title": "Darstellung",
@@ -236,6 +239,16 @@
             "previous": "Vorheriger Zeitraum",
             "next": "Nächster Zeitraum",
             "today": "Zum aktuellen Zeitraum"
-        }
+        },
+        "ratesUnavailable": "Wechselkurse sind gerade nicht verfügbar. Beträge in anderen Währungen können nicht umgerechnet werden."
+    },
+    "analytics": {
+        "title": "Analyse",
+        "subtitle": "Ausgaben pro Kategorie in {{currency}}",
+        "empty": "Keine Ausgaben in diesem Zeitraum.",
+        "uncategorized": "Ohne Kategorie",
+        "ratesUnavailable": "Wechselkurse sind gerade nicht verfügbar. Beträge in anderen Währungen können nicht umgerechnet werden.",
+        "chartLabel": "Ausgaben pro Kategorie",
+        "rates": "Fremdwährungen zum EZB-Referenzkurs des jeweiligen Tages umgerechnet."
     }
 }

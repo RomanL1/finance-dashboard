@@ -132,24 +132,3 @@ export function parsePeriodParams(
     // Normalise so a mid-period start still resolves to its period.
     return periodOf(safeKind, parsed);
 }
-
-/** Every active-account currency shows a card even with no transactions, so the layout never collapses. */
-export function withEmptyCurrencies(
-    stats: CurrencyStatsDto[],
-    currencies: string[],
-): CurrencyStatsDto[] {
-    const byCurrency = new Map(stats.map((s) => [s.currency, s]));
-    for (const currency of currencies) {
-        if (!byCurrency.has(currency)) {
-            byCurrency.set(currency, {
-                currency,
-                income: 0,
-                expenses: 0,
-                net: 0,
-            });
-        }
-    }
-    return [...byCurrency.values()].sort((a, b) =>
-        a.currency.localeCompare(b.currency),
-    );
-}

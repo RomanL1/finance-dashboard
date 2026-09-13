@@ -39,6 +39,13 @@ export const routes: Routes = [
                     ),
             },
             {
+                path: APP_PATHS.ANALYTICS,
+                loadComponent: () =>
+                    import('../features/analytics/pages/analytics.page').then(
+                        (m) => m.AnalyticsPage,
+                    ),
+            },
+            {
                 path: APP_PATHS.SETTINGS,
                 loadComponent: () =>
                     import('../features/settings/pages/settings.page').then(

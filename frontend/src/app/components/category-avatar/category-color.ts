@@ -18,6 +18,16 @@ export function categoryHue(id: string): number {
  * category, only the hue differs, so all avatars carry the same visual weight.
  */
 export function categoryColor(id: string): string {
+    return `light-dark(${categorySchemeColor(id, 'light')}, ${categorySchemeColor(id, 'dark')})`;
+}
+
+/** One side of the pair, for canvas drawings that cannot resolve `light-dark()`. */
+export function categorySchemeColor(
+    id: string,
+    scheme: 'light' | 'dark',
+): string {
     const hue = categoryHue(id);
-    return `light-dark(oklch(0.58 0.12 ${hue}), oklch(0.72 0.11 ${hue}))`;
+    return scheme === 'light'
+        ? `oklch(0.58 0.12 ${hue})`
+        : `oklch(0.72 0.11 ${hue})`;
 }

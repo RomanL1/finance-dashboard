@@ -108,6 +108,11 @@ export class ShellPage {
 
     readonly tabs = [
         { path: APP_PATHS.HOME, icon: 'home', label: 'nav.home' },
+        {
+            path: APP_PATHS.ANALYTICS,
+            icon: 'bar_chart',
+            label: 'nav.analytics',
+        },
         { path: APP_PATHS.SETTINGS, icon: 'settings', label: 'nav.settings' },
     ];
 

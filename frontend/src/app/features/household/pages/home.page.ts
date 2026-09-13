@@ -27,7 +27,6 @@ import {
     parsePeriodParams,
     periodRange,
     toPeriodParams,
-    withEmptyCurrencies,
     type Period,
 } from '../../stats/stats.types';
 import { TransactionListComponent } from '../../transaction/dumb_components/transaction-list/transaction-list.component';
@@ -83,11 +82,16 @@ import {
                         [period]="period()"
                         (periodChange)="setPeriod($event)"
                     />
-                    @if (statsCards(); as cards) {
-                        <div class="space-y-3" animate.enter="fade-in">
-                            @for (card of cards; track card.currency) {
-                                <app-stats-card [stats]="card" />
-                            }
+                    @if (stats.error()) {
+                        <p
+                            role="alert"
+                            class="rounded-m3-md bg-error-container p-3 text-on-error-container"
+                        >
+                            {{ 'stats.ratesUnavailable' | translate }}
+                        </p>
+                    } @else if (stats.value(); as card) {
+                        <div animate.enter="fade-in">
+                            <app-stats-card [stats]="card" />
                         </div>
                     } @else {
                         <app-skeleton variant="stat-card" />
@@ -195,17 +199,6 @@ export class HomePage {
     readonly activeAccounts = computed(() =>
         (this.accounts.value() ?? []).filter((a) => isActiveAccount(a)),
     );
-
-    /** Undefined while loading, so the skeleton shows; then one card per active currency. */
-    readonly statsCards = computed(() => {
-        const stats = this.stats.value();
-        const accounts = this.accounts.value();
-        if (!stats || !accounts) return undefined;
-        return withEmptyCurrencies(
-            stats,
-            this.activeAccounts().map((a) => a.currency),
-        );
-    });
 
     readonly canAddTransaction = computed(
         () =>
