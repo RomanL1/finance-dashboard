@@ -23,6 +23,28 @@ export interface Transaction extends CreateTransaction {
     createdAt: Date;
 }
 
+/** Sentinel for "uncategorized" in the category filter, since the wire cannot carry null in a query string. */
+export const UNCATEGORIZED = 'none';
+
+export const PAGE_SIZE = 50;
+export const MAX_PAGE_SIZE = 100;
+
+/** Every field optional; `categoryId: null` selects uncategorized rows. */
+export interface TransactionFilter {
+    accountId?: Id;
+    categoryId?: Id | null;
+}
+
+/** One page of the household history, newest first. */
+export interface TransactionPage {
+    items: Transaction[];
+    /** Matching rows across all pages. */
+    total: number;
+    /** 1-based */
+    page: number;
+    pageSize: number;
+}
+
 /** Half-open interval: `from` inclusive, `to` exclusive. */
 export interface DateRange {
     from: Date;

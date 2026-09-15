@@ -25,10 +25,19 @@ import {
     CurrencyStatsDto,
     StatsQueryDto,
     TransactionDto,
+    TransactionListQueryDto,
+    TransactionPageDto,
 } from '../model/transaction.dto.js';
-import { toTransactionDto, toTransactionsDto } from './transaction.mapper.js';
+import {
+    toTransactionDto,
+    toTransactionPageDto,
+} from './transaction.mapper.js';
 import { type Id } from '../../../shared/kernel/index.js';
-import type { CreateTransactionInput } from '../model/transaction.js';
+import {
+    UNCATEGORIZED,
+    type CreateTransactionInput,
+    type TransactionFilter,
+} from '../model/transaction.js';
 import { HouseholdMemberGuard } from '../../household/guard/household-member.guard.js';
 
 @ApiTags('transaction')
@@ -40,11 +49,19 @@ export class TransactionController {
     constructor(private readonly transactions: TransactionService) {}
 
     @Get()
-    @ApiOkResponse({ type: [TransactionDto] })
+    @ApiOkResponse({ type: TransactionPageDto })
     async getTransactions(
         @Param('householdId') householdId: Id,
-    ): Promise<TransactionDto[]> {
-        return toTransactionsDto(await this.transactions.getAll(householdId));
+        @Query() query: TransactionListQueryDto,
+    ): Promise<TransactionPageDto> {
+        return toTransactionPageDto(
+            await this.transactions.getPage(
+                householdId,
+                toFilter(query),
+                query.page ?? 1,
+                query.pageSize,
+            ),
+        );
     }
 
     /** Declared before the `:transactionId` routes so `stats` is never read as an id. */
@@ -118,6 +135,14 @@ export class TransactionController {
     ): Promise<void> {
         await this.transactions.delete(householdId, transactionId);
     }
+}
+
+function toFilter(query: TransactionListQueryDto): TransactionFilter {
+    return {
+        accountId: query.accountId,
+        categoryId:
+            query.categoryId === UNCATEGORIZED ? null : query.categoryId,
+    };
 }
 
 function toInput(dto: CreateTransactionDto): CreateTransactionInput {

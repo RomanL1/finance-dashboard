@@ -1,8 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
     IsIn,
     IsInt,
+    Max,
+    Min,
     IsISO8601,
     IsNotEmpty,
     IsOptional,
@@ -11,6 +13,7 @@ import {
     MaxLength,
 } from 'class-validator';
 import { TRANSACTION_TYPES } from './transaction.schema.js';
+import { MAX_PAGE_SIZE, PAGE_SIZE, UNCATEGORIZED } from './transaction.js';
 
 export class TransactionDto {
     @ApiProperty() id!: string;
@@ -25,6 +28,51 @@ export class TransactionDto {
     @ApiProperty({ nullable: true, type: String }) description!: string | null;
     @ApiProperty({ example: '2026-01-15T12:30:00.000Z' }) date!: string;
     @ApiProperty() createdAt!: string;
+}
+
+export class TransactionPageDto {
+    @ApiProperty({ type: [TransactionDto] }) items!: TransactionDto[];
+    @ApiProperty({ description: 'Matching rows across all pages' })
+    total!: number;
+    @ApiProperty({ description: '1-based' }) page!: number;
+    @ApiProperty() pageSize!: number;
+}
+
+export class TransactionListQueryDto {
+    @ApiProperty({ required: false, description: 'Only this account' })
+    @IsOptional()
+    @IsString()
+    @IsNotEmpty()
+    accountId?: string;
+
+    @ApiProperty({
+        required: false,
+        description: `Only this category; "${UNCATEGORIZED}" selects uncategorized rows`,
+    })
+    @IsOptional()
+    @IsString()
+    @IsNotEmpty()
+    categoryId?: string;
+
+    @ApiProperty({ required: false, default: 1, description: '1-based' })
+    @IsOptional()
+    @Type(() => Number)
+    @IsInt()
+    @Min(1)
+    page?: number;
+
+    @ApiProperty({
+        required: false,
+        default: PAGE_SIZE,
+        maximum: MAX_PAGE_SIZE,
+        description: 'Rows per page',
+    })
+    @IsOptional()
+    @Type(() => Number)
+    @IsInt()
+    @Min(1)
+    @Max(MAX_PAGE_SIZE)
+    pageSize?: number;
 }
 
 const trim = Transform(({ value }: { value: unknown }) =>

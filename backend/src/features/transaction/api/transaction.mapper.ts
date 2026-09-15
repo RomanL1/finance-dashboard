@@ -1,5 +1,8 @@
-import { TransactionDto } from '../model/transaction.dto.js';
-import { Transaction } from '../model/transaction.js';
+import {
+    TransactionDto,
+    TransactionPageDto,
+} from '../model/transaction.dto.js';
+import { Transaction, TransactionPage } from '../model/transaction.js';
 
 export function toTransactionDto(transaction: Transaction): TransactionDto {
     const dto = new TransactionDto();
@@ -19,4 +22,15 @@ export function toTransactionsDto(
     transactions: Transaction[],
 ): TransactionDto[] {
     return transactions.map(toTransactionDto);
+}
+
+export function toTransactionPageDto(
+    page: TransactionPage,
+): TransactionPageDto {
+    const dto = new TransactionPageDto();
+    dto.items = toTransactionsDto(page.items);
+    dto.total = page.total;
+    dto.page = page.page;
+    dto.pageSize = page.pageSize;
+    return dto;
 }

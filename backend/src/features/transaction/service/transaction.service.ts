@@ -9,7 +9,10 @@ import {
     CreateTransactionInput,
     CurrencyStats,
     DateRange,
+    PAGE_SIZE,
     Transaction,
+    TransactionFilter,
+    TransactionPage,
 } from '../model/transaction.js';
 import {
     Id,
@@ -29,8 +32,23 @@ export class TransactionService {
         private readonly exchangeRates: ExchangeRateService,
     ) {}
 
-    async getAll(householdId: Id): Promise<Transaction[]> {
-        return this.transactions.listByHouseholdId(householdId);
+    /** A page past the end is empty, not an error. */
+    async getPage(
+        householdId: Id,
+        filter: TransactionFilter,
+        page: number,
+        pageSize = PAGE_SIZE,
+    ): Promise<TransactionPage> {
+        const [items, total] = await Promise.all([
+            this.transactions.listByHouseholdId(
+                householdId,
+                filter,
+                pageSize,
+                (page - 1) * pageSize,
+            ),
+            this.transactions.countByHouseholdId(householdId, filter),
+        ]);
+        return { items, total, page, pageSize };
     }
 
     /** Income / expenses / net in the household base currency, each day converted at its own rate. Future-dated entries inside the range count. */

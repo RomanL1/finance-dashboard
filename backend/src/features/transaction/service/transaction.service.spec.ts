@@ -26,6 +26,7 @@ const input = {
 function makeRepo(overrides: Partial<TransactionRepository> = {}) {
     return {
         listByHouseholdId: vi.fn().mockResolvedValue([]),
+        countByHouseholdId: vi.fn().mockResolvedValue(0),
         accountExists: vi.fn().mockResolvedValue(true),
         categoryExists: vi.fn().mockResolvedValue(true),
         createTransaction: vi
@@ -68,6 +69,38 @@ function makeExchangeRates() {
 function makeService(repo: TransactionRepository) {
     return new TransactionService(repo, makeHouseholds(), makeExchangeRates());
 }
+
+describe('TransactionService.getPage', () => {
+    it('offsets by page and reports total with fixed page size', async () => {
+        const repo = makeRepo({
+            listByHouseholdId: vi.fn().mockResolvedValue([{ id: 't-1' }]),
+            countByHouseholdId: vi.fn().mockResolvedValue(120),
+        });
+        const filter = { accountId: 'acc-1', categoryId: null };
+
+        const page = await makeService(repo).getPage('h-1', filter, 3);
+
+        expect(repo.listByHouseholdId).toHaveBeenCalledWith(
+            'h-1',
+            filter,
+            50,
+            100,
+        );
+        expect(repo.countByHouseholdId).toHaveBeenCalledWith('h-1', filter);
+        expect(page).toEqual({
+            items: [{ id: 't-1' }],
+            total: 120,
+            page: 3,
+            pageSize: 50,
+        });
+    });
+
+    it('honours an explicit page size', async () => {
+        const repo = makeRepo();
+        await makeService(repo).getPage('h-1', {}, 2, 10);
+        expect(repo.listByHouseholdId).toHaveBeenCalledWith('h-1', {}, 10, 10);
+    });
+});
 
 describe('TransactionService.create', () => {
     it('trims title, nulls blank description, persists', async () => {

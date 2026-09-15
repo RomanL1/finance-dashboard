@@ -1,13 +1,24 @@
 import { DRIZZLE } from '../../../shared/infra/db/db.module.js';
 import type { Db } from '../../../shared/infra/db/db.js';
 import { Inject, Injectable } from '@nestjs/common';
-import { and, desc, eq, gte, inArray, lt, sql } from 'drizzle-orm';
+import {
+    and,
+    count,
+    desc,
+    eq,
+    gte,
+    inArray,
+    isNull,
+    lt,
+    sql,
+} from 'drizzle-orm';
 import {
     CategoryDayExpense,
     CreateTransaction,
     CurrencyDaySums,
     DateRange,
     Transaction,
+    TransactionFilter,
 } from '../model/transaction.js';
 import { Id } from '../../../shared/kernel/index.js';
 import { transaction } from '../model/transaction.schema.js';
@@ -41,12 +52,46 @@ export class TransactionRepository {
         );
     }
 
-    async listByHouseholdId(householdId: Id): Promise<Transaction[]> {
+    /** Household rows narrowed by the filter; `and()` drops the undefined parts. */
+    private matching(householdId: Id, filter: TransactionFilter) {
+        return and(
+            this.inHousehold(householdId),
+            filter.accountId
+                ? eq(transaction.accountId, filter.accountId)
+                : undefined,
+            filter.categoryId === null
+                ? isNull(transaction.categoryId)
+                : filter.categoryId
+                  ? eq(transaction.categoryId, filter.categoryId)
+                  : undefined,
+        );
+    }
+
+    /** Newest first; `createdAt` breaks ties so pages never overlap. */
+    async listByHouseholdId(
+        householdId: Id,
+        filter: TransactionFilter,
+        limit: number,
+        offset: number,
+    ): Promise<Transaction[]> {
         return await this.db
             .select(this.columns)
             .from(transaction)
-            .where(this.inHousehold(householdId))
-            .orderBy(desc(transaction.date));
+            .where(this.matching(householdId, filter))
+            .orderBy(desc(transaction.date), desc(transaction.createdAt))
+            .limit(limit)
+            .offset(offset);
+    }
+
+    async countByHouseholdId(
+        householdId: Id,
+        filter: TransactionFilter,
+    ): Promise<number> {
+        const [row] = await this.db
+            .select({ total: count() })
+            .from(transaction)
+            .where(this.matching(householdId, filter));
+        return row?.total ?? 0;
     }
 
     /** Grouped by the account's currency; archived accounts count, their history is still history. */
