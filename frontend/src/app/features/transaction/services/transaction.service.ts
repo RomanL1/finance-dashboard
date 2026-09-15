@@ -6,15 +6,30 @@ import {
     transactionUpdateTransaction,
 } from '../../../core/api';
 import type { CreateTransactionDto, TransactionDto } from '../../../core/api';
-import type { TransactionDefaults } from '../transaction.types';
+import type {
+    TransactionDefaults,
+    TransactionPageDto,
+    TransactionQuery,
+} from '../transaction.types';
 
 const LAST_USED_KEY = 'transaction-last-used';
 
 @Injectable({ providedIn: 'root' })
 export class TransactionService {
-    async list(householdId: string): Promise<TransactionDto[]> {
+    /** `pageSize` omitted = server default. */
+    async list(
+        householdId: string,
+        query: TransactionQuery,
+        pageSize?: number,
+    ): Promise<TransactionPageDto> {
         const response = await transactionGetTransactions({
             path: { householdId },
+            query: {
+                accountId: query.accountId,
+                categoryId: query.categoryId,
+                page: query.page,
+                pageSize,
+            },
             throwOnError: true,
         });
         return response.data;

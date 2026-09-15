@@ -1,6 +1,6 @@
 {
     "app": {
-        "title": "Personal Finance Dashboard"
+        "title": "Finance Dashboard of {{name}}"
     },
     "auth": {
         "login": {
@@ -18,9 +18,10 @@
         }
     },
     "home": {
-        "greeting": "Hello {{name}}",
         "noHouseholdFound": "No household found.",
-        "add": "Add"
+        "add": "Add",
+        "overview": "Overview",
+        "household": "Household {{name}}"
     },
     "onboarding": {
         "title": "Welcome",
@@ -190,12 +191,31 @@
             "title": "Delete transaction?",
             "message": "This removes the transaction and adjusts the account balance.",
             "confirm": "Delete"
+        },
+        "filter": {
+            "account": "Account",
+            "category": "Category",
+            "all": "All"
+        },
+        "pager": {
+            "label": "Pages",
+            "previous": "Previous page",
+            "next": "Next page",
+            "position": "Page {{page}} of {{pages}}"
+        },
+        "recent": {
+            "title": "Latest {{count}} transactions",
+            "all": "All transactions"
+        },
+        "page": {
+            "title": "Transactions"
         }
     },
     "nav": {
         "home": "Home",
         "analytics": "Analytics",
-        "settings": "Settings"
+        "settings": "Settings",
+        "transactions": "Transactions"
     },
     "settings": {
         "title": "Settings",

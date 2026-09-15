@@ -4,9 +4,60 @@ import type {
     CategoryDto,
     CreateTransactionDto,
     TransactionDto,
+    TransactionPageDto,
 } from '../../core/api';
 
-export type { CreateTransactionDto, TransactionDto };
+export type { CreateTransactionDto, TransactionDto, TransactionPageDto };
+
+/** Category filter value the API reads as "no category"; mirrors the backend sentinel. */
+export const UNCATEGORIZED = 'none';
+
+/** Which rows to show; `undefined` = no restriction. `categoryId` may be `UNCATEGORIZED`. */
+export interface TransactionFilter {
+    accountId?: string;
+    categoryId?: string;
+}
+
+export interface TransactionQuery extends TransactionFilter {
+    /** 1-based */
+    page: number;
+}
+
+/** Query params `account`, `category`, `page`; garbage falls back to the first unfiltered page. */
+export function parseTransactionParams(
+    params: Record<string, string | undefined>,
+): TransactionQuery {
+    const page = Number(params['page']);
+    return {
+        accountId: params['account'] || undefined,
+        categoryId: params['category'] || undefined,
+        page: Number.isInteger(page) && page > 0 ? page : 1,
+    };
+}
+
+/** Inverse of `parseTransactionParams`; `null` removes a param when merged into the URL. */
+export function toTransactionParams(
+    query: TransactionQuery,
+): Record<string, string | null> {
+    return {
+        account: query.accountId ?? null,
+        category: query.categoryId ?? null,
+        page: query.page > 1 ? String(query.page) : null,
+    };
+}
+
+/** Resource params are compared by reference; this keeps unrelated URL changes (period) from refetching. */
+export function sameQuery(a: TransactionQuery, b: TransactionQuery): boolean {
+    return (
+        a.accountId === b.accountId &&
+        a.categoryId === b.categoryId &&
+        a.page === b.page
+    );
+}
+
+export function pageCount(total: number, pageSize: number): number {
+    return Math.max(1, Math.ceil(total / pageSize));
+}
 
 /** Prefilled form values: last-used ids for a new entry, the full row when editing. Unknown ids are ignored. */
 export type TransactionDefaults = Partial<CreateTransactionDto>;

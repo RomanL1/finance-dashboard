@@ -1,10 +1,10 @@
 {
     "app": {
-        "title": "Personal Finance Dashboard"
+        "title": "Finance Dashboard von {{name}}"
     },
     "auth": {
         "login": {
-            "title": "Login",
+            "title": "Anmelden",
             "demo": "Demo: demo@finance.local / demo-password",
             "emailLabel": "E-Mail",
             "emailRequired": "E-Mail ist erforderlich",
@@ -13,14 +13,15 @@
             "passwordRequired": "Passwort ist erforderlich",
             "showPassword": "Passwort anzeigen",
             "hidePassword": "Passwort verbergen",
-            "submit": "Login",
+            "submit": "Anmelden",
             "failed": "Anmeldung fehlgeschlagen"
         }
     },
     "home": {
-        "greeting": "Hallo {{name}}",
         "noHouseholdFound": "Kein Haushalt gefunden.",
-        "add": "Hinzufügen"
+        "add": "Hinzufügen",
+        "overview": "Übersicht",
+        "household": "Haushalt {{name}}"
     },
     "onboarding": {
         "title": "Willkommen",
@@ -190,12 +191,31 @@
             "title": "Transaktion löschen?",
             "message": "Die Transaktion wird entfernt und der Kontostand angepasst.",
             "confirm": "Löschen"
+        },
+        "filter": {
+            "account": "Konto",
+            "category": "Kategorie",
+            "all": "Alle"
+        },
+        "pager": {
+            "label": "Seiten",
+            "previous": "Vorherige Seite",
+            "next": "Nächste Seite",
+            "position": "Seite {{page}} von {{pages}}"
+        },
+        "recent": {
+            "title": "Letzte {{count}} Transaktionen",
+            "all": "Alle Transaktionen"
+        },
+        "page": {
+            "title": "Transaktionen"
         }
     },
     "nav": {
         "home": "Start",
         "analytics": "Analyse",
-        "settings": "Einstellungen"
+        "settings": "Einstellungen",
+        "transactions": "Transaktionen"
     },
     "settings": {
         "title": "Einstellungen",

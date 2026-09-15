@@ -107,6 +107,7 @@ export type {
     TransactionGetTransactionsData,
     TransactionGetTransactionsResponse,
     TransactionGetTransactionsResponses,
+    TransactionPageDto,
     TransactionUpdateTransactionData,
     TransactionUpdateTransactionResponse,
     TransactionUpdateTransactionResponses,

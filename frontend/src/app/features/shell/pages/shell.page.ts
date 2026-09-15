@@ -9,6 +9,7 @@ import {
 } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { APP_PATHS } from '../../../config/paths.config';
+import { AuthService } from '../../../core/auth/auth.service';
 
 /**
  * Authenticated layout: M3 top app bar, navigation bar at the bottom on phones and a tab row
@@ -38,7 +39,7 @@ import { APP_PATHS } from '../../../config/paths.config';
             "
         >
             <span class="type-title-large text-on-surface">
-                {{ 'app.title' | translate }}
+                {{ 'app.title' | translate: { name: auth.user()?.name } }}
             </span>
         </header>
         <!-- Wrapper positions: Material's own position rule beats Tailwind utilities on the nav host.
@@ -98,6 +99,8 @@ import { APP_PATHS } from '../../../config/paths.config';
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ShellPage {
+    constructor(protected readonly auth: AuthService) {}
+
     /** Exact path match, but query params (home period filter) must not drop the active tab. */
     protected readonly activeOptions: IsActiveMatchOptions = {
         paths: 'exact',
@@ -108,6 +111,11 @@ export class ShellPage {
 
     readonly tabs = [
         { path: APP_PATHS.HOME, icon: 'home', label: 'nav.home' },
+        {
+            path: APP_PATHS.TRANSACTIONS,
+            icon: 'receipt_long',
+            label: 'nav.transactions',
+        },
         {
             path: APP_PATHS.ANALYTICS,
             icon: 'bar_chart',

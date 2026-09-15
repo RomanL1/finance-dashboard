@@ -39,6 +39,13 @@ export const routes: Routes = [
                     ),
             },
             {
+                path: APP_PATHS.TRANSACTIONS,
+                loadComponent: () =>
+                    import('../features/transaction/pages/transactions.page').then(
+                        (m) => m.TransactionsPage,
+                    ),
+            },
+            {
                 path: APP_PATHS.ANALYTICS,
                 loadComponent: () =>
                     import('../features/analytics/pages/analytics.page').then(

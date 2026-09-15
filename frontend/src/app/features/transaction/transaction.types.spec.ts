@@ -1,7 +1,12 @@
 import { registerLocaleData } from '@angular/common';
 import localeDe from '@angular/common/locales/de';
 import type { AccountDto, CategoryDto, TransactionDto } from '../../core/api';
-import { toTransactionGroups } from './transaction.types';
+import {
+    pageCount,
+    parseTransactionParams,
+    toTransactionGroups,
+    toTransactionParams,
+} from './transaction.types';
 
 registerLocaleData(localeDe);
 
@@ -160,5 +165,42 @@ describe('toTransactionGroups', () => {
             'de',
         );
         expect(group.rows[0].when).toBe('Di. 08:00');
+    });
+});
+
+describe('parseTransactionParams', () => {
+    it('reads filter and page, ignoring garbage', () => {
+        expect(
+            parseTransactionParams({
+                account: 'a1',
+                category: 'none',
+                page: '3',
+            }),
+        ).toEqual({ accountId: 'a1', categoryId: 'none', page: 3 });
+        expect(parseTransactionParams({ page: '0', account: '' })).toEqual({
+            accountId: undefined,
+            categoryId: undefined,
+            page: 1,
+        });
+        expect(parseTransactionParams({ page: 'x' }).page).toBe(1);
+    });
+
+    it('round-trips through toTransactionParams, dropping defaults', () => {
+        expect(toTransactionParams({ page: 1 })).toEqual({
+            account: null,
+            category: null,
+            page: null,
+        });
+        expect(
+            toTransactionParams({ accountId: 'a1', categoryId: 'c1', page: 2 }),
+        ).toEqual({ account: 'a1', category: 'c1', page: '2' });
+    });
+});
+
+describe('pageCount', () => {
+    it('is at least one and rounds up', () => {
+        expect(pageCount(0, 50)).toBe(1);
+        expect(pageCount(50, 50)).toBe(1);
+        expect(pageCount(51, 50)).toBe(2);
     });
 });
