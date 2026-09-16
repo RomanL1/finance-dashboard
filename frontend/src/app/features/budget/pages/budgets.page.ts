@@ -12,30 +12,39 @@ import { DialogService } from '../../../components/dialog/dialog.service';
 import { SkeletonComponent } from '../../../components/skeleton/skeleton.component';
 import { CategoryService } from '../../category/services/category.service';
 import { HouseholdService } from '../../household/services/household.service';
+import { AnalyticsService } from '../../analytics/services/analytics.service';
 import { PeriodSwitcherComponent } from '../../stats/dumb_components/period-switcher/period-switcher.component';
 import {
     parsePeriodParams,
     periodOf,
+    periodRange,
     toPeriodParams,
     type Period,
 } from '../../stats/stats.types';
 import {
     toBudgetRows,
+    toBudgetTotals,
     toMonthKey,
     type BudgetDialogData,
     type BudgetDialogResult,
     type BudgetRow,
 } from '../budget.types';
 import { BudgetListComponent } from '../dumb_components/budget-list/budget-list.component';
+import { BudgetSummaryComponent } from '../dumb_components/budget-summary/budget-summary.component';
 import { BudgetService } from '../services/budget.service';
 import { BudgetDialogComponent } from '../smart_components/budget-dialog/budget-dialog.component';
 
-/** Limits per category for one calendar month. Shares the `?period&start` params with the other tabs, coerced to a month. */
+/**
+ * Limits, spending and what is left per category for one calendar month. Spending comes from the same
+ * category statistics as the Categories tab, over the same client-built range, so both tabs agree.
+ * Shares the `?period&start` params with the other tabs, coerced to a month.
+ */
 @Component({
     selector: 'app-budgets-page',
     imports: [
         PeriodSwitcherComponent,
         BudgetListComponent,
+        BudgetSummaryComponent,
         SkeletonComponent,
         TranslatePipe,
     ],
@@ -46,7 +55,7 @@ import { BudgetDialogComponent } from '../smart_components/budget-dialog/budget-
                 [kinds]="['month']"
                 (periodChange)="setPeriod($event)"
             />
-            @if (budgets.error() || categories.error()) {
+            @if (budgets.error() || categories.error() || stats.error()) {
                 <p
                     role="alert"
                     class="rounded-m3-md bg-error-container p-3 text-on-error-container"
@@ -54,6 +63,14 @@ import { BudgetDialogComponent } from '../smart_components/budget-dialog/budget-
                     {{ 'budget.loadFailed' | translate }}
                 </p>
             } @else if (rows(); as list) {
+                @if (totals(); as sums) {
+                    <div animate.enter="fade-in">
+                        <app-budget-summary
+                            [totals]="sums"
+                            [currency]="household.value()!.baseCurrency"
+                        />
+                    </div>
+                }
                 <div
                     class="rounded-m3-lg bg-surface-low px-4 py-2"
                     animate.enter="fade-in"
@@ -109,19 +126,41 @@ export class BudgetsPage {
             this.budgetService.list(params.householdId, params.month),
     });
 
-    /** Undefined while either side loads, so the skeleton shows. */
+    /** Expenses per category over the month; the range is built client-side like on the Categories tab. */
+    readonly stats = resource({
+        params: () => {
+            const householdId = this.household.value()?.id;
+            return householdId
+                ? { householdId, range: periodRange(this.period()) }
+                : undefined;
+        },
+        loader: ({ params }) =>
+            this.analytics.getCategoryStats(params.householdId, params.range),
+    });
+
+    /** Undefined while any part loads, so the skeleton shows. */
     readonly rows = computed(() => {
         const categories = this.categories.value();
         const budgets = this.budgets.value();
-        return categories && budgets
-            ? toBudgetRows(categories, budgets)
+        const stats = this.stats.value();
+        return categories && budgets && stats
+            ? toBudgetRows(categories, budgets, stats)
             : undefined;
+    });
+
+    /** Null until a limit exists, so the summary only shows when it says something. */
+    readonly totals = computed(() => {
+        const rows = this.rows();
+        if (!rows) return null;
+        const totals = toBudgetTotals(rows);
+        return totals.budgeted > 0 ? totals : null;
     });
 
     constructor(
         private readonly householdService: HouseholdService,
         private readonly categoryService: CategoryService,
         private readonly budgetService: BudgetService,
+        private readonly analytics: AnalyticsService,
         private readonly dialogs: DialogService,
         private readonly router: Router,
     ) {}

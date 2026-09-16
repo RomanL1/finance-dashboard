@@ -279,7 +279,11 @@
         "loadFailed": "Could not load the budgets.",
         "list": {
             "empty": "No categories yet. Add some in the settings.",
-            "noLimit": "No limit"
+            "noLimit": "No limit",
+            "spent": "Spent",
+            "over": "Over by",
+            "left": "Left",
+            "usedRatio": "{{percent}}% of the limit used"
         },
         "form": {
             "amountLabel": "Monthly limit",
@@ -291,6 +295,14 @@
             "cancel": "Cancel",
             "save": "Save",
             "failed": "Could not save the limit."
+        },
+        "summary": {
+            "label": "Month totals",
+            "budgeted": "{{count}} budgeted categories",
+            "limit": "Limit",
+            "spent": "Spent",
+            "left": "Left",
+            "over": "Over by"
         }
     }
 }

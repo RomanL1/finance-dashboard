@@ -279,7 +279,11 @@
         "loadFailed": "Budgets konnten nicht geladen werden.",
         "list": {
             "empty": "Noch keine Kategorien. Lege welche in den Einstellungen an.",
-            "noLimit": "Kein Limit"
+            "noLimit": "Kein Limit",
+            "spent": "Ausgegeben",
+            "over": "Überschritten um",
+            "left": "Übrig",
+            "usedRatio": "{{percent}}% des Limits verbraucht"
         },
         "form": {
             "amountLabel": "Monatslimit",
@@ -291,6 +295,14 @@
             "cancel": "Abbrechen",
             "save": "Speichern",
             "failed": "Limit konnte nicht gespeichert werden."
+        },
+        "summary": {
+            "label": "Monatssummen",
+            "budgeted": "{{count}} budgetierte Kategorien",
+            "limit": "Limit",
+            "spent": "Ausgegeben",
+            "left": "Übrig",
+            "over": "Überschritten um"
         }
     }
 }

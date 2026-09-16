@@ -56,7 +56,9 @@ import { AuthService } from '../../../core/auth/auth.service';
                         [routerLink]="'/' + tab.path"
                         routerLinkActive
                         #rla="routerLinkActive"
-                        [routerLinkActiveOptions]="activeOptions"
+                        [routerLinkActiveOptions]="
+                            tab.path === '' ? exactOptions : subsetOptions
+                        "
                         [active]="rla.isActive"
                     >
                         <!-- One active indicator per idiom: a pill behind the icon on phones (navigation bar),
@@ -101,12 +103,19 @@ import { AuthService } from '../../../core/auth/auth.service';
 export class ShellPage {
     constructor(protected readonly auth: AuthService) {}
 
-    /** Exact path match, but query params (home period filter) must not drop the active tab. */
-    protected readonly activeOptions: IsActiveMatchOptions = {
-        paths: 'exact',
+    /**
+     * A tab stays active on its child routes (analytics/budgets), and query params (period filter)
+     * must not drop it. Home is `/`, a prefix of everything, so it alone needs an exact match.
+     */
+    protected readonly subsetOptions: IsActiveMatchOptions = {
+        paths: 'subset',
         queryParams: 'ignored',
         matrixParams: 'ignored',
         fragment: 'ignored',
+    };
+    protected readonly exactOptions: IsActiveMatchOptions = {
+        ...this.subsetOptions,
+        paths: 'exact',
     };
 
     readonly tabs = [

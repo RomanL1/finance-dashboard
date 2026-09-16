@@ -7,9 +7,12 @@ import {
 import { TranslatePipe } from '@ngx-translate/core';
 import { AmountComponent } from '../../../../components/amount/amount.component';
 import { CategoryAvatarComponent } from '../../../../components/category-avatar/category-avatar.component';
-import type { BudgetRow } from '../../budget.types';
+import { budgetRatio, isOverBudget, type BudgetRow } from '../../budget.types';
 
-/** Every category of the household with its limit for the month. Tapping a row edits it. */
+/**
+ * Every category of the household with its limit, what was spent and what is left for the month.
+ * Budgeted rows carry a bar that turns to the expense color once the limit is exceeded. Tapping a row edits it.
+ */
 @Component({
     selector: 'app-budget-list',
     imports: [TranslatePipe, AmountComponent, CategoryAvatarComponent],
@@ -24,28 +27,97 @@ import type { BudgetRow } from '../../budget.types';
                     <li class="relative">
                         <button
                             type="button"
-                            class="grid w-full grid-cols-[auto_1fr_auto] items-center gap-x-3 py-2.5 text-left hover:bg-surface-high"
+                            class="grid w-full grid-cols-[auto_1fr_auto] items-center gap-x-3 gap-y-1.5 py-2.5 text-left hover:bg-surface-high"
                             (click)="edit.emit(row)"
                         >
                             <app-category-avatar
                                 [categoryId]="row.category.id"
                                 [name]="row.category.name"
                             />
-                            <p class="type-body-large truncate text-on-surface">
-                                {{ row.category.name }}
-                            </p>
-                            @if (row.amount === null) {
+                            <span class="min-w-0">
+                                <span
+                                    class="type-body-large block truncate text-on-surface"
+                                >
+                                    {{ row.category.name }}
+                                </span>
+                                <span
+                                    class="type-body-small block text-on-surface-variant"
+                                >
+                                    {{ 'budget.list.spent' | translate }}
+                                    <app-amount
+                                        [amount]="row.spent"
+                                        [currency]="
+                                            row.amount === null
+                                                ? currency()
+                                                : ''
+                                        "
+                                        [showPlus]="false"
+                                        [colored]="false"
+                                        emphasis="inherit"
+                                    />
+                                    @if (row.amount !== null) {
+                                        /
+                                        <app-amount
+                                            [amount]="row.amount"
+                                            [currency]="currency()"
+                                            [showPlus]="false"
+                                            [colored]="false"
+                                            emphasis="inherit"
+                                        />
+                                    }
+                                </span>
+                            </span>
+                            @if (row.remaining === null) {
                                 <span
                                     class="type-body-medium text-on-surface-variant"
                                 >
                                     {{ 'budget.list.noLimit' | translate }}
                                 </span>
+                            } @else if (over(row)) {
+                                <span class="text-right">
+                                    <span
+                                        class="type-label-small block text-expense"
+                                    >
+                                        {{ 'budget.list.over' | translate }}
+                                    </span>
+                                    <app-amount
+                                        [amount]="row.remaining"
+                                        [currency]="currency()"
+                                    />
+                                </span>
                             } @else {
-                                <app-amount
-                                    [amount]="row.amount"
-                                    [currency]="currency()"
-                                    [showPlus]="false"
-                                />
+                                <span class="text-right">
+                                    <span
+                                        class="type-label-small block text-on-surface-variant"
+                                    >
+                                        {{ 'budget.list.left' | translate }}
+                                    </span>
+                                    <app-amount
+                                        [amount]="row.remaining"
+                                        [currency]="currency()"
+                                        [showPlus]="false"
+                                        [colored]="false"
+                                    />
+                                </span>
+                            }
+                            @let share = ratio(row);
+                            @if (share !== null) {
+                                <span
+                                    class="col-span-full h-1 overflow-hidden rounded-full bg-surface-highest"
+                                    role="img"
+                                    [attr.aria-label]="
+                                        'budget.list.usedRatio'
+                                            | translate
+                                                : { percent: percent(share) }
+                                    "
+                                >
+                                    <span
+                                        class="block h-full rounded-full transition-[width] duration-300"
+                                        [class.bg-primary]="!over(row)"
+                                        [class.bg-expense]="over(row)"
+                                        [style.width.%]="share * 100"
+                                    ></span>
+                                </span>
                             }
                         </button>
                         @if (!last) {
@@ -65,4 +137,17 @@ export class BudgetListComponent {
     readonly rows = input.required<BudgetRow[]>();
     readonly currency = input.required<string>();
     readonly edit = output<BudgetRow>();
+
+    /** Null hides the bar; a zero share still renders an empty track. */
+    protected ratio(row: BudgetRow): number | null {
+        return budgetRatio(row);
+    }
+
+    protected over(row: BudgetRow): boolean {
+        return isOverBudget(row);
+    }
+
+    protected percent(share: number): number {
+        return Math.round(share * 100);
+    }
 }
