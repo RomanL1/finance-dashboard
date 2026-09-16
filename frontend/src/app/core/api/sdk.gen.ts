@@ -17,6 +17,12 @@ import type {
     AccountGetAccountsResponses,
     AccountUpdateAccountData,
     AccountUpdateAccountResponses,
+    BudgetDeleteBudgetData,
+    BudgetDeleteBudgetResponses,
+    BudgetGetBudgetsData,
+    BudgetGetBudgetsResponses,
+    BudgetSetBudgetData,
+    BudgetSetBudgetResponses,
     CategoryCreateCategoryData,
     CategoryCreateCategoryResponses,
     CategoryDefaultsGetDefaultCategoriesData,
@@ -558,6 +564,67 @@ export const transactionUpdateTransaction = <
             },
         ],
         url: '/api/households/{householdId}/transactions/{transactionId}',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers,
+        },
+    });
+
+export const budgetGetBudgets = <ThrowOnError extends boolean = false>(
+    options: Options<BudgetGetBudgetsData, ThrowOnError>,
+): RequestResult<BudgetGetBudgetsResponses, unknown, ThrowOnError> =>
+    (options.client ?? client).get<
+        BudgetGetBudgetsResponses,
+        unknown,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/{householdId}/budgets',
+        ...options,
+    });
+
+export const budgetDeleteBudget = <ThrowOnError extends boolean = false>(
+    options: Options<BudgetDeleteBudgetData, ThrowOnError>,
+): RequestResult<BudgetDeleteBudgetResponses, unknown, ThrowOnError> =>
+    (options.client ?? client).delete<
+        BudgetDeleteBudgetResponses,
+        unknown,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/{householdId}/budgets/{categoryId}/{month}',
+        ...options,
+    });
+
+export const budgetSetBudget = <ThrowOnError extends boolean = false>(
+    options: Options<BudgetSetBudgetData, ThrowOnError>,
+): RequestResult<BudgetSetBudgetResponses, unknown, ThrowOnError> =>
+    (options.client ?? client).put<
+        BudgetSetBudgetResponses,
+        unknown,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/{householdId}/budgets/{categoryId}/{month}',
         ...options,
         headers: {
             'Content-Type': 'application/json',

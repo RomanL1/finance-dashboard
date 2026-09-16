@@ -23,7 +23,7 @@ import {
     type PeriodKind,
 } from '../../stats.types';
 
-/** Week / month / year toggle plus previous / next arrows. Tapping the label jumps back to today. */
+/** Period kind toggle plus previous / next arrows. Tapping the label jumps back to today. */
 @Component({
     selector: 'app-period-switcher',
     imports: [
@@ -35,19 +35,21 @@ import {
     ],
     template: `
         <div class="flex flex-col gap-2">
-            <mat-button-toggle-group
-                class="w-full"
-                hideSingleSelectionIndicator
-                [value]="period().kind"
-                (change)="changeKind($event.value)"
-                [attr.aria-label]="'stats.period.label' | translate"
-            >
-                @for (kind of kinds; track kind) {
-                    <mat-button-toggle class="flex-1" [value]="kind">
-                        {{ 'stats.period.' + kind | translate }}
-                    </mat-button-toggle>
-                }
-            </mat-button-toggle-group>
+            @if (kinds().length > 1) {
+                <mat-button-toggle-group
+                    class="w-full"
+                    hideSingleSelectionIndicator
+                    [value]="period().kind"
+                    (change)="changeKind($event.value)"
+                    [attr.aria-label]="'stats.period.label' | translate"
+                >
+                    @for (kind of kinds(); track kind) {
+                        <mat-button-toggle class="flex-1" [value]="kind">
+                            {{ 'stats.period.' + kind | translate }}
+                        </mat-button-toggle>
+                    }
+                </mat-button-toggle-group>
+            }
             <div class="flex items-center justify-between">
                 <app-icon-button
                     [ariaLabel]="'stats.period.previous' | translate"
@@ -79,7 +81,8 @@ export class PeriodSwitcherComponent {
     readonly period = input.required<Period>();
     readonly periodChange = output<Period>();
 
-    protected readonly kinds: PeriodKind[] = ['week', 'month', 'year'];
+    /** Which kinds the toggle offers. A single kind hides the toggle (month-only views). */
+    readonly kinds = input<PeriodKind[]>(['week', 'month', 'year']);
     private readonly locale = inject(LOCALE_ID);
 
     protected readonly label = computed(() =>

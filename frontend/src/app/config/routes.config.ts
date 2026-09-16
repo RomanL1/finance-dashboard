@@ -4,7 +4,7 @@ import {
     OnboardingCompleteGuard,
     OnboardingGuard,
 } from '../features/household/services/onboarding.guard';
-import { APP_PATHS } from './paths.config';
+import { ANALYTICS_PATHS, APP_PATHS } from './paths.config';
 
 export const routes: Routes = [
     {
@@ -46,11 +46,33 @@ export const routes: Routes = [
                     ),
             },
             {
+                /** Layout route: analytics tab row + outlet; both tabs share the `?period&start` params. */
                 path: APP_PATHS.ANALYTICS,
                 loadComponent: () =>
                     import('../features/analytics/pages/analytics.page').then(
                         (m) => m.AnalyticsPage,
                     ),
+                children: [
+                    {
+                        path: '',
+                        pathMatch: 'full',
+                        redirectTo: ANALYTICS_PATHS.CATEGORIES,
+                    },
+                    {
+                        path: ANALYTICS_PATHS.CATEGORIES,
+                        loadComponent: () =>
+                            import('../features/analytics/pages/category-stats.page').then(
+                                (m) => m.CategoryStatsPage,
+                            ),
+                    },
+                    {
+                        path: ANALYTICS_PATHS.BUDGETS,
+                        loadComponent: () =>
+                            import('../features/budget/pages/budgets.page').then(
+                                (m) => m.BudgetsPage,
+                            ),
+                    },
+                ],
             },
             {
                 path: APP_PATHS.SETTINGS,

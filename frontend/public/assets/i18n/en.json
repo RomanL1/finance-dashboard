@@ -269,6 +269,28 @@
         "empty": "No expenses in this period.",
         "uncategorized": "Uncategorized",
         "chartLabel": "Expenses per category",
-        "loadFailed": "Could not load the statistics."
+        "loadFailed": "Could not load the statistics.",
+        "tabs": {
+            "categories": "Categories",
+            "budgets": "Budgets"
+        }
+    },
+    "budget": {
+        "loadFailed": "Could not load the budgets.",
+        "list": {
+            "empty": "No categories yet. Add some in the settings.",
+            "noLimit": "No limit"
+        },
+        "form": {
+            "amountLabel": "Monthly limit",
+            "amountInvalid": "Enter 0 or a positive amount"
+        },
+        "dialog": {
+            "hint": "Limit for {{month}}. Leave 0 to budget nothing for this category.",
+            "remove": "Remove limit",
+            "cancel": "Cancel",
+            "save": "Save",
+            "failed": "Could not save the limit."
+        }
     }
 }

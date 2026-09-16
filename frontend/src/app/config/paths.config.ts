@@ -6,3 +6,9 @@ export const APP_PATHS = {
     ANALYTICS: 'analytics',
     SETTINGS: 'settings',
 } as const;
+
+/** Tabs under `analytics`, relative to it. */
+export const ANALYTICS_PATHS = {
+    CATEGORIES: 'categories',
+    BUDGETS: 'budgets',
+} as const;

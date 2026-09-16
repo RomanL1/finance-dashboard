@@ -1,0 +1,179 @@
+import { INestApplication } from '@nestjs/common';
+import { Test } from '@nestjs/testing';
+import request from 'supertest';
+import { AppModule } from '../src/app.module.js';
+import { setupApp } from '../src/shared/infra/app.setup.js';
+import { DEMO_USER } from '../src/shared/infra/db/seed.js';
+import { prepareTestDb } from './setup-db.js';
+
+describe('budget (e2e)', () => {
+    let app: INestApplication;
+    let cookie: string;
+    let householdId: string;
+    let categoryId: string;
+
+    const month = '2026-09';
+
+    beforeAll(async () => {
+        await prepareTestDb();
+        const moduleRef = await Test.createTestingModule({
+            imports: [AppModule],
+        }).compile();
+        app = setupApp(moduleRef.createNestApplication());
+        await app.init();
+    });
+
+    afterAll(() => app?.close());
+
+    const server = () => request(app.getHttpServer());
+    const base = () => `/api/households/${householdId}/budgets`;
+
+    it('rejects anonymous access with 401', async () => {
+        await server()
+            .get('/api/households/x/budgets?month=2026-09')
+            .expect(401);
+    });
+
+    it('signs in and onboards the demo user', async () => {
+        const signIn = await server()
+            .post('/api/auth/sign-in/email')
+            .send({ email: DEMO_USER.email, password: DEMO_USER.password })
+            .expect(200);
+        cookie = signIn.headers['set-cookie'][0].split(';')[0];
+
+        const onboarding = await server()
+            .post('/api/households/onboarding')
+            .set('Cookie', cookie)
+            .send({
+                name: 'Demo Haushalt',
+                categoryNames: ['Groceries'],
+                accounts: [
+                    {
+                        description: 'Checking',
+                        currency: 'CHF',
+                        initialValue: 100000,
+                        startDate: '2026-01-01',
+                    },
+                ],
+            })
+            .expect(201);
+        householdId = onboarding.body.id;
+
+        const categories = await server()
+            .get(`/api/households/${householdId}/categories`)
+            .set('Cookie', cookie)
+            .expect(200);
+        categoryId = categories.body[0].id;
+    });
+
+    it('GET returns an empty list for a month without limits', async () => {
+        const res = await server()
+            .get(`${base()}?month=${month}`)
+            .set('Cookie', cookie)
+            .expect(200);
+        expect(res.body).toEqual([]);
+    });
+
+    it('GET rejects a malformed month with 400', async () => {
+        await server()
+            .get(`${base()}?month=2026-9`)
+            .set('Cookie', cookie)
+            .expect(400);
+    });
+
+    it('GET returns 403 for a household the user is not a member of', async () => {
+        await server()
+            .get('/api/households/other-household/budgets?month=2026-09')
+            .set('Cookie', cookie)
+            .expect(403);
+    });
+
+    it('PUT creates a limit', async () => {
+        const res = await server()
+            .put(`${base()}/${categoryId}/${month}`)
+            .set('Cookie', cookie)
+            .send({ amount: 50000 })
+            .expect(200);
+        expect(res.body).toMatchObject({ categoryId, month, amount: 50000 });
+        expect(res.body.id).toBeDefined();
+    });
+
+    it('PUT replaces the amount of an existing limit, keeping one row', async () => {
+        await server()
+            .put(`${base()}/${categoryId}/${month}`)
+            .set('Cookie', cookie)
+            .send({ amount: 0 })
+            .expect(200);
+
+        const res = await server()
+            .get(`${base()}?month=${month}`)
+            .set('Cookie', cookie)
+            .expect(200);
+        expect(res.body).toHaveLength(1);
+        expect(res.body[0]).toMatchObject({ categoryId, month, amount: 0 });
+    });
+
+    it('PUT rejects a negative or fractional amount with 400', async () => {
+        await server()
+            .put(`${base()}/${categoryId}/${month}`)
+            .set('Cookie', cookie)
+            .send({ amount: -1 })
+            .expect(400);
+        await server()
+            .put(`${base()}/${categoryId}/${month}`)
+            .set('Cookie', cookie)
+            .send({ amount: 10.5 })
+            .expect(400);
+    });
+
+    it('PUT rejects a malformed month with 400', async () => {
+        await server()
+            .put(`${base()}/${categoryId}/2026-13`)
+            .set('Cookie', cookie)
+            .send({ amount: 100 })
+            .expect(400);
+    });
+
+    it('PUT returns 404 for a category outside the household', async () => {
+        await server()
+            .put(`${base()}/unknown-category/${month}`)
+            .set('Cookie', cookie)
+            .send({ amount: 100 })
+            .expect(404);
+    });
+
+    it('DELETE removes the limit with 204, then 404 on repeat', async () => {
+        await server()
+            .delete(`${base()}/${categoryId}/${month}`)
+            .set('Cookie', cookie)
+            .expect(204);
+        await server()
+            .delete(`${base()}/${categoryId}/${month}`)
+            .set('Cookie', cookie)
+            .expect(404);
+
+        const res = await server()
+            .get(`${base()}?month=${month}`)
+            .set('Cookie', cookie)
+            .expect(200);
+        expect(res.body).toEqual([]);
+    });
+
+    it('deleting the category removes its limits', async () => {
+        await server()
+            .put(`${base()}/${categoryId}/${month}`)
+            .set('Cookie', cookie)
+            .send({ amount: 100 })
+            .expect(200);
+        await server()
+            .delete(`/api/households/${householdId}/categories/${categoryId}`)
+            .set('Cookie', cookie)
+            .expect(204);
+
+        const res = await server()
+            .get(`${base()}?month=${month}`)
+            .set('Cookie', cookie)
+            .expect(200);
+        expect(res.body).toEqual([]);
+    });
+});

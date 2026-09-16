@@ -1,0 +1,40 @@
+import { ApiProperty } from '@nestjs/swagger';
+import { IsInt, Matches, Min } from 'class-validator';
+
+const MONTH_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/;
+
+export class BudgetDto {
+    @ApiProperty() id!: string;
+    @ApiProperty() categoryId!: string;
+    @ApiProperty({
+        description: 'Calendar month as YYYY-MM',
+        example: '2026-09',
+    })
+    month!: string;
+    @ApiProperty({
+        description:
+            'Limit in minor units of the household currency. 0 is a deliberate zero limit.',
+        example: 50000,
+    })
+    amount!: number;
+}
+
+export class BudgetListQueryDto {
+    @ApiProperty({
+        description: 'Calendar month as YYYY-MM',
+        example: '2026-09',
+    })
+    @Matches(MONTH_PATTERN, { message: 'month must be formatted as YYYY-MM' })
+    month!: string;
+}
+
+export class SetBudgetDto {
+    @ApiProperty({
+        description:
+            'Limit in minor units of the household currency, 0 or more',
+        example: 50000,
+    })
+    @IsInt()
+    @Min(0)
+    amount!: number;
+}

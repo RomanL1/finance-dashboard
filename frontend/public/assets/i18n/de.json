@@ -269,6 +269,28 @@
         "empty": "Keine Ausgaben in diesem Zeitraum.",
         "uncategorized": "Ohne Kategorie",
         "chartLabel": "Ausgaben pro Kategorie",
-        "loadFailed": "Statistik konnte nicht geladen werden."
+        "loadFailed": "Statistik konnte nicht geladen werden.",
+        "tabs": {
+            "categories": "Kategorien",
+            "budgets": "Budgets"
+        }
+    },
+    "budget": {
+        "loadFailed": "Budgets konnten nicht geladen werden.",
+        "list": {
+            "empty": "Noch keine Kategorien. Lege welche in den Einstellungen an.",
+            "noLimit": "Kein Limit"
+        },
+        "form": {
+            "amountLabel": "Monatslimit",
+            "amountInvalid": "Gib 0 oder einen positiven Betrag ein"
+        },
+        "dialog": {
+            "hint": "Limit für {{month}}. 0 bedeutet bewusst kein Budget für diese Kategorie.",
+            "remove": "Limit entfernen",
+            "cancel": "Abbrechen",
+            "save": "Speichern",
+            "failed": "Limit konnte nicht gespeichert werden."
+        }
     }
 }

@@ -220,6 +220,26 @@ export type CreateTransactionDto = {
     date: string;
 };
 
+export type BudgetDto = {
+    id: string;
+    categoryId: string;
+    /**
+     * Calendar month as YYYY-MM
+     */
+    month: string;
+    /**
+     * Limit in minor units of the household currency. 0 is a deliberate zero limit.
+     */
+    amount: number;
+};
+
+export type SetBudgetDto = {
+    /**
+     * Limit in minor units of the household currency, 0 or more
+     */
+    amount: number;
+};
+
 export type HealthHealthData = {
     body?: never;
     path?: never;
@@ -681,3 +701,84 @@ export type TransactionUpdateTransactionResponses = {
 
 export type TransactionUpdateTransactionResponse =
     TransactionUpdateTransactionResponses[keyof TransactionUpdateTransactionResponses];
+
+export type BudgetGetBudgetsData = {
+    body?: never;
+    path: {
+        /**
+         * Household id
+         */
+        householdId: string;
+    };
+    query: {
+        /**
+         * Calendar month as YYYY-MM
+         */
+        month: string;
+    };
+    url: '/api/households/{householdId}/budgets';
+};
+
+export type BudgetGetBudgetsResponses = {
+    200: Array<BudgetDto>;
+};
+
+export type BudgetGetBudgetsResponse =
+    BudgetGetBudgetsResponses[keyof BudgetGetBudgetsResponses];
+
+export type BudgetDeleteBudgetData = {
+    body?: never;
+    path: {
+        /**
+         * Household id
+         */
+        householdId: string;
+        /**
+         * Category id
+         */
+        categoryId: string;
+        /**
+         * Calendar month as YYYY-MM
+         */
+        month: string;
+    };
+    query?: never;
+    url: '/api/households/{householdId}/budgets/{categoryId}/{month}';
+};
+
+export type BudgetDeleteBudgetResponses = {
+    /**
+     * Budget removed; the category has no limit for that month
+     */
+    204: void;
+};
+
+export type BudgetDeleteBudgetResponse =
+    BudgetDeleteBudgetResponses[keyof BudgetDeleteBudgetResponses];
+
+export type BudgetSetBudgetData = {
+    body: SetBudgetDto;
+    path: {
+        /**
+         * Household id
+         */
+        householdId: string;
+        /**
+         * Category id
+         */
+        categoryId: string;
+        /**
+         * Calendar month as YYYY-MM
+         */
+        month: string;
+    };
+    query?: never;
+    url: '/api/households/{householdId}/budgets/{categoryId}/{month}';
+};
+
+export type BudgetSetBudgetResponses = {
+    200: BudgetDto;
+};
+
+export type BudgetSetBudgetResponse =
+    BudgetSetBudgetResponses[keyof BudgetSetBudgetResponses];
