@@ -5,6 +5,7 @@ import {
 } from '../../../shared/kernel/index.js';
 import type { Account, CreateAccount } from '../model/account.js';
 import type { AccountRepository } from '../repository/account.repository.js';
+import type { HouseholdService } from '../../household/service/household.service.js';
 import { AccountService } from './account.service.js';
 
 const dummyAccount: Account = {
@@ -47,11 +48,46 @@ function makeRepo(overrides: Partial<AccountRepository> = {}) {
     } as unknown as AccountRepository;
 }
 
+function makeHouseholds(baseCurrency = 'CHF') {
+    return {
+        getById: vi.fn().mockResolvedValue({ id: 'household-1', baseCurrency }),
+    } as unknown as HouseholdService;
+}
+
+function makeService(repo: AccountRepository, baseCurrency = 'CHF') {
+    return new AccountService(repo, makeHouseholds(baseCurrency));
+}
+
+describe('AccountService currency rule', () => {
+    it('rejects creating an account in another currency than the household', async () => {
+        const repo = makeRepo();
+        await expect(
+            makeService(repo).create('household-1', {
+                ...input,
+                currency: 'EUR',
+            }),
+        ).rejects.toBeInstanceOf(ValidationError);
+        expect(repo.createAccount).not.toHaveBeenCalled();
+    });
+
+    it('rejects updating an account into another currency', async () => {
+        const repo = makeRepo();
+        await expect(
+            makeService(repo).update('household-1', 'acc-1', {
+                description: 'Checking',
+                currency: 'USD',
+                startDate: new Date('2026-01-01'),
+            }),
+        ).rejects.toBeInstanceOf(ValidationError);
+        expect(repo.updateAccount).not.toHaveBeenCalled();
+    });
+});
+
 describe('AccountService', () => {
     describe('getAll', () => {
         it('returns all accounts for a household', async () => {
             const repo = makeRepo();
-            const service = new AccountService(repo);
+            const service = makeService(repo);
 
             const accounts = await service.getAll('household-1');
 
@@ -63,7 +99,7 @@ describe('AccountService', () => {
     describe('create', () => {
         it('creates an account with a generated id', async () => {
             const repo = makeRepo();
-            const service = new AccountService(repo);
+            const service = makeService(repo, 'USD');
 
             const created = await service.create('household-1', {
                 description: 'Checking',
@@ -90,7 +126,7 @@ describe('AccountService', () => {
         });
 
         it('throws ValidationError when description is empty or whitespace', async () => {
-            const service = new AccountService(makeRepo());
+            const service = makeService(makeRepo());
 
             await expect(
                 service.create('household-1', {
@@ -114,7 +150,7 @@ describe('AccountService', () => {
     describe('update', () => {
         it('replaces fields, keeps id and initial value', async () => {
             const repo = makeRepo();
-            const service = new AccountService(repo);
+            const service = makeService(repo);
             const archivedAt = new Date('2026-06-01');
 
             const { initialValue: _fixed, ...editable } = input;
@@ -131,7 +167,7 @@ describe('AccountService', () => {
         });
 
         it('throws NotFoundError when the repository returns null', async () => {
-            const service = new AccountService(
+            const service = makeService(
                 makeRepo({ updateAccount: vi.fn().mockResolvedValue(null) }),
             );
 
@@ -144,7 +180,7 @@ describe('AccountService', () => {
     describe('delete', () => {
         it('deletes an account', async () => {
             const repo = makeRepo();
-            await new AccountService(repo).delete('household-1', 'acc-1');
+            await makeService(repo).delete('household-1', 'acc-1');
             expect(repo.deleteAccount).toHaveBeenCalledWith(
                 'household-1',
                 'acc-1',
@@ -152,7 +188,7 @@ describe('AccountService', () => {
         });
 
         it('throws NotFoundError when nothing was deleted', async () => {
-            const service = new AccountService(
+            const service = makeService(
                 makeRepo({ deleteAccount: vi.fn().mockResolvedValue(false) }),
             );
             await expect(

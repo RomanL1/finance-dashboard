@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
+import { AmountComponent } from '../../../components/amount/amount.component';
 import { SectionHeaderComponent } from '../../../components/section-header/section-header.component';
 import { SkeletonComponent } from '../../../components/skeleton/skeleton.component';
 import { HouseholdService } from '../services/household.service';
@@ -29,6 +30,7 @@ import { TransactionHistoryComponent } from '../../transaction/smart_components/
     selector: 'app-home-page',
     imports: [
         AccountChipsComponent,
+        AmountComponent,
         TransactionHistoryComponent,
         PeriodSwitcherComponent,
         StatsCardComponent,
@@ -67,7 +69,7 @@ import { TransactionHistoryComponent } from '../../transaction/smart_components/
                             role="alert"
                             class="rounded-m3-md bg-error-container p-3 text-on-error-container"
                         >
-                            {{ 'stats.ratesUnavailable' | translate }}
+                            {{ 'stats.loadFailed' | translate }}
                         </p>
                     } @else if (stats.value(); as card) {
                         <div animate.enter="fade-in">
@@ -82,6 +84,23 @@ import { TransactionHistoryComponent } from '../../transaction/smart_components/
                     <app-section-header
                         [title]="'account.chips.title' | translate"
                     />
+                    <div class="mb-3">
+                        <p class="type-label-small text-on-surface-variant">
+                            {{ 'home.totalBalance' | translate }}
+                        </p>
+                        @if (totalBalance(); as total) {
+                            <div animate.enter="fade-in">
+                                <app-amount
+                                    [amount]="total.amount"
+                                    [currency]="total.currency"
+                                    [showPlus]="false"
+                                    emphasis="stat"
+                                />
+                            </div>
+                        } @else {
+                            <app-skeleton variant="stat" />
+                        }
+                    </div>
                     @if (accounts.value()) {
                         <app-account-chips [accounts]="activeAccounts()" />
                     } @else {
@@ -149,6 +168,16 @@ export class HomePage {
     readonly activeAccounts = computed(() =>
         (this.accounts.value() ?? []).filter((a) => isActiveAccount(a)),
     );
+
+    /** One currency per household, so the total is a plain sum of the active balances. Undefined while loading. */
+    readonly totalBalance = computed(() => {
+        const household = this.household.value();
+        if (!household || !this.accounts.value()) return undefined;
+        return {
+            currency: household.baseCurrency,
+            amount: this.activeAccounts().reduce((sum, a) => sum + a.amount, 0),
+        };
+    });
 
     constructor(
         private readonly householdService: HouseholdService,

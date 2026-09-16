@@ -11,8 +11,6 @@ export default defineConfig({
     env: {
       DB_FILE_NAME: ':memory:',
       BETTER_AUTH_SECRET: 'e2e-secret-0123456789-0123456789',
-      // Never reach the real provider from tests: connection refused, so the mirror alone is used.
-      EXCHANGE_RATE_API_URL: 'http://127.0.0.1:9/v2',
     },
   },
 });

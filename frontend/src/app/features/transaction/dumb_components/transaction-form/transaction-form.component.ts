@@ -97,7 +97,7 @@ function toLocalDateTime(instant: Date): string {
                 <mat-select formControlName="accountId">
                     @for (account of activeAccounts(); track account.id) {
                         <mat-option [value]="account.id"
-                            >{{ account.description }} ({{ account.currency }})
+                            >{{ account.description }}
                         </mat-option>
                     }
                 </mat-select>

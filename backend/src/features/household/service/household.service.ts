@@ -37,7 +37,7 @@ export class HouseholdService {
         return (await this.households.findMembershipByUserId(userId)) !== null;
     }
 
-    /** Owners only. Returns the membership so the caller keeps the role. */
+    /** Owners only. Returns the membership so the caller keeps the role. A currency change cascades to the accounts (repository). */
     async update(
         householdId: Id,
         userId: Id,

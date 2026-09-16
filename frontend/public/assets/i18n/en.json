@@ -21,7 +21,8 @@
         "noHouseholdFound": "No household found.",
         "add": "Add",
         "overview": "Overview",
-        "household": "Household {{name}}"
+        "household": "Household {{name}}",
+        "totalBalance": "Total balance"
     },
     "onboarding": {
         "title": "Welcome",
@@ -236,8 +237,8 @@
                 "owner": "Owner",
                 "member": "Member"
             },
-            "baseCurrency": "Base currency",
-            "baseCurrencyHint": "Analytics convert every amount into this currency."
+            "baseCurrency": "Currency",
+            "baseCurrencyHint": "Display only. Every account and transaction uses this currency; changing it relabels them, amounts are not converted."
         },
         "appearance": {
             "title": "Appearance",
@@ -260,15 +261,14 @@
             "next": "Next period",
             "today": "Jump to current period"
         },
-        "ratesUnavailable": "Exchange rates are not available right now. Amounts in other currencies cannot be converted."
+        "loadFailed": "Could not load the statistics."
     },
     "analytics": {
         "title": "Analytics",
         "subtitle": "Expenses per category in {{currency}}",
         "empty": "No expenses in this period.",
         "uncategorized": "Uncategorized",
-        "ratesUnavailable": "Exchange rates are not available right now. Amounts in other currencies cannot be converted.",
         "chartLabel": "Expenses per category",
-        "rates": "Foreign currencies converted at the ECB reference rate of each day."
+        "loadFailed": "Could not load the statistics."
     }
 }

@@ -63,18 +63,21 @@ function todayIsoDate(): string {
                 }
             </mat-form-field>
 
-            <mat-form-field class="flex flex-col gap-1">
-                <mat-label>{{
-                    'account.form.currencyLabel' | translate
-                }}</mat-label>
-                <mat-select formControlName="currency">
-                    @for (currency of currencies; track currency) {
-                        <mat-option [value]="currency">{{
-                            currency
-                        }}</mat-option>
-                    }
-                </mat-select>
-            </mat-form-field>
+            <!-- Only the first account (onboarding) picks; afterwards the household currency is fixed. -->
+            @if (!currency()) {
+                <mat-form-field class="flex flex-col gap-1">
+                    <mat-label>{{
+                        'account.form.currencyLabel' | translate
+                    }}</mat-label>
+                    <mat-select formControlName="currency">
+                        @for (currency of currencies; track currency) {
+                            <mat-option [value]="currency">{{
+                                currency
+                            }}</mat-option>
+                        }
+                    </mat-select>
+                </mat-form-field>
+            }
 
             <!-- Fixed after creation: the balance is derived from it plus transactions. -->
             @if (!defaults()) {
@@ -134,6 +137,8 @@ export class AccountFormComponent {
     readonly defaults = input<AccountDto | null>(null);
     readonly busy = input<boolean>(false);
     readonly errorMessage = input<string | null>(null);
+    /** Household currency. Set = every account uses it and the picker is hidden; null = the form picks (onboarding). */
+    readonly currency = input<string | null>(null);
     readonly submitted = output<CreateAccountDto>();
 
     readonly currencies = CURRENCIES;
@@ -167,6 +172,10 @@ export class AccountFormComponent {
                 startDate: d.startDate.slice(0, 10),
             });
             this.form.controls.initialValue.disable();
+        });
+        effect(() => {
+            const fixed = this.currency();
+            if (fixed) this.form.controls.currency.setValue(fixed as Currency);
         });
     }
 

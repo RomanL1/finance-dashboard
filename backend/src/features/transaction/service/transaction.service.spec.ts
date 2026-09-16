@@ -4,13 +4,11 @@ import {
     ValidationError,
 } from '../../../shared/kernel/index.js';
 import type {
-    CategoryDayExpense,
+    CategoryExpense,
     CreateTransaction,
 } from '../model/transaction.js';
 import type { TransactionRepository } from '../repository/transaction.repository.js';
 import type { HouseholdService } from '../../household/service/household.service.js';
-import type { ExchangeRateService } from '../../exchange-rate/service/exchange-rate.service.js';
-import type { CurrencyConverter } from '../../exchange-rate/model/exchange-rate.js';
 import { TransactionService } from './transaction.service.js';
 
 const input = {
@@ -40,8 +38,8 @@ function makeRepo(overrides: Partial<TransactionRepository> = {}) {
                 Promise.resolve({ ...entity, createdAt: new Date() }),
             ),
         deleteTransaction: vi.fn().mockResolvedValue(true),
-        sumByCurrencyAndDay: vi.fn().mockResolvedValue([]),
-        sumExpensesByCategoryAndDay: vi.fn().mockResolvedValue([]),
+        sumByRange: vi.fn().mockResolvedValue({ income: 0, expenses: 0 }),
+        sumExpensesByCategory: vi.fn().mockResolvedValue([]),
         ...overrides,
     } as unknown as TransactionRepository;
 }
@@ -52,22 +50,8 @@ function makeHouseholds(baseCurrency = 'CHF') {
     } as unknown as HouseholdService;
 }
 
-/** Fixed rates: 1 CHF = 2 EUR, 1 CHF = 4 USD. */
-function makeExchangeRates() {
-    const converter: CurrencyConverter = {
-        base: 'CHF',
-        toBase: (amount, currency) =>
-            currency === 'CHF'
-                ? amount
-                : Math.round(amount / { EUR: 2, USD: 4, GBP: 1 }[currency]),
-    };
-    return {
-        converter: vi.fn().mockResolvedValue(converter),
-    } as unknown as ExchangeRateService;
-}
-
 function makeService(repo: TransactionRepository) {
-    return new TransactionService(repo, makeHouseholds(), makeExchangeRates());
+    return new TransactionService(repo, makeHouseholds());
 }
 
 describe('TransactionService.getPage', () => {
@@ -194,28 +178,11 @@ describe('TransactionService.delete', () => {
 });
 
 describe('TransactionService.getStats', () => {
-    it('converts each day into the base currency and sums', async () => {
+    it('reports the sums in the household currency', async () => {
         const repo = makeRepo({
-            sumByCurrencyAndDay: vi.fn().mockResolvedValue([
-                {
-                    currency: 'CHF',
-                    day: '2026-09-01',
-                    income: 100,
-                    expenses: 40,
-                },
-                {
-                    currency: 'EUR',
-                    day: '2026-09-02',
-                    income: 200,
-                    expenses: 80,
-                },
-                {
-                    currency: 'USD',
-                    day: '2026-09-03',
-                    income: 0,
-                    expenses: 400,
-                },
-            ]),
+            sumByRange: vi
+                .fn()
+                .mockResolvedValue({ income: 200, expenses: 180 }),
         });
         const range = {
             from: new Date('2026-09-01'),
@@ -224,14 +191,13 @@ describe('TransactionService.getStats', () => {
 
         const stats = await makeService(repo).getStats('h-1', range);
 
-        // 1 CHF = 2 EUR = 4 USD → EUR 200/80 → 100/40, USD 400 → 100
         expect(stats).toEqual({
             currency: 'CHF',
             income: 200,
             expenses: 180,
             net: 20,
         });
-        expect(repo.sumByCurrencyAndDay).toHaveBeenCalledWith('h-1', range);
+        expect(repo.sumByRange).toHaveBeenCalledWith('h-1', range);
     });
 
     it('is all zeros for an empty range', async () => {
@@ -260,61 +226,30 @@ describe('TransactionService.getStats', () => {
 
 describe('TransactionService.getCategoryStats', () => {
     const range = { from: new Date('2026-09-01'), to: new Date('2026-10-01') };
-    const rows: CategoryDayExpense[] = [
-        {
-            currency: 'CHF',
-            categoryId: 'c1',
-            categoryName: 'Food',
-            day: '2026-09-01',
-            expenses: 1000,
-        },
-        {
-            currency: 'EUR',
-            categoryId: 'c1',
-            categoryName: 'Food',
-            day: '2026-09-02',
-            expenses: 2000,
-        },
-        {
-            currency: 'USD',
-            categoryId: null,
-            categoryName: null,
-            day: '2026-09-03',
-            expenses: 4000,
-        },
-        {
-            currency: 'CHF',
-            categoryId: 'c2',
-            categoryName: 'Rent',
-            day: '2026-09-04',
-            expenses: 5000,
-        },
+    const rows: CategoryExpense[] = [
+        { categoryId: 'c1', categoryName: 'Food', expenses: 2000 },
+        { categoryId: null, categoryName: null, expenses: 5000 },
+        { categoryId: 'c2', categoryName: 'Rent', expenses: 5000 },
+        { categoryId: 'c3', categoryName: 'Bills', expenses: 5000 },
     ];
 
-    it('converts every day into the base currency, merges per category and sorts descending', async () => {
+    it('sorts by expenses descending, ties by name with uncategorized last', async () => {
         const repo = makeRepo({
-            sumExpensesByCategoryAndDay: vi.fn().mockResolvedValue(rows),
+            sumExpensesByCategory: vi.fn().mockResolvedValue(rows),
         });
-        const exchangeRates = makeExchangeRates();
-        const service = new TransactionService(
-            repo,
-            makeHouseholds(),
-            exchangeRates,
-        );
 
-        await expect(service.getCategoryStats('h-1', range)).resolves.toEqual({
+        await expect(
+            makeService(repo).getCategoryStats('h-1', range),
+        ).resolves.toEqual({
             currency: 'CHF',
             categories: [
+                { categoryId: 'c3', categoryName: 'Bills', expenses: 5000 },
                 { categoryId: 'c2', categoryName: 'Rent', expenses: 5000 },
+                { categoryId: null, categoryName: null, expenses: 5000 },
                 { categoryId: 'c1', categoryName: 'Food', expenses: 2000 },
-                { categoryId: null, categoryName: null, expenses: 1000 },
             ],
         });
-        expect(exchangeRates.converter).toHaveBeenCalledWith(
-            'CHF',
-            range.from,
-            range.to,
-        );
+        expect(repo.sumExpensesByCategory).toHaveBeenCalledWith('h-1', range);
     });
 
     it('returns no categories for an empty range', async () => {

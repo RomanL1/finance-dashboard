@@ -55,7 +55,7 @@ import { AnalyticsService } from '../services/analytics.service';
                         role="alert"
                         class="rounded-m3-md bg-error-container p-3 text-on-error-container"
                     >
-                        {{ 'analytics.ratesUnavailable' | translate }}
+                        {{ 'analytics.loadFailed' | translate }}
                     </p>
                 } @else if (bars(); as rows) {
                     <div
@@ -75,9 +75,6 @@ import { AnalyticsService } from '../services/analytics.service';
                             />
                         }
                     </div>
-                    <p class="type-body-small text-on-surface-variant">
-                        {{ 'analytics.rates' | translate }}
-                    </p>
                 } @else {
                     <app-skeleton variant="stat-card" />
                 }

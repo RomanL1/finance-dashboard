@@ -14,22 +14,14 @@ import {
     TransactionFilter,
     TransactionPage,
 } from '../model/transaction.js';
-import {
-    Id,
-    NotFoundError,
-    SUPPORTED_CURRENCIES,
-    ValidationError,
-    type SupportedCurrency,
-} from '../../../shared/kernel/index.js';
+import { Id, NotFoundError } from '../../../shared/kernel/index.js';
 import { HouseholdService } from '../../household/service/household.service.js';
-import { ExchangeRateService } from '../../exchange-rate/service/exchange-rate.service.js';
 
 @Injectable()
 export class TransactionService {
     constructor(
         @Inject() private readonly transactions: TransactionRepository,
         private readonly households: HouseholdService,
-        private readonly exchangeRates: ExchangeRateService,
     ) {}
 
     /** A page past the end is empty, not an error. */
@@ -51,27 +43,14 @@ export class TransactionService {
         return { items, total, page, pageSize };
     }
 
-    /** Income / expenses / net in the household base currency, each day converted at its own rate. Future-dated entries inside the range count. */
+    /** Income / expenses / net in the household currency. Future-dated entries inside the range count. */
     async getStats(householdId: Id, range: DateRange): Promise<CurrencyStats> {
         assertValidRange(range);
         const household = await this.households.getById(householdId);
-        const rows = await this.transactions.sumByCurrencyAndDay(
+        const { income, expenses } = await this.transactions.sumByRange(
             householdId,
             range,
         );
-        const converter = await this.exchangeRates.converter(
-            household.baseCurrency,
-            range.from,
-            range.to,
-        );
-        let income = 0;
-        let expenses = 0;
-        for (const row of rows) {
-            const currency = asSupportedCurrency(row.currency);
-            const date = new Date(`${row.day}T00:00:00.000Z`);
-            income += converter.toBase(row.income, currency, date);
-            expenses += converter.toBase(row.expenses, currency, date);
-        }
         return {
             currency: household.baseCurrency,
             income,
@@ -80,41 +59,20 @@ export class TransactionService {
         };
     }
 
-    /** Expenses per category, converted into the household base currency at each day's rate. */
+    /** Expenses per category in the household currency, largest first. */
     async getCategoryStats(
         householdId: Id,
         range: DateRange,
     ): Promise<CategoryStats> {
         assertValidRange(range);
         const household = await this.households.getById(householdId);
-        const rows = await this.transactions.sumExpensesByCategoryAndDay(
+        const categories = await this.transactions.sumExpensesByCategory(
             householdId,
             range,
         );
-        const converter = await this.exchangeRates.converter(
-            household.baseCurrency,
-            range.from,
-            range.to,
-        );
-
-        const byCategory = new Map<Id | null, CategoryExpense>();
-        for (const row of rows) {
-            const converted = converter.toBase(
-                row.expenses,
-                asSupportedCurrency(row.currency),
-                new Date(`${row.day}T00:00:00.000Z`),
-            );
-            const entry = byCategory.get(row.categoryId) ?? {
-                categoryId: row.categoryId,
-                categoryName: row.categoryName,
-                expenses: 0,
-            };
-            entry.expenses += converted;
-            byCategory.set(row.categoryId, entry);
-        }
         return {
             currency: household.baseCurrency,
-            categories: [...byCategory.values()].sort(compareCategoryExpense),
+            categories: categories.toSorted(compareCategoryExpense),
         };
     }
 
@@ -182,11 +140,4 @@ function compareCategoryExpense(
     if (a.categoryName === null) return b.categoryName === null ? 0 : 1;
     if (b.categoryName === null) return -1;
     return a.categoryName.localeCompare(b.categoryName);
-}
-
-function asSupportedCurrency(value: string): SupportedCurrency {
-    if (!(SUPPORTED_CURRENCIES as readonly string[]).includes(value)) {
-        throw new ValidationError(`Unsupported account currency ${value}`);
-    }
-    return value as SupportedCurrency;
 }

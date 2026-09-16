@@ -46,6 +46,7 @@ import type {
             <app-account-form
                 [formId]="formId"
                 [defaults]="data.account ?? null"
+                [currency]="data.currency"
                 [busy]="busy()"
                 [errorMessage]="error()"
                 (submitted)="save($event)"

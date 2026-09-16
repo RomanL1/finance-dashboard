@@ -251,12 +251,14 @@ export class SettingsPage {
         protected readonly theme: ThemeService,
     ) {}
 
+    /** Relabels every account server-side, so the list reloads too. Amounts are not converted. */
     async setBaseCurrency(
         householdId: string,
         baseCurrency: Currency,
     ): Promise<void> {
         await this.householdService.update(householdId, { baseCurrency });
         this.household.reload();
+        this.accounts.reload();
     }
 
     openAccountDialog(householdId: string, accountId?: string): void {
@@ -266,6 +268,7 @@ export class SettingsPage {
             AccountDto
         >(AccountDialogComponent, {
             householdId,
+            currency: this.household.value()!.baseCurrency,
             account: this.find(accountId),
         });
         ref.afterClosed().subscribe((saved) => {

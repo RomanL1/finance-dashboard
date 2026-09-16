@@ -9,6 +9,8 @@ export type { AccountDto, CreateAccountDto, UpdateAccountDto };
 /** What the account dialog needs from its opener. `account` set = edit mode. */
 export interface AccountDialogData {
     householdId: string;
+    /** Household currency; every account uses it. */
+    currency: string;
     account?: AccountDto;
 }
 

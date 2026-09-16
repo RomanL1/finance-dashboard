@@ -50,7 +50,7 @@ export class OnboardingService {
             id: newId(),
             name: input.name,
             onboardingComplete: true,
-            // The first account's currency is the household's default reporting currency.
+            // The first account's currency becomes the household currency; every account must share it.
             baseCurrency: baseCurrencyOf(input.accounts),
             createdAt: new Date(),
         };
@@ -70,6 +70,9 @@ function baseCurrencyOf(accounts: CreateAccountInput[]): SupportedCurrency {
     const first = accounts[0]?.currency;
     if (!isSupportedCurrency(first)) {
         throw new ValidationError('Onboarding needs at least one account');
+    }
+    if (accounts.some((a) => a.currency !== first)) {
+        throw new ValidationError('All accounts must use the same currency');
     }
     return first;
 }

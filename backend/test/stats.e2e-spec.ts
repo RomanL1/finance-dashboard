@@ -3,21 +3,16 @@ import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import { AppModule } from '../src/app.module.js';
 import { setupApp } from '../src/shared/infra/app.setup.js';
-import { db } from '../src/shared/infra/db/db.js';
 import { DEMO_USER } from '../src/shared/infra/db/seed.js';
-import { exchangeRate } from '../src/shared/infra/db/schema.js';
 import { prepareTestDb } from './setup-db.js';
 
-/**
- * Stats are converted into the base currency over a half-open range; future entries inside the range count.
- * The provider is unreachable here (see vitest.config.e2e.ts): rates are seeded into the mirror.
- */
+/** Stats are summed in the household currency over a half-open range; future entries inside the range count. */
 describe('transaction stats (e2e)', () => {
     let app: INestApplication;
     let cookie: string;
     let householdId: string;
-    let chfAccountId: string;
-    let eurAccountId: string;
+    let checkingId: string;
+    let savingsId: string;
 
     const stats = (from: string, to: string) =>
         request(app.getHttpServer())
@@ -64,8 +59,8 @@ describe('transaction stats (e2e)', () => {
                         startDate: '2026-01-01',
                     },
                     {
-                        description: 'Travel',
-                        currency: 'EUR',
+                        description: 'Savings',
+                        currency: 'CHF',
                         initialValue: 0,
                         startDate: '2026-01-01',
                     },
@@ -77,24 +72,19 @@ describe('transaction stats (e2e)', () => {
             .get(`/api/households/${householdId}/accounts`)
             .set('Cookie', cookie)
             .expect(200);
-        chfAccountId = accounts.body.find(
-            (a: { currency: string }) => a.currency === 'CHF',
+        checkingId = accounts.body.find(
+            (a: { description: string }) => a.description === 'Checking',
         ).id;
-        eurAccountId = accounts.body.find(
-            (a: { currency: string }) => a.currency === 'EUR',
+        savingsId = accounts.body.find(
+            (a: { description: string }) => a.description === 'Savings',
         ).id;
 
-        await add(chfAccountId, 'income', 5000, '2026-09-01T00:00:00.000Z'); // on `from`: counted
-        await add(chfAccountId, 'expense', 1200, '2026-09-15T12:00:00.000Z');
-        await add(chfAccountId, 'expense', 800, '2099-09-28T12:00:00.000Z'); // far future, outside
-        await add(chfAccountId, 'expense', 300, '2026-09-29T12:00:00.000Z'); // future within month
-        await add(chfAccountId, 'income', 999, '2026-10-01T00:00:00.000Z'); // on `to`: excluded
-        await add(eurAccountId, 'expense', 2500, '2026-09-10T12:00:00.000Z'); // 1 CHF = 2 EUR → 1250
-        await db
-            .insert(exchangeRate)
-            .values([
-                { base: 'CHF', quote: 'EUR', date: '2026-09-01', rate: 2 },
-            ]);
+        await add(checkingId, 'income', 5000, '2026-09-01T00:00:00.000Z'); // on `from`: counted
+        await add(checkingId, 'expense', 1200, '2026-09-15T12:00:00.000Z');
+        await add(checkingId, 'expense', 800, '2099-09-28T12:00:00.000Z'); // far future, outside
+        await add(checkingId, 'expense', 300, '2026-09-29T12:00:00.000Z'); // future within month
+        await add(checkingId, 'income', 999, '2026-10-01T00:00:00.000Z'); // on `to`: excluded
+        await add(savingsId, 'expense', 1250, '2026-09-10T12:00:00.000Z'); // other account, same household
     });
 
     afterAll(() => app?.close());

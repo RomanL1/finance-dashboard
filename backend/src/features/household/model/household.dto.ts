@@ -20,7 +20,8 @@ export class HouseholdDto {
     @ApiProperty() onboardingComplete!: boolean;
     @ApiProperty({
         enum: SUPPORTED_CURRENCIES,
-        description: 'Currency that analytics convert every amount into',
+        description:
+            'Currency of every account and transaction; changing it relabels them without converting amounts',
     })
     baseCurrency!: SupportedCurrency;
     @ApiProperty() createdAt!: string;

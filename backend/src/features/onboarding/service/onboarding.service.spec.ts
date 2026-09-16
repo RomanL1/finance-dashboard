@@ -65,6 +65,22 @@ describe('OnboardingService', () => {
         });
     });
 
+    it('rejects accounts in different currencies', async () => {
+        const repo = makeRepo();
+        const service = new OnboardingService(repo, makeHouseholds());
+
+        await expect(
+            service.onboard('u1', {
+                ...input,
+                accounts: [
+                    ...input.accounts,
+                    { ...input.accounts[0], currency: 'EUR' },
+                ],
+            }),
+        ).rejects.toBeInstanceOf(ValidationError);
+        expect(repo.insertHousehold).not.toHaveBeenCalled();
+    });
+
     it('refuses a second household for the same user', async () => {
         const repo = makeRepo();
         const service = new OnboardingService(repo, makeHouseholds(true));

@@ -7,7 +7,6 @@ import { CategoryModule } from './features/category/category.module.js';
 import { AccountModule } from './features/account/account.module.js';
 import { OnboardingModule } from './features/onboarding/onboarding.module.js';
 import { TransactionModule } from './features/transaction/transaction.module.js';
-import { ExchangeRateModule } from './features/exchange-rate/exchange-rate.module.js';
 
 @Module({
     imports: [
@@ -19,7 +18,6 @@ import { ExchangeRateModule } from './features/exchange-rate/exchange-rate.modul
         AccountModule,
         OnboardingModule,
         TransactionModule,
-        ExchangeRateModule,
     ],
 })
 export class AppModule {}

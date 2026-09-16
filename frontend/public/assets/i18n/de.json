@@ -21,7 +21,8 @@
         "noHouseholdFound": "Kein Haushalt gefunden.",
         "add": "Hinzufügen",
         "overview": "Übersicht",
-        "household": "Haushalt {{name}}"
+        "household": "Haushalt {{name}}",
+        "totalBalance": "Gesamtsaldo"
     },
     "onboarding": {
         "title": "Willkommen",
@@ -236,8 +237,8 @@
                 "owner": "Inhaber:in",
                 "member": "Mitglied"
             },
-            "baseCurrency": "Basiswährung",
-            "baseCurrencyHint": "Die Analyse rechnet alle Beträge in diese Währung um."
+            "baseCurrency": "Währung",
+            "baseCurrencyHint": "Nur Anzeige. Alle Konten und Transaktionen verwenden diese Währung; eine Änderung benennt sie um, Beträge werden nicht umgerechnet."
         },
         "appearance": {
             "title": "Darstellung",
@@ -260,15 +261,14 @@
             "next": "Nächster Zeitraum",
             "today": "Zum aktuellen Zeitraum"
         },
-        "ratesUnavailable": "Wechselkurse sind gerade nicht verfügbar. Beträge in anderen Währungen können nicht umgerechnet werden."
+        "loadFailed": "Statistik konnte nicht geladen werden."
     },
     "analytics": {
         "title": "Analyse",
         "subtitle": "Ausgaben pro Kategorie in {{currency}}",
         "empty": "Keine Ausgaben in diesem Zeitraum.",
         "uncategorized": "Ohne Kategorie",
-        "ratesUnavailable": "Wechselkurse sind gerade nicht verfügbar. Beträge in anderen Währungen können nicht umgerechnet werden.",
         "chartLabel": "Ausgaben pro Kategorie",
-        "rates": "Fremdwährungen zum EZB-Referenzkurs des jeweiligen Tages umgerechnet."
+        "loadFailed": "Statistik konnte nicht geladen werden."
     }
 }

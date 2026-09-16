@@ -51,16 +51,13 @@ export interface DateRange {
     to: Date;
 }
 
-/** Income and expense sums of one currency on one calendar day; the unit the converter works on. */
-export interface CurrencyDaySums {
-    currency: string;
-    /** `YYYY-MM-DD` (UTC) */
-    day: string;
+/** Income and expense sums over a range. Minor units. */
+export interface RangeSums {
     income: number;
     expenses: number;
 }
 
-/** Sums over a date range, every amount converted into the household base currency. Minor units. */
+/** Sums over a date range in the household currency. Minor units. */
 export interface CurrencyStats {
     currency: string;
     income: number;
@@ -69,25 +66,15 @@ export interface CurrencyStats {
     net: number;
 }
 
-/** Expense sum of one category in one currency on one calendar day; the unit the converter works on. */
-export interface CategoryDayExpense {
-    currency: string;
-    categoryId: Id | null;
-    categoryName: string | null;
-    /** `YYYY-MM-DD` (UTC) */
-    day: string;
-    expenses: number;
-}
-
 export interface CategoryExpense {
     categoryId: Id | null;
     /** Null for uncategorized entries. */
     categoryName: string | null;
-    /** Minor units of the household's base currency. */
+    /** Minor units of the household currency. */
     expenses: number;
 }
 
-/** Expenses per category over a range, converted into one currency. Sorted by expenses, descending. */
+/** Expenses per category over a range in the household currency. Sorted by expenses, descending. */
 export interface CategoryStats {
     currency: string;
     categories: CategoryExpense[];

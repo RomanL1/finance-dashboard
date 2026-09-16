@@ -145,9 +145,9 @@ export class StatsQueryDto {
     to!: string;
 }
 
-/** Sums over the range, every amount converted into the household base currency at its day's rate. */
+/** Sums over the range in the household currency. */
 export class CurrencyStatsDto {
-    @ApiProperty({ example: 'CHF', description: 'Household base currency' })
+    @ApiProperty({ example: 'CHF', description: 'Household currency' })
     currency!: string;
     @ApiProperty({ description: 'Minor units (cents)' }) income!: number;
     @ApiProperty({ description: 'Minor units (cents)' }) expenses!: number;
@@ -167,9 +167,9 @@ export class CategoryExpenseDto {
     expenses!: number;
 }
 
-/** Expenses per category, every amount converted into the household base currency at its day's rate. */
+/** Expenses per category in the household currency. */
 export class CategoryStatsDto {
-    @ApiProperty({ example: 'CHF', description: 'Household base currency' })
+    @ApiProperty({ example: 'CHF', description: 'Household currency' })
     currency!: string;
     @ApiProperty({
         type: [CategoryExpenseDto],

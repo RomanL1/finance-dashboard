@@ -1,3 +1,4 @@
+import { inputBinding, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideTranslateService, TranslateService } from '@ngx-translate/core';
 import type { CreateAccountDto } from '../../account.types';
@@ -39,6 +40,20 @@ describe('AccountFormComponent', () => {
         expect(fixture.componentInstance.form.controls.currency.value).toBe(
             'CHF',
         );
+    });
+
+    it('hides the currency picker and uses the household currency when one is given', () => {
+        const withCurrency = TestBed.createComponent(AccountFormComponent, {
+            bindings: [inputBinding('currency', signal('EUR'))],
+        });
+        withCurrency.detectChanges();
+
+        expect(
+            withCurrency.nativeElement.querySelector('mat-select'),
+        ).toBeNull();
+        expect(
+            withCurrency.componentInstance.form.controls.currency.value,
+        ).toBe('EUR');
     });
 
     it('disables submit while the form is invalid', () => {

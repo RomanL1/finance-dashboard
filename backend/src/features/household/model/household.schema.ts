@@ -16,7 +16,7 @@ export const household = sqliteTable('household', {
     onboardingComplete: integer('onboarding_complete', { mode: 'boolean' })
         .notNull()
         .default(false),
-    /** Currency that multi-currency figures (analytics) are converted into. Set from the first account at onboarding. */
+    /** The one currency of every account and transaction in the household. Set from the first account at onboarding, display only. */
     baseCurrency: text('base_currency', { enum: SUPPORTED_CURRENCIES })
         .notNull()
         .default('CHF'),

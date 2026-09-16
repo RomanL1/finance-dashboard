@@ -8,7 +8,7 @@ export interface Household {
     id: Id;
     name: string;
     onboardingComplete: boolean;
-    /** Currency that multi-currency figures are converted into. */
+    /** Every account and transaction uses this currency. Changing it relabels, never converts. */
     baseCurrency: SupportedCurrency;
     createdAt: Date;
 }

@@ -3,21 +3,16 @@ import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import { AppModule } from '../src/app.module.js';
 import { setupApp } from '../src/shared/infra/app.setup.js';
-import { db } from '../src/shared/infra/db/db.js';
 import { DEMO_USER } from '../src/shared/infra/db/seed.js';
-import { exchangeRate } from '../src/shared/infra/db/schema.js';
 import { prepareTestDb } from './setup-db.js';
 
-/**
- * Category stats convert every currency into the household base currency at the day's rate.
- * The provider is unreachable here (see vitest.config.e2e.ts), so rates come from the mirror.
- */
+/** Category stats are summed in the household currency; a currency change relabels accounts without converting. */
 describe('category stats (e2e)', () => {
     let app: INestApplication;
     let cookie: string;
     let householdId: string;
-    let chfAccountId: string;
-    let eurAccountId: string;
+    let checkingId: string;
+    let travelId: string;
     let utilitiesId: string;
 
     const stats = (from: string, to: string) =>
@@ -66,7 +61,7 @@ describe('category stats (e2e)', () => {
                     },
                     {
                         description: 'Travel',
-                        currency: 'EUR',
+                        currency: 'CHF',
                         initialValue: 0,
                         startDate: '2026-01-01',
                     },
@@ -80,11 +75,11 @@ describe('category stats (e2e)', () => {
             .get(`/api/households/${householdId}/accounts`)
             .set('Cookie', cookie)
             .expect(200);
-        chfAccountId = accounts.body.find(
-            (a: { currency: string }) => a.currency === 'CHF',
+        checkingId = accounts.body.find(
+            (a: { description: string }) => a.description === 'Checking',
         ).id;
-        eurAccountId = accounts.body.find(
-            (a: { currency: string }) => a.currency === 'EUR',
+        travelId = accounts.body.find(
+            (a: { description: string }) => a.description === 'Travel',
         ).id;
         const categories = await request(app.getHttpServer())
             .get(`/api/households/${householdId}/categories`)
@@ -92,26 +87,15 @@ describe('category stats (e2e)', () => {
             .expect(200);
         utilitiesId = categories.body[0].id;
 
-        await add(chfAccountId, 1000, '2026-09-01T12:00:00.000Z', utilitiesId);
-        await add(eurAccountId, 2000, '2026-09-02T12:00:00.000Z', utilitiesId); // 1 CHF = 2 EUR → 1000
-        await add(eurAccountId, 4000, '2026-09-20T12:00:00.000Z'); // 1 CHF = 4 EUR → 1000, uncategorized
-        await add(chfAccountId, 300, '2026-08-31T23:59:59.000Z', utilitiesId); // before range
+        await add(checkingId, 1000, '2026-09-01T12:00:00.000Z', utilitiesId);
+        await add(travelId, 1000, '2026-09-02T12:00:00.000Z', utilitiesId);
+        await add(travelId, 1000, '2026-09-20T12:00:00.000Z'); // uncategorized
+        await add(checkingId, 300, '2026-08-31T23:59:59.000Z', utilitiesId); // before range
     });
 
     afterAll(() => app?.close());
 
-    it('answers 503 when a conversion is needed, nothing is mirrored and the provider is down', async () => {
-        await stats(
-            '2026-09-01T00:00:00.000Z',
-            '2026-10-01T00:00:00.000Z',
-        ).expect(503);
-    });
-
-    it("converts at each day's rate into the base currency, merged per category", async () => {
-        await db.insert(exchangeRate).values([
-            { base: 'CHF', quote: 'EUR', date: '2026-08-30', rate: 2 },
-            { base: 'CHF', quote: 'EUR', date: '2026-09-05', rate: 4 },
-        ]);
+    it('sums per category across accounts, largest first', async () => {
         const res = await stats(
             '2026-09-01T00:00:00.000Z',
             '2026-10-01T00:00:00.000Z',
@@ -137,12 +121,7 @@ describe('category stats (e2e)', () => {
         expect(res.body).toEqual({ currency: 'CHF', categories: [] });
     });
 
-    it('follows a changed base currency', async () => {
-        await db
-            .insert(exchangeRate)
-            .values([
-                { base: 'EUR', quote: 'CHF', date: '2026-08-30', rate: 0.5 },
-            ]);
+    it('relabels every account and the stats when the household currency changes, amounts untouched', async () => {
         await request(app.getHttpServer())
             .patch(`/api/households/${householdId}`)
             .set('Cookie', cookie)
@@ -150,22 +129,42 @@ describe('category stats (e2e)', () => {
             .expect(200)
             .expect((r) => expect(r.body.baseCurrency).toBe('EUR'));
 
+        const accounts = await request(app.getHttpServer())
+            .get(`/api/households/${householdId}/accounts`)
+            .set('Cookie', cookie)
+            .expect(200);
+        expect(
+            accounts.body.map((a: { currency: string }) => a.currency),
+        ).toEqual(['EUR', 'EUR']);
+
         const res = await stats(
             '2026-09-01T00:00:00.000Z',
             '2026-10-01T00:00:00.000Z',
         ).expect(200);
         expect(res.body).toEqual({
             currency: 'EUR',
-            // Tie on 4000: named category first, uncategorized last.
             categories: [
                 {
                     categoryId: utilitiesId,
                     categoryName: 'Utilities',
-                    expenses: 4000,
+                    expenses: 2000,
                 },
-                { categoryId: null, categoryName: null, expenses: 4000 },
+                { categoryId: null, categoryName: null, expenses: 1000 },
             ],
         });
+    });
+
+    it('rejects an account in another currency than the household with 400', async () => {
+        await request(app.getHttpServer())
+            .post(`/api/households/${householdId}/accounts`)
+            .set('Cookie', cookie)
+            .send({
+                description: 'Foreign',
+                currency: 'USD',
+                initialValue: 0,
+                startDate: '2026-01-01',
+            })
+            .expect(400);
     });
 
     it('rejects an unsupported base currency with 400', async () => {
