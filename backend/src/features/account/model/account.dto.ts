@@ -9,7 +9,10 @@ import {
     IsString,
     MaxLength,
 } from 'class-validator';
-import { SUPPORTED_CURRENCIES } from '../../../shared/kernel/index.js';
+import {
+    SUPPORTED_CURRENCIES,
+    type SupportedCurrency,
+} from '../../../shared/kernel/index.js';
 
 export class AccountDto {
     @ApiProperty() id!: string;
@@ -23,6 +26,17 @@ export class AccountDto {
     @ApiProperty() startDate!: string;
     @ApiProperty({ type: String, nullable: true }) archivedAt!: string | null;
     @ApiProperty() createdAt!: string;
+}
+
+/** Sum of the active account balances in the household base currency. */
+export class HouseholdBalanceDto {
+    @ApiProperty({ enum: SUPPORTED_CURRENCIES, example: 'CHF' })
+    currency!: SupportedCurrency;
+    @ApiProperty({
+        description:
+            'Minor units (cents); negative when the household is overdrawn',
+    })
+    amount!: number;
 }
 
 export class CreateAccountDto {

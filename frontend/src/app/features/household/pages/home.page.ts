@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
+import { AmountComponent } from '../../../components/amount/amount.component';
 import { SectionHeaderComponent } from '../../../components/section-header/section-header.component';
 import { SkeletonComponent } from '../../../components/skeleton/skeleton.component';
 import { HouseholdService } from '../services/household.service';
@@ -29,6 +30,7 @@ import { TransactionHistoryComponent } from '../../transaction/smart_components/
     selector: 'app-home-page',
     imports: [
         AccountChipsComponent,
+        AmountComponent,
         TransactionHistoryComponent,
         PeriodSwitcherComponent,
         StatsCardComponent,
@@ -82,6 +84,30 @@ import { TransactionHistoryComponent } from '../../transaction/smart_components/
                     <app-section-header
                         [title]="'account.chips.title' | translate"
                     />
+                    <div class="mb-3">
+                        <p class="type-label-small text-on-surface-variant">
+                            {{ 'home.totalBalance' | translate }}
+                        </p>
+                        @if (balance.error()) {
+                            <p
+                                role="alert"
+                                class="type-body-medium text-on-surface-variant"
+                            >
+                                {{ 'stats.ratesUnavailable' | translate }}
+                            </p>
+                        } @else if (balance.value(); as total) {
+                            <div animate.enter="fade-in">
+                                <app-amount
+                                    [amount]="total.amount"
+                                    [currency]="total.currency"
+                                    [showPlus]="false"
+                                    emphasis="stat"
+                                />
+                            </div>
+                        } @else {
+                            <app-skeleton variant="stat" />
+                        }
+                    </div>
                     @if (accounts.value()) {
                         <app-account-chips [accounts]="activeAccounts()" />
                     } @else {
@@ -123,6 +149,12 @@ export class HomePage {
     readonly accounts = resource({
         params: () => this.household.value()?.id,
         loader: ({ params }) => this.accountService.list(params),
+    });
+
+    /** Active accounts summed in the base currency; a snapshot at today's rate. */
+    readonly balance = resource({
+        params: () => this.household.value()?.id,
+        loader: ({ params }) => this.accountService.householdBalance(params),
     });
 
     readonly categories = resource({
@@ -170,6 +202,7 @@ export class HomePage {
     /** Balance and period sums are derived from transactions server-side. */
     reloadAfterTransactionChange(): void {
         this.accounts.reload();
+        this.balance.reload();
         this.stats.reload();
     }
 }

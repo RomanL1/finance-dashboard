@@ -4,10 +4,12 @@ import {
     accountDeleteAccount,
     accountGetAccounts,
     accountUpdateAccount,
+    householdBalanceGetBalance,
 } from '../../../core/api';
 import type {
     AccountDto,
     CreateAccountDto,
+    HouseholdBalanceDto,
     UpdateAccountDto,
 } from '../account.types';
 
@@ -15,6 +17,15 @@ import type {
 export class AccountService {
     async list(householdId: string): Promise<AccountDto[]> {
         const response = await accountGetAccounts({
+            path: { householdId },
+            throwOnError: true,
+        });
+        return response.data;
+    }
+
+    /** Active accounts summed in the household base currency. Rejects with a 503 response when a rate is missing. */
+    async householdBalance(householdId: string): Promise<HouseholdBalanceDto> {
+        const response = await householdBalanceGetBalance({
             path: { householdId },
             throwOnError: true,
         });

@@ -82,22 +82,18 @@ export class ExchangeRateService implements OnApplicationBootstrap {
             base,
             addDays(fromDay, -1),
         );
-        // No eager check: a household whose accounts all use `base` never needs a rate.
-        const table = buildLookup([...before, ...inRange]);
+        return makeConverter(base, [...before, ...inRange]);
+    }
 
-        return {
-            base,
-            toBase(amount, currency, date) {
-                if (currency === base) return amount;
-                const rate = lookup(table, currency, toDay(date));
-                if (rate === undefined) {
-                    throw new UnavailableError(
-                        `No ${base}/${currency} exchange rate on or before ${toDay(date)}`,
-                    );
-                }
-                return Math.round(amount / rate);
-            },
-        };
+    /**
+     * A converter over the newest mirrored rate per quote, for point-in-time figures such as
+     * balances. Reads the mirror only: no provider round trip, so a dashboard load never waits on
+     * the network. Staleness is not checked here; the warm-up and the analytics requests keep the
+     * mirror current.
+     */
+    async latestConverter(base: SupportedCurrency): Promise<CurrencyConverter> {
+        const rows = await this.rates.latestOnOrBefore(base, toDay(this.now()));
+        return makeConverter(base, rows);
     }
 
     /**
@@ -140,6 +136,27 @@ export class ExchangeRateService implements OnApplicationBootstrap {
             );
         }
     }
+}
+
+/** No eager check: a household whose accounts all use `base` never needs a rate. */
+function makeConverter(
+    base: SupportedCurrency,
+    rows: ExchangeRate[],
+): CurrencyConverter {
+    const table = buildLookup(rows);
+    return {
+        base,
+        toBase(amount, currency, date) {
+            if (currency === base) return amount;
+            const rate = lookup(table, currency, toDay(date));
+            if (rate === undefined) {
+                throw new UnavailableError(
+                    `No ${base}/${currency} exchange rate on or before ${toDay(date)}`,
+                );
+            }
+            return Math.round(amount / rate);
+        },
+    };
 }
 
 /** quote → sorted days → rate. */

@@ -1,10 +1,16 @@
 import type {
     AccountDto,
     CreateAccountDto,
+    HouseholdBalanceDto,
     UpdateAccountDto,
 } from '../../core/api';
 
-export type { AccountDto, CreateAccountDto, UpdateAccountDto };
+export type {
+    AccountDto,
+    CreateAccountDto,
+    HouseholdBalanceDto,
+    UpdateAccountDto,
+};
 
 /** What the account dialog needs from its opener. `account` set = edit mode. */
 export interface AccountDialogData {

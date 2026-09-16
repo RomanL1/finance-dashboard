@@ -21,6 +21,7 @@
         "noHouseholdFound": "Kein Haushalt gefunden.",
         "add": "Hinzufügen",
         "overview": "Übersicht",
+        "totalBalance": "Gesamtsaldo",
         "household": "Haushalt {{name}}"
     },
     "onboarding": {

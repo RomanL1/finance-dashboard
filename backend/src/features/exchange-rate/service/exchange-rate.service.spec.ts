@@ -214,3 +214,32 @@ describe('ExchangeRateService.converter', () => {
         ).toThrow(UnavailableError);
     });
 });
+
+describe('ExchangeRateService.latestConverter', () => {
+    it('uses the newest mirrored rate per quote and never calls the provider', async () => {
+        const repo = makeRepo([
+            chfEur('2026-09-01', 1.0),
+            chfEur('2026-09-10', 2.0),
+        ]);
+        const provider = makeProvider([chfEur(TODAY, 4.0)]);
+        const converter = await new TestService(repo, provider).latestConverter(
+            'CHF',
+        );
+
+        expect(
+            converter.toBase(1000, 'EUR', new Date(`${TODAY}T10:00:00Z`)),
+        ).toBe(500);
+        expect(converter.toBase(1000, 'CHF', new Date())).toBe(1000);
+        expect(provider.fetchRates).not.toHaveBeenCalled();
+    });
+
+    it('throws UnavailableError for a quote that was never mirrored', async () => {
+        const converter = await new TestService(
+            makeRepo(),
+            makeProvider(),
+        ).latestConverter('CHF');
+        expect(() => converter.toBase(1, 'EUR', new Date())).toThrow(
+            UnavailableError,
+        );
+    });
+});

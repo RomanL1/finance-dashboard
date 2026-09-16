@@ -6,6 +6,9 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
     template: `
         <div class="animate-pulse" aria-hidden="true">
             @switch (variant()) {
+                @case ('stat') {
+                    <div class="h-8 w-40 rounded bg-surface-highest"></div>
+                }
                 @case ('stat-card') {
                     <div class="h-28 rounded-m3-lg bg-surface-highest"></div>
                 }
@@ -47,6 +50,8 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SkeletonComponent {
-    readonly variant = input.required<'stat-card' | 'chips' | 'list'>();
+    readonly variant = input.required<
+        'stat' | 'stat-card' | 'chips' | 'list'
+    >();
     protected readonly rows = [0, 1, 2, 3, 4];
 }

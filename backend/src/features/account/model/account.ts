@@ -2,6 +2,7 @@ import {
     newId,
     ValidationError,
     type Id,
+    type SupportedCurrency,
 } from '../../../shared/kernel/index.js';
 
 export interface CreateAccount {
@@ -27,6 +28,17 @@ export interface Account {
     startDate: Date;
     archivedAt: Date | null;
     createdAt: Date;
+}
+
+/** Sum of the active account balances, converted into the household base currency. Minor units. */
+export interface HouseholdBalance {
+    currency: SupportedCurrency;
+    amount: number;
+}
+
+/** Active = not archived, or archived at a date still in the future. */
+export function isActiveAccount(account: Account, at: Date): boolean {
+    return account.archivedAt === null || account.archivedAt > at;
 }
 
 export interface CreateAccountInput {

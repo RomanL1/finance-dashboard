@@ -1,5 +1,5 @@
-import { AccountDto } from '../model/account.dto.js';
-import { Account } from '../model/account.js';
+import { AccountDto, HouseholdBalanceDto } from '../model/account.dto.js';
+import { Account, HouseholdBalance } from '../model/account.js';
 
 export function toAccountDto({
     id,
@@ -29,4 +29,14 @@ export function toAccountDto({
 
 export function toAccountsDto(accounts: Account[]): AccountDto[] {
     return accounts.map(toAccountDto);
+}
+
+export function toHouseholdBalanceDto({
+    currency,
+    amount,
+}: HouseholdBalance): HouseholdBalanceDto {
+    const dto = new HouseholdBalanceDto();
+    dto.currency = currency;
+    dto.amount = amount;
+    return dto;
 }

@@ -29,6 +29,8 @@ import type {
     CategoryUpdateCategoryResponses,
     HealthHealthData,
     HealthHealthResponses,
+    HouseholdBalanceGetBalanceData,
+    HouseholdBalanceGetBalanceResponses,
     HouseholdMineData,
     HouseholdMineResponses,
     HouseholdUpdateHouseholdData,
@@ -317,6 +319,27 @@ export const accountUpdateAccount = <ThrowOnError extends boolean = false>(
             'Content-Type': 'application/json',
             ...options.headers,
         },
+    });
+
+export const householdBalanceGetBalance = <
+    ThrowOnError extends boolean = false,
+>(
+    options: Options<HouseholdBalanceGetBalanceData, ThrowOnError>,
+): RequestResult<HouseholdBalanceGetBalanceResponses, unknown, ThrowOnError> =>
+    (options.client ?? client).get<
+        HouseholdBalanceGetBalanceResponses,
+        unknown,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/{householdId}/balance',
+        ...options,
     });
 
 export const onboardingOnboard = <ThrowOnError extends boolean = false>(

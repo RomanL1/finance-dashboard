@@ -21,6 +21,7 @@
         "noHouseholdFound": "No household found.",
         "add": "Add",
         "overview": "Overview",
+        "totalBalance": "Total balance",
         "household": "Household {{name}}"
     },
     "onboarding": {

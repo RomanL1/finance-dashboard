@@ -94,6 +94,14 @@ export type UpdateAccountDto = {
     archivedAt?: string | null;
 };
 
+export type HouseholdBalanceDto = {
+    currency: 'CHF' | 'EUR' | 'USD' | 'GBP';
+    /**
+     * Minor units (cents); negative when the household is overdrawn
+     */
+    amount: number;
+};
+
 export type OnboardingAccountDto = {
     /**
      * Account description
@@ -456,6 +464,25 @@ export type AccountUpdateAccountResponses = {
 
 export type AccountUpdateAccountResponse =
     AccountUpdateAccountResponses[keyof AccountUpdateAccountResponses];
+
+export type HouseholdBalanceGetBalanceData = {
+    body?: never;
+    path: {
+        /**
+         * Household id
+         */
+        householdId: string;
+    };
+    query?: never;
+    url: '/api/households/{householdId}/balance';
+};
+
+export type HouseholdBalanceGetBalanceResponses = {
+    200: HouseholdBalanceDto;
+};
+
+export type HouseholdBalanceGetBalanceResponse =
+    HouseholdBalanceGetBalanceResponses[keyof HouseholdBalanceGetBalanceResponses];
 
 export type OnboardingOnboardData = {
     body: CompleteOnboardingDto;
