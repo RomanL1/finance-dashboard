@@ -23,6 +23,12 @@ export interface SetBudgetInput {
     amount: number;
 }
 
+/** Outcome of copying limits into a month. `sourceMonth` is null when no earlier month had limits. */
+export interface CopiedBudgets {
+    sourceMonth: Month | null;
+    budgets: Budget[];
+}
+
 export function assertValidMonth(month: string): void {
     if (!MONTH_PATTERN.test(month)) {
         throw new ValidationError('Month must be formatted as YYYY-MM');
@@ -43,4 +49,11 @@ export function buildBudget(input: SetBudgetInput): Budget {
         month: input.month,
         amount: input.amount,
     };
+}
+
+/** Fresh rows for `month` with the amounts of `source`, so the target month is independent from now on. */
+export function copyBudgets(source: Budget[], month: Month): Budget[] {
+    return source.map((b) =>
+        buildBudget({ categoryId: b.categoryId, month, amount: b.amount }),
+    );
 }

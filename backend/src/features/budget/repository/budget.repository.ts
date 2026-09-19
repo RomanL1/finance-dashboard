@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, asc, eq } from 'drizzle-orm';
+import { and, asc, eq, lt, max } from 'drizzle-orm';
 import { DRIZZLE } from '../../../shared/infra/db/db.module.js';
 import type { Db } from '../../../shared/infra/db/db.js';
 import { type Id } from '../../../shared/kernel/index.js';
@@ -31,6 +31,30 @@ export class BudgetRepository {
                 ),
             )
             .orderBy(asc(category.name));
+    }
+
+    /** The most recent month before `month` that has at least one limit in the household, or null. */
+    async latestMonthBefore(
+        householdId: Id,
+        month: Month,
+    ): Promise<Month | null> {
+        const [row] = await this.db
+            .select({ month: max(budget.month) })
+            .from(budget)
+            .innerJoin(category, eq(category.id, budget.categoryId))
+            .where(
+                and(
+                    eq(category.householdId, householdId),
+                    lt(budget.month, month),
+                ),
+            );
+        return row?.month ?? null;
+    }
+
+    /** One statement, so either every row lands or none. Rows must not collide with existing (category, month) pairs. */
+    async insertMany(entities: Budget[]): Promise<Budget[]> {
+        if (entities.length === 0) return [];
+        return this.db.insert(budget).values(entities).returning(budgetColumns);
     }
 
     async find(

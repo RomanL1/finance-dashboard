@@ -4,10 +4,12 @@ import {
     computed,
     input,
     resource,
+    signal,
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
+import { ButtonComponent } from '../../../components/button/button.component';
 import { DialogService } from '../../../components/dialog/dialog.service';
 import { SkeletonComponent } from '../../../components/skeleton/skeleton.component';
 import { CategoryService } from '../../category/services/category.service';
@@ -22,12 +24,14 @@ import {
     type Period,
 } from '../../stats/stats.types';
 import {
+    isAutoInheritMonth,
     toBudgetRows,
     toBudgetTotals,
     toMonthKey,
     type BudgetDialogData,
     type BudgetDialogResult,
     type BudgetRow,
+    type MonthBudgets,
 } from '../budget.types';
 import { BudgetListComponent } from '../dumb_components/budget-list/budget-list.component';
 import { BudgetSummaryComponent } from '../dumb_components/budget-summary/budget-summary.component';
@@ -38,6 +42,9 @@ import { BudgetDialogComponent } from '../smart_components/budget-dialog/budget-
  * Limits, spending and what is left per category for one calendar month. Spending comes from the same
  * category statistics as the Categories tab, over the same client-built range, so both tabs agree.
  * Shares the `?period&start` params with the other tabs, coerced to a month.
+ *
+ * An empty current or next month fills itself with the previous limits on first view (story S4);
+ * any other empty month offers a button for it. Copies are independent rows, so the source month stays as it was.
  */
 @Component({
     selector: 'app-budgets-page',
@@ -45,6 +52,7 @@ import { BudgetDialogComponent } from '../smart_components/budget-dialog/budget-
         PeriodSwitcherComponent,
         BudgetListComponent,
         BudgetSummaryComponent,
+        ButtonComponent,
         SkeletonComponent,
         TranslatePipe,
     ],
@@ -63,6 +71,40 @@ import { BudgetDialogComponent } from '../smart_components/budget-dialog/budget-
                     {{ 'budget.loadFailed' | translate }}
                 </p>
             } @else if (rows(); as list) {
+                @if (inheritedFrom(); as source) {
+                    <p
+                        role="status"
+                        class="type-body-small text-on-surface-variant"
+                    >
+                        {{
+                            'budget.inherit.taken'
+                                | translate: { month: source }
+                        }}
+                    </p>
+                }
+                @if (canInherit()) {
+                    <div class="flex flex-wrap items-center gap-3">
+                        <app-button
+                            variant="tonal"
+                            [disabled]="inheriting()"
+                            (clicked)="inherit()"
+                        >
+                            {{ 'budget.inherit.action' | translate }}
+                        </app-button>
+                        @if (inheritStatus(); as status) {
+                            <p
+                                role="status"
+                                class="type-body-small"
+                                [class.text-error]="status === 'failed'"
+                                [class.text-on-surface-variant]="
+                                    status === 'nothing'
+                                "
+                            >
+                                {{ 'budget.inherit.' + status | translate }}
+                            </p>
+                        }
+                    </div>
+                }
                 @if (totals(); as sums) {
                     <div animate.enter="fade-in">
                         <app-budget-summary
@@ -115,6 +157,7 @@ export class BudgetsPage {
         loader: ({ params }) => this.categoryService.list(params),
     });
 
+    /** Loads the month; an empty current or next month is filled from the previous limits first. */
     readonly budgets = resource({
         params: () => {
             const householdId = this.household.value()?.id;
@@ -122,9 +165,42 @@ export class BudgetsPage {
                 ? { householdId, month: this.month() }
                 : undefined;
         },
-        loader: ({ params }) =>
-            this.budgetService.list(params.householdId, params.month),
+        loader: async ({ params }): Promise<MonthBudgets> => {
+            const budgets = await this.budgetService.list(
+                params.householdId,
+                params.month,
+            );
+            if (budgets.length > 0 || !isAutoInheritMonth(params.month)) {
+                return { budgets, inheritedFrom: null };
+            }
+            const copied = await this.budgetService.copyPrevious(
+                params.householdId,
+                params.month,
+            );
+            return {
+                budgets: copied.budgets,
+                inheritedFrom: copied.sourceMonth,
+            };
+        },
     });
+
+    readonly inheritedFrom = computed(
+        () => this.budgets.value()?.inheritedFrom ?? null,
+    );
+
+    /** Past and far-future months do not fill themselves; offer it while the month is empty. */
+    readonly canInherit = computed(() => {
+        const loaded = this.budgets.value();
+        return (
+            !!loaded &&
+            loaded.budgets.length === 0 &&
+            !isAutoInheritMonth(this.month())
+        );
+    });
+
+    readonly inheriting = signal(false);
+    /** Outcome of the last explicit take-over on this page. */
+    readonly inheritStatus = signal<'nothing' | 'failed' | null>(null);
 
     /** Expenses per category over the month; the range is built client-side like on the Categories tab. */
     readonly stats = resource({
@@ -141,7 +217,7 @@ export class BudgetsPage {
     /** Undefined while any part loads, so the skeleton shows. */
     readonly rows = computed(() => {
         const categories = this.categories.value();
-        const budgets = this.budgets.value();
+        const budgets = this.budgets.value()?.budgets;
         const stats = this.stats.value();
         return categories && budgets && stats
             ? toBudgetRows(categories, budgets, stats)
@@ -166,11 +242,38 @@ export class BudgetsPage {
     ) {}
 
     setPeriod(period: Period): void {
+        this.inheritStatus.set(null);
         void this.router.navigate([], {
             queryParams: toPeriodParams(period),
             queryParamsHandling: 'merge',
             replaceUrl: true,
         });
+    }
+
+    /** Explicit take-over for a month that does not fill itself. Reloads so the hint and rows come from the same load. */
+    async inherit(): Promise<void> {
+        const household = this.household.value();
+        if (!household || this.inheriting()) return;
+        this.inheriting.set(true);
+        this.inheritStatus.set(null);
+        try {
+            const copied = await this.budgetService.copyPrevious(
+                household.id,
+                this.month(),
+            );
+            if (copied.sourceMonth === null) {
+                this.inheritStatus.set('nothing');
+            } else {
+                this.budgets.set({
+                    budgets: copied.budgets,
+                    inheritedFrom: copied.sourceMonth,
+                });
+            }
+        } catch {
+            this.inheritStatus.set('failed');
+        } finally {
+            this.inheriting.set(false);
+        }
     }
 
     async openDialog(row: BudgetRow): Promise<void> {

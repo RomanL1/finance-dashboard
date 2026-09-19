@@ -17,6 +17,9 @@ import type {
     AccountGetAccountsResponses,
     AccountUpdateAccountData,
     AccountUpdateAccountResponses,
+    BudgetCopyPreviousBudgetsData,
+    BudgetCopyPreviousBudgetsErrors,
+    BudgetCopyPreviousBudgetsResponses,
     BudgetDeleteBudgetData,
     BudgetDeleteBudgetResponses,
     BudgetGetBudgetsData,
@@ -630,4 +633,27 @@ export const budgetSetBudget = <ThrowOnError extends boolean = false>(
             'Content-Type': 'application/json',
             ...options.headers,
         },
+    });
+
+export const budgetCopyPreviousBudgets = <ThrowOnError extends boolean = false>(
+    options: Options<BudgetCopyPreviousBudgetsData, ThrowOnError>,
+): RequestResult<
+    BudgetCopyPreviousBudgetsResponses,
+    BudgetCopyPreviousBudgetsErrors,
+    ThrowOnError
+> =>
+    (options.client ?? client).post<
+        BudgetCopyPreviousBudgetsResponses,
+        BudgetCopyPreviousBudgetsErrors,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/{householdId}/budgets/{month}/copy-previous',
+        ...options,
     });

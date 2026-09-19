@@ -6,11 +6,13 @@ import {
     HttpCode,
     HttpStatus,
     Param,
+    Post,
     Put,
     Query,
     UseGuards,
 } from '@nestjs/common';
 import {
+    ApiConflictResponse,
     ApiCookieAuth,
     ApiNoContentResponse,
     ApiOkResponse,
@@ -22,10 +24,15 @@ import { HouseholdMemberGuard } from '../../household/guard/household-member.gua
 import {
     BudgetDto,
     BudgetListQueryDto,
+    CopiedBudgetsDto,
     SetBudgetDto,
 } from '../model/budget.dto.js';
 import { BudgetService } from '../service/budget.service.js';
-import { toBudgetDto, toBudgetsDto } from './budget.mapper.js';
+import {
+    toBudgetDto,
+    toBudgetsDto,
+    toCopiedBudgetsDto,
+} from './budget.mapper.js';
 
 /** A limit is addressed by (category, month); there is at most one per pair, so PUT creates or replaces it. */
 @ApiTags('budget')
@@ -67,6 +74,28 @@ export class BudgetController {
                 month,
                 amount: dto.amount,
             }),
+        );
+    }
+
+    @Post(':month/copy-previous')
+    @ApiParam({
+        name: 'month',
+        description: 'Calendar month as YYYY-MM',
+        type: String,
+    })
+    @HttpCode(HttpStatus.OK)
+    @ApiOkResponse({
+        type: CopiedBudgetsDto,
+        description:
+            'The month now holds copies of the nearest earlier month with limits; empty when there is none',
+    })
+    @ApiConflictResponse({ description: 'The month already has limits' })
+    async copyPreviousBudgets(
+        @Param('householdId') householdId: Id,
+        @Param('month') month: string,
+    ): Promise<CopiedBudgetsDto> {
+        return toCopiedBudgetsDto(
+            await this.budgets.copyFromPrevious(householdId, month),
         );
     }
 

@@ -1,10 +1,16 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { type Id, NotFoundError } from '../../../shared/kernel/index.js';
+import {
+    ConflictError,
+    type Id,
+    NotFoundError,
+} from '../../../shared/kernel/index.js';
 import { CategoryService } from '../../category/service/category.service.js';
 import {
     assertValidMonth,
     buildBudget,
+    copyBudgets,
     type Budget,
+    type CopiedBudgets,
     type Month,
     type SetBudgetInput,
 } from '../model/budget.js';
@@ -39,6 +45,33 @@ export class BudgetService {
         if (!deleted) {
             throw new NotFoundError('Budget', `${categoryId}/${month}`);
         }
+    }
+
+    /**
+     * Fills an empty month with the limits of the nearest earlier month that has any (story S4).
+     * The copies are independent rows, so editing them leaves the source month untouched.
+     */
+    async copyFromPrevious(
+        householdId: Id,
+        month: Month,
+    ): Promise<CopiedBudgets> {
+        assertValidMonth(month);
+        const existing = await this.budgets.listByMonth(householdId, month);
+        if (existing.length > 0) {
+            throw new ConflictError(`Month ${month} already has limits`);
+        }
+        const sourceMonth = await this.budgets.latestMonthBefore(
+            householdId,
+            month,
+        );
+        if (sourceMonth === null) {
+            return { sourceMonth: null, budgets: [] };
+        }
+        const source = await this.budgets.listByMonth(householdId, sourceMonth);
+        const budgets = await this.budgets.insertMany(
+            copyBudgets(source, month),
+        );
+        return { sourceMonth, budgets };
     }
 
     private async assertCategory(

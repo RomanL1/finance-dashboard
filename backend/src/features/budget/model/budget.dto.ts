@@ -38,3 +38,16 @@ export class SetBudgetDto {
     @Min(0)
     amount!: number;
 }
+
+export class CopiedBudgetsDto {
+    @ApiProperty({
+        description:
+            'Month the limits were taken from, or null when no earlier month had any',
+        example: '2026-08',
+        type: String,
+        nullable: true,
+    })
+    sourceMonth!: string | null;
+    @ApiProperty({ type: [BudgetDto] })
+    budgets!: BudgetDto[];
+}

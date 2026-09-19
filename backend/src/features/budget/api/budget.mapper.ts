@@ -1,5 +1,5 @@
-import { BudgetDto } from '../model/budget.dto.js';
-import type { Budget } from '../model/budget.js';
+import { BudgetDto, CopiedBudgetsDto } from '../model/budget.dto.js';
+import type { Budget, CopiedBudgets } from '../model/budget.js';
 
 export function toBudgetDto({
     id,
@@ -17,4 +17,14 @@ export function toBudgetDto({
 
 export function toBudgetsDto(budgets: Budget[]): BudgetDto[] {
     return budgets.map(toBudgetDto);
+}
+
+export function toCopiedBudgetsDto({
+    sourceMonth,
+    budgets,
+}: CopiedBudgets): CopiedBudgetsDto {
+    const dto = new CopiedBudgetsDto();
+    dto.sourceMonth = sourceMonth;
+    dto.budgets = toBudgetsDto(budgets);
+    return dto;
 }

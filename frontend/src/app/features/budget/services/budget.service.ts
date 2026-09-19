@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import {
+    budgetCopyPreviousBudgets,
     budgetDeleteBudget,
     budgetGetBudgets,
     budgetSetBudget,
 } from '../../../core/api';
-import type { BudgetDto } from '../budget.types';
+import type { BudgetDto, CopiedBudgetsDto } from '../budget.types';
 
 @Injectable({ providedIn: 'root' })
 export class BudgetService {
@@ -42,5 +43,20 @@ export class BudgetService {
             path: { householdId, categoryId, month },
             throwOnError: true,
         });
+    }
+
+    /**
+     * Fills an empty month with copies of the nearest earlier month's limits. `sourceMonth` is null
+     * when there was nothing to copy. Fails with 409 when the month already has limits.
+     */
+    async copyPrevious(
+        householdId: string,
+        month: string,
+    ): Promise<CopiedBudgetsDto> {
+        const response = await budgetCopyPreviousBudgets({
+            path: { householdId, month },
+            throwOnError: true,
+        });
+        return response.data;
     }
 }

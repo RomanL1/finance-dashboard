@@ -1,11 +1,32 @@
 import { formatDate } from '@angular/common';
-import type { BudgetDto, CategoryDto, CategoryStatsDto } from '../../core/api';
+import type {
+    BudgetDto,
+    CategoryDto,
+    CategoryStatsDto,
+    CopiedBudgetsDto,
+} from '../../core/api';
 
-export type { BudgetDto };
+export type { BudgetDto, CopiedBudgetsDto };
 
 /** `YYYY-MM`, the key the API addresses limits by. */
 export function toMonthKey(date: Date): string {
     return formatDate(date, 'yyyy-MM', 'en');
+}
+
+/**
+ * Months that fill themselves from the previous limits on first view (story S4): the current
+ * calendar month and the next one, so limits can be planned ahead. Any other month needs an explicit action.
+ */
+export function isAutoInheritMonth(month: string, now = new Date()): boolean {
+    const current = toMonthKey(now);
+    const next = toMonthKey(new Date(now.getFullYear(), now.getMonth() + 1, 1));
+    return month === current || month === next;
+}
+
+/** The limits of one month plus, when they were just copied, where they came from. */
+export interface MonthBudgets {
+    budgets: BudgetDto[];
+    inheritedFrom: string | null;
 }
 
 /** One list row: every household category, with its limit and what was spent against it. */

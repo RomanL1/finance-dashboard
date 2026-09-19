@@ -159,6 +159,68 @@ describe('budget (e2e)', () => {
         expect(res.body).toEqual([]);
     });
 
+    it('POST copy-previous fills an empty month from the nearest earlier month with limits', async () => {
+        await server()
+            .put(`${base()}/${categoryId}/2026-06`)
+            .set('Cookie', cookie)
+            .send({ amount: 30000 })
+            .expect(200);
+
+        const res = await server()
+            .post(`${base()}/2026-08/copy-previous`)
+            .set('Cookie', cookie)
+            .expect(200);
+        expect(res.body.sourceMonth).toBe('2026-06');
+        expect(res.body.budgets).toHaveLength(1);
+        expect(res.body.budgets[0]).toMatchObject({
+            categoryId,
+            month: '2026-08',
+            amount: 30000,
+        });
+
+        const list = await server()
+            .get(`${base()}?month=2026-08`)
+            .set('Cookie', cookie)
+            .expect(200);
+        expect(list.body).toHaveLength(1);
+    });
+
+    it('editing the copied month leaves the source month untouched', async () => {
+        await server()
+            .put(`${base()}/${categoryId}/2026-08`)
+            .set('Cookie', cookie)
+            .send({ amount: 1 })
+            .expect(200);
+
+        const june = await server()
+            .get(`${base()}?month=2026-06`)
+            .set('Cookie', cookie)
+            .expect(200);
+        expect(june.body[0]).toMatchObject({ amount: 30000 });
+    });
+
+    it('POST copy-previous returns 409 when the month already has limits', async () => {
+        await server()
+            .post(`${base()}/2026-08/copy-previous`)
+            .set('Cookie', cookie)
+            .expect(409);
+    });
+
+    it('POST copy-previous returns no source when nothing earlier exists', async () => {
+        const res = await server()
+            .post(`${base()}/2026-01/copy-previous`)
+            .set('Cookie', cookie)
+            .expect(200);
+        expect(res.body).toEqual({ sourceMonth: null, budgets: [] });
+    });
+
+    it('POST copy-previous rejects a malformed month with 400', async () => {
+        await server()
+            .post(`${base()}/2026-13/copy-previous`)
+            .set('Cookie', cookie)
+            .expect(400);
+    });
+
     it('deleting the category removes its limits', async () => {
         await server()
             .put(`${base()}/${categoryId}/${month}`)

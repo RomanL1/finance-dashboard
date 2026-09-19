@@ -303,6 +303,12 @@
             "spent": "Spent",
             "left": "Left",
             "over": "Over by"
+        },
+        "inherit": {
+            "taken": "Limits taken over from {{month}}. Changes here do not affect that month.",
+            "action": "Take over previous limits",
+            "nothing": "No earlier month has limits.",
+            "failed": "Could not take over the limits."
         }
     }
 }

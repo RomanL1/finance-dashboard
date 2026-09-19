@@ -303,6 +303,12 @@
             "spent": "Ausgegeben",
             "left": "Übrig",
             "over": "Überschritten um"
+        },
+        "inherit": {
+            "taken": "Limiten aus {{month}} übernommen. Änderungen hier betreffen jenen Monat nicht.",
+            "action": "Limiten des Vormonats übernehmen",
+            "nothing": "Kein früherer Monat hat Limiten.",
+            "failed": "Limiten konnten nicht übernommen werden."
         }
     }
 }

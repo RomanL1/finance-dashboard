@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
     budgetRatio,
+    isAutoInheritMonth,
     isOverBudget,
     toBudgetRows,
     toBudgetTotals,
@@ -12,6 +13,24 @@ describe('toMonthKey', () => {
     it('zero-pads the month', () => {
         expect(toMonthKey(new Date(2026, 0, 15))).toBe('2026-01');
         expect(toMonthKey(new Date(2026, 11, 31))).toBe('2026-12');
+    });
+});
+
+describe('isAutoInheritMonth', () => {
+    const now = new Date(2026, 8, 16);
+
+    it('is true for the current and the next month', () => {
+        expect(isAutoInheritMonth('2026-09', now)).toBe(true);
+        expect(isAutoInheritMonth('2026-10', now)).toBe(true);
+    });
+
+    it('is false for past months and months further ahead', () => {
+        expect(isAutoInheritMonth('2026-08', now)).toBe(false);
+        expect(isAutoInheritMonth('2026-11', now)).toBe(false);
+    });
+
+    it('rolls over the year', () => {
+        expect(isAutoInheritMonth('2027-01', new Date(2026, 11, 3))).toBe(true);
     });
 });
 

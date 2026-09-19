@@ -240,6 +240,14 @@ export type SetBudgetDto = {
     amount: number;
 };
 
+export type CopiedBudgetsDto = {
+    /**
+     * Month the limits were taken from, or null when no earlier month had any
+     */
+    sourceMonth: string | null;
+    budgets: Array<BudgetDto>;
+};
+
 export type HealthHealthData = {
     body?: never;
     path?: never;
@@ -782,3 +790,36 @@ export type BudgetSetBudgetResponses = {
 
 export type BudgetSetBudgetResponse =
     BudgetSetBudgetResponses[keyof BudgetSetBudgetResponses];
+
+export type BudgetCopyPreviousBudgetsData = {
+    body?: never;
+    path: {
+        /**
+         * Household id
+         */
+        householdId: string;
+        /**
+         * Calendar month as YYYY-MM
+         */
+        month: string;
+    };
+    query?: never;
+    url: '/api/households/{householdId}/budgets/{month}/copy-previous';
+};
+
+export type BudgetCopyPreviousBudgetsErrors = {
+    /**
+     * The month already has limits
+     */
+    409: unknown;
+};
+
+export type BudgetCopyPreviousBudgetsResponses = {
+    /**
+     * The month now holds copies of the nearest earlier month with limits; empty when there is none
+     */
+    200: CopiedBudgetsDto;
+};
+
+export type BudgetCopyPreviousBudgetsResponse =
+    BudgetCopyPreviousBudgetsResponses[keyof BudgetCopyPreviousBudgetsResponses];
