@@ -162,9 +162,9 @@
             "confirmMessage": "Keine Buchungen verwenden diese Kategorie.",
             "confirm": "Löschen",
             "title": "„{{name}}“ löschen?",
-            "message": "{{count}} Buchungen verwenden diese Kategorie. Kategorie daraus entfernen oder Buchungen in eine andere Kategorie verschieben.",
+            "message": "{{count}} Buchungen verwenden diese Kategorie. Buchungen zu «Ohne Kategorie» oder in eine andere Kategorie verschieben.",
             "transferLabel": "Verschieben nach",
-            "uncategorize": "Aus Buchungen entfernen",
+            "uncategorize": "Zu «Ohne Kategorie»",
             "transfer": "Verschieben und löschen"
         }
     },

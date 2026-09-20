@@ -162,9 +162,9 @@
             "confirmMessage": "No transactions use this category.",
             "confirm": "Delete",
             "title": "Delete “{{name}}”?",
-            "message": "{{count}} transactions use this category. Remove the category from them, or move them to another category.",
+            "message": "{{count}} transactions use this category. Move them to “Uncategorized” or to another category.",
             "transferLabel": "Move to",
-            "uncategorize": "Remove from transactions",
+            "uncategorize": "Move to Uncategorized",
             "transfer": "Move and delete"
         }
     },
