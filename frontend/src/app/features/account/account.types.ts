@@ -6,6 +6,17 @@ import type {
 
 export type { AccountDto, CreateAccountDto, UpdateAccountDto };
 
+export type AccountType = AccountDto['type'];
+
+/** Picker order. Labels live under `account.type.<value>`. */
+export const ACCOUNT_TYPES: readonly AccountType[] = [
+    'checking',
+    'savings',
+    'cash',
+    'credit_card',
+    'other',
+];
+
 /** What the account dialog needs from its opener. `account` set = edit mode. */
 export interface AccountDialogData {
     householdId: string;

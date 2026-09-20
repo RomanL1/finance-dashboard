@@ -10,6 +10,7 @@ import {
     MaxLength,
 } from 'class-validator';
 import { SUPPORTED_CURRENCIES } from '../../../shared/kernel/index.js';
+import { ACCOUNT_TYPES } from './account.schema.js';
 
 export class AccountDto {
     @ApiProperty() id!: string;
@@ -17,6 +18,7 @@ export class AccountDto {
     @ApiProperty({ description: 'Per-household running number, starts at 1' })
     number!: number;
     @ApiProperty() description!: string;
+    @ApiProperty({ enum: ACCOUNT_TYPES }) type!: string;
     @ApiProperty({ example: 'CHF' }) currency!: string;
     @ApiProperty({ description: 'Minor units (cents)' }) initialValue!: number;
     @ApiProperty({ description: 'Minor units (cents)' }) amount!: number;
@@ -34,6 +36,10 @@ export class CreateAccountDto {
     @IsNotEmpty()
     @MaxLength(100)
     description!: string;
+
+    @ApiProperty({ enum: ACCOUNT_TYPES, example: 'checking' })
+    @IsIn(ACCOUNT_TYPES)
+    type!: (typeof ACCOUNT_TYPES)[number];
 
     @ApiProperty({ enum: SUPPORTED_CURRENCIES, example: 'CHF' })
     @IsIn(SUPPORTED_CURRENCIES)

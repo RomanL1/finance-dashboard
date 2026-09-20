@@ -55,12 +55,14 @@ describe('transaction stats (e2e)', () => {
                     {
                         description: 'Checking',
                         currency: 'CHF',
+                        type: 'checking',
                         initialValue: 0,
                         startDate: '2026-01-01',
                     },
                     {
                         description: 'Savings',
                         currency: 'CHF',
+                        type: 'checking',
                         initialValue: 0,
                         startDate: '2026-01-01',
                     },

@@ -12,6 +12,7 @@ import {
     ValidateNested,
 } from 'class-validator';
 import { SUPPORTED_CURRENCIES } from '../../../shared/kernel/index.js';
+import { ACCOUNT_TYPES } from '../../account/model/account.schema.js';
 
 export class OnboardingHouseholdDto {
     @ApiProperty({ description: 'Household name', example: 'Home' })
@@ -33,6 +34,10 @@ export class OnboardingAccountDto {
     @IsNotEmpty()
     @MaxLength(100)
     description!: string;
+
+    @ApiProperty({ enum: ACCOUNT_TYPES, example: 'checking' })
+    @IsIn(ACCOUNT_TYPES)
+    type!: (typeof ACCOUNT_TYPES)[number];
 
     @ApiProperty({ enum: SUPPORTED_CURRENCIES, example: 'CHF' })
     @IsIn(SUPPORTED_CURRENCIES)

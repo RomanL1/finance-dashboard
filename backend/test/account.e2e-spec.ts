@@ -20,6 +20,7 @@ describe('account (e2e)', () => {
             .send({
                 description,
                 currency: 'CHF',
+                type: 'checking',
                 initialValue: 0,
                 startDate: '2026-01-01',
             })
@@ -49,12 +50,14 @@ describe('account (e2e)', () => {
                     {
                         description: 'Checking',
                         currency: 'CHF',
+                        type: 'checking',
                         initialValue: 100000,
                         startDate: '2026-01-01',
                     },
                     {
                         description: 'Savings',
                         currency: 'CHF',
+                        type: 'checking',
                         initialValue: 500000,
                         startDate: '2026-01-01',
                     },
@@ -98,6 +101,35 @@ describe('account (e2e)', () => {
         // max is 2 again, so the next number is 3: the sequence follows the current max.
         const fourth = await create('Cash again');
         expect(fourth.body.number).toBe(3);
+    });
+
+    it('stores the account type and rejects an unknown one', async () => {
+        const cash = await create('Wallet');
+        expect(cash.body.type).toBe('checking');
+
+        const updated = await request(app.getHttpServer())
+            .patch(`${url()}/${cash.body.id}`)
+            .set('Cookie', cookie)
+            .send({
+                description: 'Wallet',
+                type: 'cash',
+                currency: 'CHF',
+                startDate: '2026-01-01',
+            })
+            .expect(200);
+        expect(updated.body.type).toBe('cash');
+
+        await request(app.getHttpServer())
+            .post(url())
+            .set('Cookie', cookie)
+            .send({
+                description: 'Bad',
+                type: 'piggy_bank',
+                currency: 'CHF',
+                initialValue: 0,
+                startDate: '2026-01-01',
+            })
+            .expect(400);
     });
 
     it('refuses to delete an account with transactions and keeps its history', async () => {

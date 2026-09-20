@@ -68,7 +68,11 @@ import { isActiveAccount, type AccountDto } from '../../account.types';
                                                   }
                                     }}
                                 } @else {
-                                    {{ account.currency }}
+                                    {{
+                                        'account.type.' + account.type
+                                            | translate
+                                    }}
+                                    · {{ account.currency }}
                                 }
                             </p>
                         </div>

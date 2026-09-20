@@ -61,6 +61,7 @@
         "form": {
             "descriptionLabel": "Description",
             "descriptionRequired": "Description is required",
+            "typeLabel": "Account type",
             "currencyLabel": "Currency",
             "initialValueLabel": "Initial value",
             "initialValueRequired": "Initial value is required",
@@ -108,6 +109,13 @@
         "chips": {
             "title": "Accounts",
             "label": "Account balances"
+        },
+        "type": {
+            "checking": "Checking",
+            "savings": "Savings",
+            "cash": "Cash",
+            "credit_card": "Credit card",
+            "other": "Other"
         }
     },
     "category": {

@@ -1,0 +1,1 @@
+ALTER TABLE `finance_account` ADD `type` text DEFAULT 'other' NOT NULL;

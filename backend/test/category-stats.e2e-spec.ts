@@ -56,12 +56,14 @@ describe('category stats (e2e)', () => {
                     {
                         description: 'Checking',
                         currency: 'CHF',
+                        type: 'checking',
                         initialValue: 0,
                         startDate: '2026-01-01',
                     },
                     {
                         description: 'Travel',
                         currency: 'CHF',
+                        type: 'checking',
                         initialValue: 0,
                         startDate: '2026-01-01',
                     },
@@ -161,6 +163,7 @@ describe('category stats (e2e)', () => {
             .send({
                 description: 'Foreign',
                 currency: 'USD',
+                type: 'checking',
                 initialValue: 0,
                 startDate: '2026-01-01',
             })

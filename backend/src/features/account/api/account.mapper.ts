@@ -6,6 +6,7 @@ export function toAccountDto({
     householdId,
     number,
     description,
+    type,
     currency,
     initialValue,
     amount,
@@ -18,6 +19,7 @@ export function toAccountDto({
     dto.householdId = householdId;
     dto.number = number;
     dto.description = description;
+    dto.type = type;
     dto.currency = currency;
     dto.initialValue = initialValue;
     dto.amount = amount;

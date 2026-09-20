@@ -16,6 +16,7 @@ const input = {
         {
             description: 'Checking',
             currency: 'CHF',
+            type: 'checking' as const,
             initialValue: 100000,
             startDate: new Date('2026-01-01'),
         },
@@ -61,6 +62,7 @@ describe('OnboardingService', () => {
         expect(written.accounts[0]).toMatchObject({
             description: 'Checking',
             currency: 'CHF',
+            type: 'checking' as const,
             initialValue: 100000,
         });
     });

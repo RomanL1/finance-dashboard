@@ -61,6 +61,7 @@
         "form": {
             "descriptionLabel": "Beschreibung",
             "descriptionRequired": "Beschreibung ist erforderlich",
+            "typeLabel": "Kontoart",
             "currencyLabel": "Währung",
             "initialValueLabel": "Anfangswert",
             "initialValueRequired": "Anfangswert ist erforderlich",
@@ -108,6 +109,13 @@
         "chips": {
             "title": "Konten",
             "label": "Kontostände"
+        },
+        "type": {
+            "checking": "Privatkonto",
+            "savings": "Sparkonto",
+            "cash": "Bargeld",
+            "credit_card": "Kreditkarte",
+            "other": "Andere"
         }
     },
     "category": {

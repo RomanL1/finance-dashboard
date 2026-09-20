@@ -8,6 +8,14 @@ import { sql } from 'drizzle-orm';
 import { household } from '../../household/model/household.schema.js';
 import { timestamps } from '../../../shared/infra/db/timestamp.schema.js';
 
+export const ACCOUNT_TYPES = [
+    'checking',
+    'savings',
+    'cash',
+    'credit_card',
+    'other',
+] as const;
+
 /** Named financeAccount / finance_account: better-auth already owns `account`. */
 export const financeAccount = sqliteTable(
     'finance_account',
@@ -19,6 +27,8 @@ export const financeAccount = sqliteTable(
         /** Per-household running number, assigned at insert (`max + 1`). Only the highest number is freed by a delete. Shown as a badge. */
         number: integer('number').notNull(),
         description: text('description').notNull(),
+        /** Informational label (story M7); no rule depends on it. Rows older than the column are `other`. */
+        type: text('type', { enum: ACCOUNT_TYPES }).notNull().default('other'),
         currency: text('currency').notNull(),
         /** Minor units (cents), fixed starting balance. */
         initialValue: integer('initial_value').notNull(),

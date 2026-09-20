@@ -51,6 +51,7 @@ describe('budget (e2e)', () => {
                     {
                         description: 'Checking',
                         currency: 'CHF',
+                        type: 'checking',
                         initialValue: 100000,
                         startDate: '2026-01-01',
                     },

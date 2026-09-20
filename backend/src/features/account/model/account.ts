@@ -3,10 +3,14 @@ import {
     ValidationError,
     type Id,
 } from '../../../shared/kernel/index.js';
+import { ACCOUNT_TYPES } from './account.schema.js';
+
+export type AccountType = (typeof ACCOUNT_TYPES)[number];
 
 export interface CreateAccount {
     id: Id;
     description: string;
+    type: AccountType;
     currency: string;
     initialValue: number;
     startDate: Date;
@@ -20,6 +24,7 @@ export interface Account {
     /** Per-household running number starting at 1. Assigned by the repository. */
     number: number;
     description: string;
+    type: AccountType;
     currency: string;
     initialValue: number;
     /** Current balance: initialValue plus the signed sum of its transactions. Computed, never stored. */
@@ -31,6 +36,7 @@ export interface Account {
 
 export interface CreateAccountInput {
     description: string;
+    type: AccountType;
     currency: string;
     initialValue: number;
     startDate: Date;
@@ -54,6 +60,7 @@ export function buildAccountUpdate(input: UpdateAccountInput): UpdateAccount {
     return {
         id: newId(),
         description,
+        type: input.type,
         currency: input.currency,
         startDate: input.startDate,
         archivedAt: input.archivedAt ?? null,

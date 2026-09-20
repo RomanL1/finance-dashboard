@@ -18,6 +18,7 @@ const ACCOUNTS: AccountDto[] = [
         id: 'a1',
         householdId: 'h',
         number: 1,
+        type: 'checking',
         description: 'Main',
         currency: 'CHF',
         initialValue: 0,

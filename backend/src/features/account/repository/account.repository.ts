@@ -23,6 +23,7 @@ export class AccountRepository {
         householdId: financeAccount.householdId,
         number: financeAccount.number,
         description: financeAccount.description,
+        type: financeAccount.type,
         currency: financeAccount.currency,
         initialValue: financeAccount.initialValue,
         amount: this.balance,

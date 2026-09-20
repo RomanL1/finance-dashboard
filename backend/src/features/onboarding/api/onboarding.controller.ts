@@ -34,6 +34,7 @@ export class OnboardingController {
             categoryNames: dto.categoryNames,
             accounts: dto.accounts.map((account) => ({
                 description: account.description,
+                type: account.type,
                 currency: account.currency,
                 initialValue: account.initialValue,
                 startDate: new Date(account.startDate),

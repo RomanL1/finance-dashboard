@@ -94,6 +94,7 @@ export class AccountDialogComponent {
                       this.data.account.id,
                       {
                           description: dto.description,
+                          type: dto.type,
                           currency: dto.currency,
                           startDate: dto.startDate,
                           archivedAt: this.data.account.archivedAt,

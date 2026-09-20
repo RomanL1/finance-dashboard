@@ -49,7 +49,9 @@ describe('AccountFormComponent', () => {
         withCurrency.detectChanges();
 
         expect(
-            withCurrency.nativeElement.querySelector('mat-select'),
+            withCurrency.nativeElement.querySelector(
+                'mat-select[formControlName="currency"]',
+            ),
         ).toBeNull();
         expect(
             withCurrency.componentInstance.form.controls.currency.value,
@@ -73,6 +75,7 @@ describe('AccountFormComponent', () => {
 
         fixture.componentInstance.form.setValue({
             description: '  Checking  ',
+            type: 'savings',
             currency: 'EUR',
             initialValue: 100.5,
             startDate: '2026-01-01',
@@ -81,6 +84,7 @@ describe('AccountFormComponent', () => {
 
         expect(emitted).toEqual({
             description: 'Checking',
+            type: 'savings',
             currency: 'EUR',
             initialValue: 10050,
             startDate: '2026-01-01',

@@ -15,6 +15,7 @@ const dummyAccount: Account = {
     number: 1,
     description: 'Checking',
     currency: 'CHF',
+    type: 'checking',
     initialValue: 10000,
     amount: 10000,
     startDate: new Date('2026-01-01'),
@@ -25,6 +26,7 @@ const dummyAccount: Account = {
 const input = {
     description: 'Checking',
     currency: 'CHF',
+    type: 'checking' as const,
     initialValue: 1000,
     startDate: new Date('2026-01-01'),
 };
@@ -77,6 +79,7 @@ describe('AccountService currency rule', () => {
         await expect(
             makeService(repo).update('household-1', 'acc-1', {
                 description: 'Checking',
+                type: 'checking',
                 currency: 'USD',
                 startDate: new Date('2026-01-01'),
             }),
@@ -106,6 +109,7 @@ describe('AccountService', () => {
             const created = await service.create('household-1', {
                 description: 'Checking',
                 currency: 'USD',
+                type: 'checking',
                 initialValue: 5000,
                 startDate: new Date('2026-01-01'),
             });
@@ -119,6 +123,7 @@ describe('AccountService', () => {
                     id: expect.any(String),
                     description: 'Checking',
                     currency: 'USD',
+                    type: 'checking',
                     initialValue: 5000,
                     startDate: new Date('2026-01-01'),
                     archivedAt: null,
@@ -134,6 +139,7 @@ describe('AccountService', () => {
                 service.create('household-1', {
                     description: '',
                     currency: 'CHF',
+                    type: 'checking',
                     initialValue: 1000,
                     startDate: new Date('2026-01-01'),
                 }),
@@ -142,6 +148,7 @@ describe('AccountService', () => {
                 service.create('household-1', {
                     description: '   ',
                     currency: 'CHF',
+                    type: 'checking',
                     initialValue: 1000,
                     startDate: new Date('2026-01-01'),
                 }),

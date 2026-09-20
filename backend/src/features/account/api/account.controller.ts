@@ -53,6 +53,7 @@ export class AccountController {
         return toAccountDto(
             await this.accounts.create(householdId, {
                 description: dto.description,
+                type: dto.type,
                 currency: dto.currency,
                 initialValue: dto.initialValue,
                 startDate: new Date(dto.startDate),
@@ -71,6 +72,7 @@ export class AccountController {
         return toAccountDto(
             await this.accounts.update(householdId, accountId, {
                 description: dto.description,
+                type: dto.type,
                 currency: dto.currency,
                 startDate: new Date(dto.startDate),
                 archivedAt: dto.archivedAt ? new Date(dto.archivedAt) : null,

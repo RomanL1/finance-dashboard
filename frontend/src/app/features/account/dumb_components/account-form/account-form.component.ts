@@ -21,7 +21,12 @@ import {
     CURRENCIES,
     type Currency,
 } from '../../../../core/constants/currencies';
-import type { AccountDto, CreateAccountDto } from '../../account.types';
+import {
+    ACCOUNT_TYPES,
+    type AccountDto,
+    type AccountType,
+    type CreateAccountDto,
+} from '../../account.types';
 
 function todayIsoDate(): string {
     return new Date().toISOString().slice(0, 10);
@@ -61,6 +66,19 @@ function todayIsoDate(): string {
                         'account.form.descriptionRequired' | translate
                     }}</mat-error>
                 }
+            </mat-form-field>
+
+            <mat-form-field class="flex flex-col gap-1">
+                <mat-label>{{
+                    'account.form.typeLabel' | translate
+                }}</mat-label>
+                <mat-select formControlName="type">
+                    @for (type of accountTypes; track type) {
+                        <mat-option [value]="type">{{
+                            'account.type.' + type | translate
+                        }}</mat-option>
+                    }
+                </mat-select>
             </mat-form-field>
 
             <!-- Only the first account (onboarding) picks; afterwards the household currency is fixed. -->
@@ -142,9 +160,14 @@ export class AccountFormComponent {
     readonly submitted = output<CreateAccountDto>();
 
     readonly currencies = CURRENCIES;
+    readonly accountTypes = ACCOUNT_TYPES;
 
     readonly form = new FormGroup({
         description: new FormControl('', {
+            nonNullable: true,
+            validators: [Validators.required],
+        }),
+        type: new FormControl<AccountType>('checking', {
             nonNullable: true,
             validators: [Validators.required],
         }),
@@ -167,6 +190,7 @@ export class AccountFormComponent {
             if (!d) return;
             this.form.patchValue({
                 description: d.description,
+                type: d.type,
                 currency: d.currency as Currency,
                 initialValue: d.initialValue / 100,
                 startDate: d.startDate.slice(0, 10),
@@ -184,6 +208,7 @@ export class AccountFormComponent {
         const value = this.form.getRawValue();
         this.submitted.emit({
             description: value.description.trim(),
+            type: value.type,
             currency: value.currency,
             initialValue: Math.round((value.initialValue ?? 0) * 100),
             startDate: value.startDate,

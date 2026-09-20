@@ -303,6 +303,7 @@ export class SettingsPage {
     ): Promise<void> {
         await this.accountService.update(householdId, account.id, {
             description: account.description,
+            type: account.type,
             /** Response type is plain string; the request enum is narrower. Server validates. */
             currency: account.currency as UpdateAccountDto['currency'],
             startDate: account.startDate,
