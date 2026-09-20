@@ -260,7 +260,8 @@
             "title": "Appearance",
             "system": "System",
             "light": "Light",
-            "dark": "Dark"
+            "dark": "Dark",
+            "language": "Language"
         }
     },
     "stats": {

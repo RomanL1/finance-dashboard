@@ -260,7 +260,8 @@
             "title": "Darstellung",
             "system": "System",
             "light": "Hell",
-            "dark": "Dunkel"
+            "dark": "Dunkel",
+            "language": "Sprache"
         }
     },
     "stats": {

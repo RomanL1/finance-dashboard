@@ -16,9 +16,11 @@ import { provideTranslateService } from '@ngx-translate/core';
 import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 
 import { routes } from './config/routes.config';
+import { restoreLanguage } from './core/i18n/language.service';
 
-/** Single app language for now; switch both `lang` and `LOCALE_ID` together once a language switcher exists. */
-const LANG = 'en';
+/** `lang` and `LOCALE_ID` always move together; the settings language switcher reloads the app to change them. */
+const LANG = restoreLanguage();
+document.documentElement.lang = LANG;
 registerLocaleData(localeDe);
 
 export const appConfig: ApplicationConfig = {

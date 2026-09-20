@@ -12,6 +12,10 @@ import {
     ThemeService,
     type ThemePreference,
 } from '../../../core/theme/theme.service';
+import {
+    LANGUAGES,
+    LanguageService,
+} from '../../../core/i18n/language.service';
 import { SectionHeaderComponent } from '../../../components/section-header/section-header.component';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
@@ -92,6 +96,24 @@ import type {
                                 'settings.appearance.' + option.value
                                     | translate
                             }}
+                        </mat-button-toggle>
+                    }
+                </mat-button-toggle-group>
+                <mat-button-toggle-group
+                    class="mt-3 w-full"
+                    hideSingleSelectionIndicator
+                    [value]="language.current"
+                    (change)="language.set($event.value)"
+                    [attr.aria-label]="
+                        'settings.appearance.language' | translate
+                    "
+                >
+                    @for (option of languages; track option.value) {
+                        <mat-button-toggle
+                            class="flex-1"
+                            [value]="option.value"
+                        >
+                            {{ option.label }}
                         </mat-button-toggle>
                     }
                 </mat-button-toggle-group>
@@ -225,6 +247,7 @@ export class SettingsPage {
         { value: 'dark', icon: 'dark_mode' },
     ];
 
+    protected readonly languages = LANGUAGES;
     protected readonly currencies = CURRENCIES;
 
     readonly household = resource({
@@ -249,6 +272,7 @@ export class SettingsPage {
         private readonly dialogs: DialogService,
         private readonly router: Router,
         protected readonly theme: ThemeService,
+        protected readonly language: LanguageService,
     ) {}
 
     /** Relabels every account server-side, so the list reloads too. Amounts are not converted. */
