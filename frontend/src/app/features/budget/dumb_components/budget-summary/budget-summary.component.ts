@@ -6,7 +6,7 @@ import {
 } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AmountComponent } from '../../../../components/amount/amount.component';
-import type { BudgetTotals } from '../../budget.types';
+import { LOW_BUDGET_SHARE, type BudgetTotals } from '../../budget.types';
 
 /** Month totals over the budgeted categories: limit, spent and what is left, with the same bar as the rows. */
 @Component({
@@ -49,11 +49,20 @@ import type { BudgetTotals } from '../../budget.types';
                     </dd>
                 </div>
                 <div class="text-right">
-                    <dt class="type-label-small text-on-surface-variant">
+                    <dt
+                        class="type-label-small"
+                        [class.text-on-surface-variant]="!low() && !usedUp()"
+                        [class.text-warning]="low()"
+                        [class.text-used-up]="usedUp()"
+                    >
                         {{
                             (over()
                                 ? 'budget.summary.over'
-                                : 'budget.summary.left'
+                                : usedUp()
+                                  ? 'budget.summary.usedUp'
+                                  : low()
+                                    ? 'budget.summary.low'
+                                    : 'budget.summary.left'
                             ) | translate
                         }}
                     </dt>
@@ -77,7 +86,9 @@ import type { BudgetTotals } from '../../budget.types';
             >
                 <div
                     class="h-full rounded-full transition-[width] duration-300"
-                    [class.bg-primary]="!over()"
+                    [class.bg-primary]="!over() && !low() && !usedUp()"
+                    [class.bg-used-up]="usedUp()"
+                    [class.bg-warning]="low()"
                     [class.bg-expense]="over()"
                     [style.width.%]="ratio() * 100"
                 ></div>
@@ -91,6 +102,18 @@ export class BudgetSummaryComponent {
     readonly currency = input.required<string>();
 
     protected readonly over = computed(() => this.totals().remaining < 0);
+
+    /** Same tiers as the rows: amber below 20% left, black when the total limit is met to the cent. */
+    protected readonly low = computed(() => {
+        const { limit, remaining } = this.totals();
+        return (
+            limit > 0 && remaining > 0 && remaining < limit * LOW_BUDGET_SHARE
+        );
+    });
+    protected readonly usedUp = computed(() => {
+        const { limit, remaining } = this.totals();
+        return limit > 0 && remaining === 0;
+    });
 
     /** Spent share of the total limit, clamped to [0, 1]; a zero total counts as full once anything is spent. */
     protected readonly ratio = computed(() => {

@@ -2,10 +2,14 @@ import { describe, expect, it } from 'vitest';
 import {
     budgetRatio,
     isAutoInheritMonth,
+    isLowBudget,
     isOverBudget,
+    isUsedUp,
     toBudgetRows,
     toBudgetTotals,
     toMonthKey,
+    toSafeToSpend,
+    toSafeToSpendShares,
     type BudgetRow,
 } from './budget.types';
 
@@ -129,6 +133,93 @@ describe('isOverBudget', () => {
         expect(isOverBudget(row(100, 100))).toBe(false);
         expect(isOverBudget(row(100, 101))).toBe(true);
         expect(isOverBudget(row(0, 1))).toBe(true);
+    });
+});
+
+describe('isLowBudget', () => {
+    it('is true while less than 20% but more than nothing is left', () => {
+        expect(isLowBudget(row(1000, 801))).toBe(true);
+        expect(isLowBudget(row(1000, 999))).toBe(true);
+    });
+
+    it('is false once the limit is met exactly', () => {
+        expect(isLowBudget(row(1000, 1000))).toBe(false);
+    });
+
+    it('is false with 20% or more left, when exceeded, or without a usable limit', () => {
+        expect(isLowBudget(row(1000, 800))).toBe(false);
+        expect(isLowBudget(row(1000, 1001))).toBe(false);
+        expect(isLowBudget(row(null, 100))).toBe(false);
+        expect(isLowBudget(row(0, 0))).toBe(false);
+    });
+});
+
+describe('isUsedUp', () => {
+    it('is true only when the limit is met to the cent', () => {
+        expect(isUsedUp(row(1000, 1000))).toBe(true);
+        expect(isUsedUp(row(1000, 999))).toBe(false);
+        expect(isUsedUp(row(1000, 1001))).toBe(false);
+    });
+
+    it('ignores rows without a usable limit', () => {
+        expect(isUsedUp(row(null, 0))).toBe(false);
+        expect(isUsedUp(row(0, 0))).toBe(false);
+    });
+});
+
+describe('toSafeToSpend', () => {
+    const stats = { currency: 'CHF', income: 5000, expenses: 1800, net: 3200 };
+
+    it('subtracts expenses and what the limits still hold', () => {
+        const result = toSafeToSpend(stats, [row(1000, 400), row(null, 900)]);
+        expect(result).toEqual({
+            income: 5000,
+            expenses: 1800,
+            reserved: 600,
+            amount: 2600,
+        });
+    });
+
+    it('reserves nothing for an exceeded limit', () => {
+        expect(toSafeToSpend(stats, [row(100, 500)]).reserved).toBe(0);
+    });
+
+    it('goes negative when more is committed than came in', () => {
+        const broke = { ...stats, income: 0 };
+        expect(toSafeToSpend(broke, [row(1000, 0)]).amount).toBe(-2800);
+    });
+});
+
+describe('toSafeToSpendShares', () => {
+    const value = (income: number, expenses: number, reserved: number) => ({
+        income,
+        expenses,
+        reserved,
+        amount: income - expenses - reserved,
+    });
+
+    it('splits the income into spent, held by budgets and free', () => {
+        expect(toSafeToSpendShares(value(1000, 500, 100))).toEqual({
+            expenses: 0.5,
+            reserved: 0.1,
+            free: 0.4,
+        });
+    });
+
+    it('spans the commitments when they exceed the income', () => {
+        expect(toSafeToSpendShares(value(100, 300, 100))).toEqual({
+            expenses: 0.75,
+            reserved: 0.25,
+            free: 0,
+        });
+    });
+
+    it('is empty when nothing happened', () => {
+        expect(toSafeToSpendShares(value(0, 0, 0))).toEqual({
+            expenses: 0,
+            reserved: 0,
+            free: 0,
+        });
     });
 });
 

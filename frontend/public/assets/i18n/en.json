@@ -22,7 +22,11 @@
         "add": "Add",
         "overview": "Overview",
         "household": "Household {{name}}",
-        "totalBalance": "Total balance"
+        "totalBalance": "Total balance",
+        "tabs": {
+            "label": "Home views",
+            "budget": "Budget"
+        }
     },
     "onboarding": {
         "title": "Welcome",
@@ -259,7 +263,12 @@
             "year": "Year",
             "previous": "Previous period",
             "next": "Next period",
-            "today": "Jump to current period"
+            "today": "Jump to current period",
+            "current": {
+                "week": "Current",
+                "month": "Current",
+                "year": "Current"
+            }
         },
         "loadFailed": "Could not load the statistics."
     },
@@ -283,7 +292,9 @@
             "spent": "Spent",
             "over": "Over by",
             "left": "Left",
-            "usedRatio": "{{percent}}% of the limit used"
+            "usedRatio": "{{percent}}% of the limit used",
+            "low": "Almost used up",
+            "usedUp": "Used up"
         },
         "form": {
             "amountLabel": "Monthly limit",
@@ -302,13 +313,24 @@
             "limit": "Limit",
             "spent": "Spent",
             "left": "Left",
-            "over": "Over by"
+            "over": "Over by",
+            "low": "Almost used up",
+            "usedUp": "Used up"
         },
         "inherit": {
             "taken": "Limits taken over from {{month}}. Changes here do not affect that month.",
             "action": "Take over previous limits",
             "nothing": "No earlier month has limits.",
             "failed": "Could not take over the limits."
+        },
+        "safe": {
+            "title": "Left after budgets",
+            "formula": "Income − expenses − open budgets",
+            "reserved": "Still in budgets",
+            "noLimits": "No budgets this month, so this equals the net.",
+            "barLabel": "{{expenses}}% spent, {{reserved}}% still in budgets, {{free}}% free",
+            "overCount": "{{count}} budgets over limit",
+            "allBudgets": "All budgets"
         }
     }
 }

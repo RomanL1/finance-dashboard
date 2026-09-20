@@ -31,6 +31,8 @@
     --color-expense: var(--app-expense);
     --color-expense-container: var(--app-expense-container);
     --color-on-expense-container: var(--app-on-expense-container);
+    --color-warning: var(--app-warning);
+    --color-used-up: var(--app-used-up);
     --color-on-account: var(--app-on-account);
 
     /* Material shape tokens. */

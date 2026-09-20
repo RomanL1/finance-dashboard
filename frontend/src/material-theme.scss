@@ -51,6 +51,12 @@ body {
     --app-expense-container: var(--mat-sys-error-container);
     --app-on-expense-container: var(--mat-sys-on-error-container);
 
+    // Amber: a limit that is nearly used up. Dark enough for AA as text on the surface.
+    --app-warning: light-dark(#8a5a00, #f5bd5c);
+
+    // A limit met to the cent: neither a warning nor an excess, so it gets no hue at all.
+    --app-used-up: light-dark(#000, #e0e0e0);
+
     // Eight account hues, spaced ~45° apart in OKLCH. Same lightness/chroma per scheme so
     // every badge has the same visual weight. Badge text is `--app-on-account`.
     --app-account-1: light-dark(oklch(0.52 0.17 20), oklch(0.74 0.14 20));

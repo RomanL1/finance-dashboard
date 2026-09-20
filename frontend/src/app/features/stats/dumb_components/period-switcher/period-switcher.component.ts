@@ -13,7 +13,10 @@ import {
 } from '@angular/material/button-toggle';
 import { MatIcon } from '@angular/material/icon';
 import { TranslatePipe } from '@ngx-translate/core';
-import { IconButtonComponent } from '../../../../components/button/button.component';
+import {
+    ButtonComponent,
+    IconButtonComponent,
+} from '../../../../components/button/button.component';
 import {
     isSamePeriod,
     periodLabel,
@@ -23,13 +26,14 @@ import {
     type PeriodKind,
 } from '../../stats.types';
 
-/** Period kind toggle plus previous / next arrows. Tapping the label jumps back to today. */
+/** Period kind toggle plus previous / next arrows. Away from today, a button (and the label) jumps back. */
 @Component({
     selector: 'app-period-switcher',
     imports: [
         MatButtonToggleGroup,
         MatButtonToggle,
         MatIcon,
+        ButtonComponent,
         IconButtonComponent,
         TranslatePipe,
     ],
@@ -73,6 +77,15 @@ import {
                     <mat-icon>chevron_right</mat-icon>
                 </app-icon-button>
             </div>
+            @if (!isCurrent()) {
+                <div class="flex justify-center pb-2" animate.enter="fade-in">
+                    <app-button variant="tonal" (clicked)="goToCurrent()">
+                        {{
+                            'stats.period.current.' + period().kind | translate
+                        }}
+                    </app-button>
+                </div>
+            }
         </div>
     `,
     changeDetection: ChangeDetectionStrategy.OnPush,

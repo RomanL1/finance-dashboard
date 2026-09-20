@@ -31,7 +31,6 @@ import {
     type BudgetDialogData,
     type BudgetDialogResult,
     type BudgetRow,
-    type MonthBudgets,
 } from '../budget.types';
 import { BudgetListComponent } from '../dumb_components/budget-list/budget-list.component';
 import { BudgetSummaryComponent } from '../dumb_components/budget-summary/budget-summary.component';
@@ -83,7 +82,7 @@ import { BudgetDialogComponent } from '../smart_components/budget-dialog/budget-
                     </p>
                 }
                 @if (canInherit()) {
-                    <div class="flex flex-wrap items-center gap-3">
+                    <div class="flex flex-col items-center gap-2 text-center">
                         <app-button
                             variant="tonal"
                             [disabled]="inheriting()"
@@ -165,23 +164,8 @@ export class BudgetsPage {
                 ? { householdId, month: this.month() }
                 : undefined;
         },
-        loader: async ({ params }): Promise<MonthBudgets> => {
-            const budgets = await this.budgetService.list(
-                params.householdId,
-                params.month,
-            );
-            if (budgets.length > 0 || !isAutoInheritMonth(params.month)) {
-                return { budgets, inheritedFrom: null };
-            }
-            const copied = await this.budgetService.copyPrevious(
-                params.householdId,
-                params.month,
-            );
-            return {
-                budgets: copied.budgets,
-                inheritedFrom: copied.sourceMonth,
-            };
-        },
+        loader: ({ params }) =>
+            this.budgetService.loadMonth(params.householdId, params.month),
     });
 
     readonly inheritedFrom = computed(

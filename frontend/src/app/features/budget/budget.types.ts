@@ -4,6 +4,7 @@ import type {
     CategoryDto,
     CategoryStatsDto,
     CopiedBudgetsDto,
+    CurrencyStatsDto,
 } from '../../core/api';
 
 export type { BudgetDto, CopiedBudgetsDto };
@@ -74,6 +75,73 @@ export function budgetRatio(row: BudgetRow): number | null {
 
 export function isOverBudget(row: BudgetRow): boolean {
     return row.remaining !== null && row.remaining < 0;
+}
+
+/** Below this share of the limit left, a row warns before it is exceeded. */
+export const LOW_BUDGET_SHARE = 0.2;
+
+/** Less than 20% of the limit is left, but something still is. A zero limit has nothing to run low on. */
+export function isLowBudget(row: BudgetRow): boolean {
+    if (row.amount === null || row.remaining === null || row.amount === 0) {
+        return false;
+    }
+    return row.remaining > 0 && row.remaining < row.amount * LOW_BUDGET_SHARE;
+}
+
+/** The limit is met to the cent. A zero limit with nothing spent is not used up, it was never there to use. */
+export function isUsedUp(row: BudgetRow): boolean {
+    return row.amount !== null && row.amount > 0 && row.remaining === 0;
+}
+
+/**
+ * What can still be spent this month without touching money a limit has set aside:
+ * `income - expenses - reserved`. An exceeded limit reserves nothing; its excess is already in the expenses,
+ * as is spending without a limit or category. Negative when more is committed than came in.
+ */
+export interface SafeToSpend {
+    income: number;
+    expenses: number;
+    /** Sum of what is left in every limit that is not exceeded. */
+    reserved: number;
+    amount: number;
+}
+
+export function toSafeToSpend(
+    stats: CurrencyStatsDto,
+    rows: BudgetRow[],
+): SafeToSpend {
+    const reserved = rows.reduce(
+        (sum, r) => sum + Math.max(r.remaining ?? 0, 0),
+        0,
+    );
+    return {
+        income: stats.income,
+        expenses: stats.expenses,
+        reserved,
+        amount: stats.income - stats.expenses - reserved,
+    };
+}
+
+/** Bar segments of the safe-to-spend card as shares of [0, 1] that sum to at most 1. */
+export interface SafeToSpendShares {
+    expenses: number;
+    reserved: number;
+    free: number;
+}
+
+/**
+ * The bar spans the income. When more is committed than came in, it spans the commitments instead,
+ * so expenses and budgets fill it and nothing is free. All zero when there is nothing to show.
+ */
+export function toSafeToSpendShares(value: SafeToSpend): SafeToSpendShares {
+    const committed = value.expenses + value.reserved;
+    const base = Math.max(value.income, committed);
+    if (base <= 0) return { expenses: 0, reserved: 0, free: 0 };
+    return {
+        expenses: value.expenses / base,
+        reserved: value.reserved / base,
+        free: (base - committed) / base,
+    };
 }
 
 /** Sums over the budgeted categories only, so `remaining` is honest about the limits that exist. */

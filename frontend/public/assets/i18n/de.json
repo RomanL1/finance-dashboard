@@ -22,7 +22,11 @@
         "add": "Hinzufügen",
         "overview": "Übersicht",
         "household": "Haushalt {{name}}",
-        "totalBalance": "Gesamtsaldo"
+        "totalBalance": "Gesamtsaldo",
+        "tabs": {
+            "label": "Ansichten",
+            "budget": "Budget"
+        }
     },
     "onboarding": {
         "title": "Willkommen",
@@ -259,7 +263,12 @@
             "year": "Jahr",
             "previous": "Vorheriger Zeitraum",
             "next": "Nächster Zeitraum",
-            "today": "Zum aktuellen Zeitraum"
+            "today": "Zum aktuellen Zeitraum",
+            "current": {
+                "week": "Diese Woche",
+                "month": "Dieser Monat",
+                "year": "Dieses Jahr"
+            }
         },
         "loadFailed": "Statistik konnte nicht geladen werden."
     },
@@ -283,7 +292,9 @@
             "spent": "Ausgegeben",
             "over": "Überschritten um",
             "left": "Übrig",
-            "usedRatio": "{{percent}}% des Limits verbraucht"
+            "usedRatio": "{{percent}}% des Limits verbraucht",
+            "low": "Fast aufgebraucht",
+            "usedUp": "Aufgebraucht"
         },
         "form": {
             "amountLabel": "Monatslimit",
@@ -302,13 +313,24 @@
             "limit": "Limit",
             "spent": "Ausgegeben",
             "left": "Übrig",
-            "over": "Überschritten um"
+            "over": "Überschritten um",
+            "low": "Fast aufgebraucht",
+            "usedUp": "Aufgebraucht"
         },
         "inherit": {
             "taken": "Limiten aus {{month}} übernommen. Änderungen hier betreffen jenen Monat nicht.",
             "action": "Limiten des Vormonats übernehmen",
             "nothing": "Kein früherer Monat hat Limiten.",
             "failed": "Limiten konnten nicht übernommen werden."
+        },
+        "safe": {
+            "title": "Übrig nach Budgets",
+            "formula": "Einnahmen − Ausgaben − offene Budgets",
+            "reserved": "Noch in Budgets",
+            "noLimits": "Keine Budgets in diesem Monat, entspricht dem Saldo.",
+            "barLabel": "{{expenses}}% ausgegeben, {{reserved}}% noch in Budgets, {{free}}% frei",
+            "overCount": "{{count}} Budgets überschritten",
+            "allBudgets": "Alle Budgets"
         }
     }
 }

@@ -7,11 +7,19 @@ import {
 import { TranslatePipe } from '@ngx-translate/core';
 import { AmountComponent } from '../../../../components/amount/amount.component';
 import { CategoryAvatarComponent } from '../../../../components/category-avatar/category-avatar.component';
-import { budgetRatio, isOverBudget, type BudgetRow } from '../../budget.types';
+import {
+    budgetRatio,
+    isLowBudget,
+    isOverBudget,
+    isUsedUp,
+    type BudgetRow,
+} from '../../budget.types';
 
 /**
  * Every category of the household with its limit, what was spent and what is left for the month.
- * Budgeted rows carry a bar that turns to the expense color once the limit is exceeded. Tapping a row edits it.
+ * Budgeted rows carry a bar that turns amber when less than 20% is left, black when the limit is met
+ * exactly and to the expense color once the
+ * limit is exceeded. Tapping a row edits it.
  */
 @Component({
     selector: 'app-budget-list',
@@ -88,9 +96,21 @@ import { budgetRatio, isOverBudget, type BudgetRow } from '../../budget.types';
                             } @else {
                                 <span class="text-right">
                                     <span
-                                        class="type-label-small block text-on-surface-variant"
+                                        class="type-label-small block"
+                                        [class.text-on-surface-variant]="
+                                            !low(row) && !usedUp(row)
+                                        "
+                                        [class.text-warning]="low(row)"
+                                        [class.text-used-up]="usedUp(row)"
                                     >
-                                        {{ 'budget.list.left' | translate }}
+                                        {{
+                                            (usedUp(row)
+                                                ? 'budget.list.usedUp'
+                                                : low(row)
+                                                  ? 'budget.list.low'
+                                                  : 'budget.list.left'
+                                            ) | translate
+                                        }}
                                     </span>
                                     <app-amount
                                         [amount]="row.remaining"
@@ -113,7 +133,13 @@ import { budgetRatio, isOverBudget, type BudgetRow } from '../../budget.types';
                                 >
                                     <span
                                         class="block h-full rounded-full transition-[width] duration-300"
-                                        [class.bg-primary]="!over(row)"
+                                        [class.bg-primary]="
+                                            !over(row) &&
+                                            !low(row) &&
+                                            !usedUp(row)
+                                        "
+                                        [class.bg-warning]="low(row)"
+                                        [class.bg-used-up]="usedUp(row)"
                                         [class.bg-expense]="over(row)"
                                         [style.width.%]="share * 100"
                                     ></span>
@@ -145,6 +171,14 @@ export class BudgetListComponent {
 
     protected over(row: BudgetRow): boolean {
         return isOverBudget(row);
+    }
+
+    protected usedUp(row: BudgetRow): boolean {
+        return isUsedUp(row);
+    }
+
+    protected low(row: BudgetRow): boolean {
+        return isLowBudget(row);
     }
 
     protected percent(share: number): number {
