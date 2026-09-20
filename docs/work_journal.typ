@@ -22,6 +22,12 @@
   ("2026-09-03", 6.0, [change styling to angular material, add translations, add default categories, implement onboarding workflow including account and currency]),
   ("2026-09-04", 6.0, [add transactions list overview and crud functionality, add settings page, manage categories part 1]),
   ("2026-09-08", 2.0, [finish manage categories]),
+  ("2026-09-11", 6.0, [per-household account numbers, transaction stats endpoint, overview stats with material 3 restyle, account badges and category avatars, fix navigation indicators, run production bundle with docker compose]),
+  ("2026-09-13", 4.0, [category stats with base-currency conversion via mirrored ECB rates, analytics page with category bar chart, base currency setting]),
+  ("2026-09-15", 3.0, [filter and page the transaction list in backend, transactions tab with account/category filter and pager]),
+  ("2026-09-16", 6.5, [simplify to one currency per household and drop exchange rates (I was concerned about how this might affect the complexity of upcoming features, but forgot this was out of scope anyway), create, update and delete budgets per month, month summary with visuals per category]),
+  ("2026-09-19", 2.5, [copy budgets from previous month]),
+  ("2026-09-20", 2.5, [budget tab on home with left-after-budgets figure]),
 )
 
 // Automatically calculate total hours
