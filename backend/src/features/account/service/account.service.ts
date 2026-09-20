@@ -8,6 +8,7 @@ import {
     UpdateAccountInput,
 } from '../model/account.js';
 import {
+    ConflictError,
     Id,
     NotFoundError,
     ValidationError,
@@ -58,8 +59,13 @@ export class AccountService {
         }
     }
 
-    /** Every transaction of the account goes with it (explicit delete, FK is restrict). */
+    /** Only an account without transactions can go; one with history is archived instead (story M16). */
     async delete(householdId: Id, id: Id): Promise<void> {
+        if (await this.accounts.hasTransactions(householdId, id)) {
+            throw new ConflictError(
+                'Account has transactions, archive it instead',
+            );
+        }
         if (!(await this.accounts.deleteAccount(householdId, id))) {
             throw new NotFoundError('Account', id);
         }

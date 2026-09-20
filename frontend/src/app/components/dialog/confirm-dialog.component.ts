@@ -14,7 +14,8 @@ export interface ConfirmDialogData {
     title: string;
     message: string;
     confirm: string;
-    cancel: string;
+    /** Omitted for a notice with a single button. */
+    cancel?: string;
 }
 
 /** Closes with `true` on confirm, `undefined` otherwise. Open via `DialogService.confirm`. */
@@ -32,9 +33,11 @@ export interface ConfirmDialogData {
         <h2 mat-dialog-title>{{ data.title | translate }}</h2>
         <mat-dialog-content>{{ data.message | translate }}</mat-dialog-content>
         <mat-dialog-actions align="end" class="gap-2">
-            <app-button variant="text" mat-dialog-close>
-                {{ data.cancel | translate }}
-            </app-button>
+            @if (data.cancel; as cancel) {
+                <app-button variant="text" mat-dialog-close>
+                    {{ cancel | translate }}
+                </app-button>
+            }
             <app-button variant="filled" [mat-dialog-close]="true">
                 {{ data.confirm | translate }}
             </app-button>

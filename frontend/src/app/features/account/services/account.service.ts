@@ -46,11 +46,13 @@ export class AccountService {
         return response.data;
     }
 
-    /** Deletes the account and all of its transactions. */
-    async delete(householdId: string, accountId: string): Promise<void> {
-        await accountDeleteAccount({
+    /** False when the server refuses because the account has transactions (story M16). */
+    async delete(householdId: string, accountId: string): Promise<boolean> {
+        const { error, response } = await accountDeleteAccount({
             path: { householdId, accountId },
-            throwOnError: true,
         });
+        if (response?.status === 409) return false;
+        if (error !== undefined) throw error;
+        return true;
     }
 }

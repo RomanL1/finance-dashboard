@@ -1,7 +1,7 @@
 import { DRIZZLE } from '../../../shared/infra/db/db.module.js';
 import type { Db } from '../../../shared/infra/db/db.js';
 import { Inject, Injectable } from '@nestjs/common';
-import { and, eq, inArray, sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import { Account, CreateAccount, UpdateAccount } from '../model/account.js';
 import { Id } from '../../../shared/kernel/index.js';
 import { financeAccount, nextAccountNumber } from '../model/account.schema.js';
@@ -76,38 +76,35 @@ export class AccountRepository {
         return account ?? null;
     }
 
-    /**
-     * Explicit, not FK cascade: transactions first, then the account.
-     * `batch` runs atomically on one connection; `db.transaction` breaks on the in-memory e2e db.
-     */
-    async deleteAccount(householdId: Id, id: Id): Promise<boolean> {
-        const [, deleted] = await this.db.batch([
-            this.db
-                .delete(transaction)
-                .where(
-                    and(
-                        eq(transaction.accountId, id),
-                        inArray(
-                            transaction.accountId,
-                            this.db
-                                .select({ id: financeAccount.id })
-                                .from(financeAccount)
-                                .where(
-                                    eq(financeAccount.householdId, householdId),
-                                ),
-                        ),
-                    ),
+    async hasTransactions(householdId: Id, id: Id): Promise<boolean> {
+        const [row] = await this.db
+            .select({ id: transaction.id })
+            .from(transaction)
+            .innerJoin(
+                financeAccount,
+                eq(financeAccount.id, transaction.accountId),
+            )
+            .where(
+                and(
+                    eq(transaction.accountId, id),
+                    eq(financeAccount.householdId, householdId),
                 ),
-            this.db
-                .delete(financeAccount)
-                .where(
-                    and(
-                        eq(financeAccount.id, id),
-                        eq(financeAccount.householdId, householdId),
-                    ),
-                )
-                .returning({ id: financeAccount.id }),
-        ]);
+            )
+            .limit(1);
+        return row !== undefined;
+    }
+
+    /** Only reaches empty accounts: the service refuses the rest and the FK is `restrict`. */
+    async deleteAccount(householdId: Id, id: Id): Promise<boolean> {
+        const deleted = await this.db
+            .delete(financeAccount)
+            .where(
+                and(
+                    eq(financeAccount.id, id),
+                    eq(financeAccount.householdId, householdId),
+                ),
+            )
+            .returning({ id: financeAccount.id });
         return deleted.length > 0;
     }
 }

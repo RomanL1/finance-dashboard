@@ -11,6 +11,7 @@ import {
     UseGuards,
 } from '@nestjs/common';
 import {
+    ApiConflictResponse,
     ApiCookieAuth,
     ApiNoContentResponse,
     ApiOkResponse,
@@ -77,11 +78,12 @@ export class AccountController {
         );
     }
 
-    /** Also deletes the account's transactions. */
+    /** Empty accounts only; one with transactions is archived instead. */
     @Delete(':accountId')
     @ApiParam({ name: 'accountId', description: 'Account id', type: String })
     @HttpCode(HttpStatus.NO_CONTENT)
     @ApiNoContentResponse()
+    @ApiConflictResponse({ description: 'The account has transactions' })
     async deleteAccount(
         @Param('householdId') householdId: Id,
         @Param('accountId') accountId: Id,

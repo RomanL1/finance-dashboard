@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+    ConflictError,
     NotFoundError,
     ValidationError,
 } from '../../../shared/kernel/index.js';
@@ -43,6 +44,7 @@ function makeRepo(overrides: Partial<AccountRepository> = {}) {
                 }),
             ),
         updateAccount: vi.fn().mockResolvedValue(dummyAccount),
+        hasTransactions: vi.fn().mockResolvedValue(false),
         deleteAccount: vi.fn().mockResolvedValue(true),
         ...overrides,
     } as unknown as AccountRepository;
@@ -178,6 +180,16 @@ describe('AccountService', () => {
     });
 
     describe('delete', () => {
+        it('refuses an account with transactions', async () => {
+            const repo = makeRepo({
+                hasTransactions: vi.fn().mockResolvedValue(true),
+            });
+            await expect(
+                makeService(repo).delete('household-1', 'acc-1'),
+            ).rejects.toBeInstanceOf(ConflictError);
+            expect(repo.deleteAccount).not.toHaveBeenCalled();
+        });
+
         it('deletes an account', async () => {
             const repo = makeRepo();
             await makeService(repo).delete('household-1', 'acc-1');

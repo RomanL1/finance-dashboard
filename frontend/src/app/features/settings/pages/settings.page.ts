@@ -293,7 +293,15 @@ export class SettingsPage {
             });
             if (!confirmed) return;
         }
-        await this.accountService.update(householdId, accountId, {
+        await this.setArchived(householdId, account, archived);
+    }
+
+    private async setArchived(
+        householdId: string,
+        account: AccountDto,
+        archived: boolean,
+    ): Promise<void> {
+        await this.accountService.update(householdId, account.id, {
             description: account.description,
             /** Response type is plain string; the request enum is narrower. Server validates. */
             currency: account.currency as UpdateAccountDto['currency'],
@@ -303,8 +311,10 @@ export class SettingsPage {
         this.accounts.reload();
     }
 
-    /** Cascades server-side: the confirm text says every transaction goes too. */
+    /** Only empty accounts go. One with transactions keeps its history: the user is led to archiving instead. */
     async deleteAccount(householdId: string, accountId: string): Promise<void> {
+        const account = this.find(accountId);
+        if (!account) return;
         const confirmed = await this.dialogs.confirm({
             title: 'account.delete.title',
             message: 'account.delete.message',
@@ -312,8 +322,25 @@ export class SettingsPage {
             cancel: 'account.dialog.cancel',
         });
         if (!confirmed) return;
-        await this.accountService.delete(householdId, accountId);
-        this.accounts.reload();
+        if (await this.accountService.delete(householdId, accountId)) {
+            this.accounts.reload();
+            return;
+        }
+        if (account.archivedAt) {
+            await this.dialogs.confirm({
+                title: 'account.delete.blockedTitle',
+                message: 'account.delete.blockedArchivedMessage',
+                confirm: 'account.delete.blockedOk',
+            });
+            return;
+        }
+        const archiveInstead = await this.dialogs.confirm({
+            title: 'account.delete.blockedTitle',
+            message: 'account.delete.blockedMessage',
+            confirm: 'account.archive.confirm',
+            cancel: 'account.dialog.cancel',
+        });
+        if (archiveInstead) await this.setArchived(householdId, account, true);
     }
 
     openCategoryDialog(householdId: string, categoryId?: string): void {

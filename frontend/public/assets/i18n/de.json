@@ -97,8 +97,12 @@
         },
         "delete": {
             "title": "Konto löschen?",
-            "message": "Das Konto und alle seine Buchungen werden dauerhaft gelöscht. Dies kann nicht rückgängig gemacht werden.",
-            "confirm": "Löschen"
+            "message": "Das Konto wird dauerhaft gelöscht. Dies kann nicht rückgängig gemacht werden.",
+            "confirm": "Löschen",
+            "blockedTitle": "Konto hat Buchungen",
+            "blockedMessage": "Ein Konto mit Buchungen kann nicht gelöscht werden, damit die Historie erhalten bleibt. Stattdessen archivieren? Es verschwindet aus Erfassung und Summen, bleibt aber in der Historie.",
+            "blockedArchivedMessage": "Ein Konto mit Buchungen kann nicht gelöscht werden, damit die Historie erhalten bleibt. Es ist bereits archiviert.",
+            "blockedOk": "OK"
         },
         "badge": "Konto {{number}}",
         "chips": {

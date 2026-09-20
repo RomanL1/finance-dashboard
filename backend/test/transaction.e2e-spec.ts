@@ -119,7 +119,7 @@ describe('transaction (e2e)', () => {
         expect(list.body).toEqual([]);
     });
 
-    it('DELETE account removes its transactions with it', async () => {
+    it('DELETE account is refused while it has transactions', async () => {
         await request(app.getHttpServer())
             .post(url())
             .set('Cookie', cookie)
@@ -128,15 +128,11 @@ describe('transaction (e2e)', () => {
         await request(app.getHttpServer())
             .delete(`/api/households/${householdId}/accounts/${accountId}`)
             .set('Cookie', cookie)
-            .expect(204);
+            .expect(409);
         const list = await request(app.getHttpServer())
             .get(url())
             .set('Cookie', cookie)
             .expect(200);
-        expect(list.body).toEqual([]);
-        await request(app.getHttpServer())
-            .delete(`/api/households/${householdId}/accounts/${accountId}`)
-            .set('Cookie', cookie)
-            .expect(404);
+        expect(list.body.total).toBe(1);
     });
 });

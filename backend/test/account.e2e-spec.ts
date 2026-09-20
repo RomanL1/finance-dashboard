@@ -99,4 +99,32 @@ describe('account (e2e)', () => {
         const fourth = await create('Cash again');
         expect(fourth.body.number).toBe(3);
     });
+
+    it('refuses to delete an account with transactions and keeps its history', async () => {
+        const used = await create('Used');
+        await request(app.getHttpServer())
+            .post(`/api/households/${householdId}/transactions`)
+            .set('Cookie', cookie)
+            .send({
+                accountId: used.body.id,
+                type: 'expense',
+                amount: 500,
+                title: 'x',
+                date: '2026-02-01',
+            })
+            .expect(201);
+
+        await request(app.getHttpServer())
+            .delete(`${url()}/${used.body.id}`)
+            .set('Cookie', cookie)
+            .expect(409);
+
+        const list = await request(app.getHttpServer())
+            .get(url())
+            .set('Cookie', cookie)
+            .expect(200);
+        expect(
+            list.body.find((a: { id: string }) => a.id === used.body.id).amount,
+        ).toBe(-500);
+    });
 });

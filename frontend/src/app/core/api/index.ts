@@ -34,6 +34,7 @@ export type {
     AccountCreateAccountResponse,
     AccountCreateAccountResponses,
     AccountDeleteAccountData,
+    AccountDeleteAccountErrors,
     AccountDeleteAccountResponse,
     AccountDeleteAccountResponses,
     AccountDto,

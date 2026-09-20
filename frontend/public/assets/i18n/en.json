@@ -97,8 +97,12 @@
         },
         "delete": {
             "title": "Delete account?",
-            "message": "This permanently deletes the account and all of its transactions. This cannot be undone.",
-            "confirm": "Delete"
+            "message": "This permanently deletes the account. This cannot be undone.",
+            "confirm": "Delete",
+            "blockedTitle": "Account has transactions",
+            "blockedMessage": "An account with transactions cannot be deleted, so its history is kept. Archive it instead? It disappears from entry and totals but stays in the history.",
+            "blockedArchivedMessage": "An account with transactions cannot be deleted, so its history is kept. It is already archived.",
+            "blockedOk": "OK"
         },
         "badge": "Account {{number}}",
         "chips": {

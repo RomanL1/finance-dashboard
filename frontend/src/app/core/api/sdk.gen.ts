@@ -12,6 +12,7 @@ import type {
     AccountCreateAccountData,
     AccountCreateAccountResponses,
     AccountDeleteAccountData,
+    AccountDeleteAccountErrors,
     AccountDeleteAccountResponses,
     AccountGetAccountsData,
     AccountGetAccountsResponses,
@@ -288,10 +289,14 @@ export const accountCreateAccount = <ThrowOnError extends boolean = false>(
 
 export const accountDeleteAccount = <ThrowOnError extends boolean = false>(
     options: Options<AccountDeleteAccountData, ThrowOnError>,
-): RequestResult<AccountDeleteAccountResponses, unknown, ThrowOnError> =>
+): RequestResult<
+    AccountDeleteAccountResponses,
+    AccountDeleteAccountErrors,
+    ThrowOnError
+> =>
     (options.client ?? client).delete<
         AccountDeleteAccountResponses,
-        unknown,
+        AccountDeleteAccountErrors,
         ThrowOnError
     >({
         security: [
