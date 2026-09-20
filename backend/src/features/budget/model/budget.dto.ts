@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, Matches, Min } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsBoolean, IsInt, IsOptional, Matches, Min } from 'class-validator';
 
 const MONTH_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/;
 
@@ -39,6 +40,21 @@ export class SetBudgetDto {
     amount!: number;
 }
 
+export class CopyPreviousQueryDto {
+    @ApiProperty({
+        description:
+            'Take-over on first view: does nothing when the limits of the month were set, removed or taken over before',
+        required: false,
+        default: false,
+    })
+    @IsOptional()
+    @Transform(({ value }: { value: unknown }) =>
+        value === 'true' ? true : value === 'false' ? false : value,
+    )
+    @IsBoolean()
+    auto?: boolean;
+}
+
 export class CopiedBudgetsDto {
     @ApiProperty({
         description:
@@ -50,4 +66,9 @@ export class CopiedBudgetsDto {
     sourceMonth!: string | null;
     @ApiProperty({ type: [BudgetDto] })
     budgets!: BudgetDto[];
+    @ApiProperty({
+        description:
+            'True when an automatic take-over left the month alone because its limits were touched before',
+    })
+    skipped!: boolean;
 }

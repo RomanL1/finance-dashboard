@@ -23,10 +23,12 @@ export interface SetBudgetInput {
     amount: number;
 }
 
-/** Outcome of copying limits into a month. `sourceMonth` is null when no earlier month had limits. */
+/** Outcome of copying limits into a month. `sourceMonth` is null when nothing was copied. */
 export interface CopiedBudgets {
     sourceMonth: Month | null;
     budgets: Budget[];
+    /** True when an automatic take-over left the month alone because its limits were already touched. */
+    skipped: boolean;
 }
 
 export function assertValidMonth(month: string): void {

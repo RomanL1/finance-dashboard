@@ -31,10 +31,14 @@ export class BudgetService {
     async loadMonth(householdId: string, month: string): Promise<MonthBudgets> {
         const budgets = await this.list(householdId, month);
         if (budgets.length > 0 || !isAutoInheritMonth(month)) {
-            return { budgets, inheritedFrom: null };
+            return { budgets, inheritedFrom: null, emptied: false };
         }
-        const copied = await this.copyPrevious(householdId, month);
-        return { budgets: copied.budgets, inheritedFrom: copied.sourceMonth };
+        const copied = await this.copyPrevious(householdId, month, true);
+        return {
+            budgets: copied.budgets,
+            inheritedFrom: copied.sourceMonth,
+            emptied: copied.skipped,
+        };
     }
 
     /** Creates the limit or replaces its amount. */
@@ -66,13 +70,16 @@ export class BudgetService {
     /**
      * Fills an empty month with copies of the nearest earlier month's limits. `sourceMonth` is null
      * when there was nothing to copy. Fails with 409 when the month already has limits.
+     * `auto` = take-over on first view: the server skips a month whose limits were touched before.
      */
     async copyPrevious(
         householdId: string,
         month: string,
+        auto = false,
     ): Promise<CopiedBudgetsDto> {
         const response = await budgetCopyPreviousBudgets({
             path: { householdId, month },
+            query: auto ? { auto: true } : undefined,
             throwOnError: true,
         });
         return response.data;

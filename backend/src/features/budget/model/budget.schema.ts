@@ -1,9 +1,11 @@
 import {
     integer,
+    primaryKey,
     sqliteTable,
     text,
     uniqueIndex,
 } from 'drizzle-orm/sqlite-core';
+import { household } from '../../household/model/household.schema.js';
 import { category } from '../../category/model/category.schema.js';
 import { timestamps } from '../../../shared/infra/db/timestamp.schema.js';
 
@@ -31,4 +33,20 @@ export const budget = sqliteTable(
             table.month,
         ),
     ],
+);
+
+/**
+ * A month whose limits the household has touched: set, removed or taken over. Such a month never
+ * fills itself again, so removing its last limit leaves it deliberately unbudgeted (stories S1, S3).
+ */
+export const budgetMonth = sqliteTable(
+    'budget_month',
+    {
+        householdId: text('household_id')
+            .notNull()
+            .references(() => household.id, { onDelete: 'cascade' }),
+        /** `YYYY-MM`. */
+        month: text('month').notNull(),
+    },
+    (table) => [primaryKey({ columns: [table.householdId, table.month] })],
 );

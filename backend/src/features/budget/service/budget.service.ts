@@ -32,7 +32,9 @@ export class BudgetService {
     async set(householdId: Id, input: SetBudgetInput): Promise<Budget> {
         const entity = buildBudget(input);
         await this.assertCategory(householdId, input.categoryId);
-        return this.budgets.upsert(entity);
+        const saved = await this.budgets.upsert(entity);
+        await this.budgets.markMonthTouched(householdId, entity.month);
+        return saved;
     }
 
     async remove(householdId: Id, categoryId: Id, month: Month): Promise<void> {
@@ -45,33 +47,42 @@ export class BudgetService {
         if (!deleted) {
             throw new NotFoundError('Budget', `${categoryId}/${month}`);
         }
+        // Also covers months whose limits predate the marker.
+        await this.budgets.markMonthTouched(householdId, month);
     }
 
     /**
      * Fills an empty month with the limits of the nearest earlier month that has any (story S4).
      * The copies are independent rows, so editing them leaves the source month untouched.
+     * `auto` is the take-over on first view: it leaves a month alone whose limits were touched before,
+     * so a month emptied on purpose stays empty. The explicit take-over still fills it.
      */
     async copyFromPrevious(
         householdId: Id,
         month: Month,
+        auto = false,
     ): Promise<CopiedBudgets> {
         assertValidMonth(month);
         const existing = await this.budgets.listByMonth(householdId, month);
         if (existing.length > 0) {
             throw new ConflictError(`Month ${month} already has limits`);
         }
+        if (auto && (await this.budgets.isMonthTouched(householdId, month))) {
+            return { sourceMonth: null, budgets: [], skipped: true };
+        }
         const sourceMonth = await this.budgets.latestMonthBefore(
             householdId,
             month,
         );
         if (sourceMonth === null) {
-            return { sourceMonth: null, budgets: [] };
+            return { sourceMonth: null, budgets: [], skipped: false };
         }
         const source = await this.budgets.listByMonth(householdId, sourceMonth);
         const budgets = await this.budgets.insertMany(
             copyBudgets(source, month),
         );
-        return { sourceMonth, budgets };
+        await this.budgets.markMonthTouched(householdId, month);
+        return { sourceMonth, budgets, skipped: false };
     }
 
     private async assertCategory(

@@ -4,7 +4,7 @@ import { DRIZZLE } from '../../../shared/infra/db/db.module.js';
 import type { Db } from '../../../shared/infra/db/db.js';
 import { type Id } from '../../../shared/kernel/index.js';
 import { category } from '../../category/model/category.schema.js';
-import { budget } from '../model/budget.schema.js';
+import { budget, budgetMonth } from '../model/budget.schema.js';
 import type { Budget, Month } from '../model/budget.js';
 
 const budgetColumns = {
@@ -49,6 +49,28 @@ export class BudgetRepository {
                 ),
             );
         return row?.month ?? null;
+    }
+
+    async isMonthTouched(householdId: Id, month: Month): Promise<boolean> {
+        const [row] = await this.db
+            .select({ month: budgetMonth.month })
+            .from(budgetMonth)
+            .where(
+                and(
+                    eq(budgetMonth.householdId, householdId),
+                    eq(budgetMonth.month, month),
+                ),
+            )
+            .limit(1);
+        return row !== undefined;
+    }
+
+    /** Idempotent. */
+    async markMonthTouched(householdId: Id, month: Month): Promise<void> {
+        await this.db
+            .insert(budgetMonth)
+            .values({ householdId, month })
+            .onConflictDoNothing();
     }
 
     /** One statement, so either every row lands or none. Rows must not collide with existing (category, month) pairs. */

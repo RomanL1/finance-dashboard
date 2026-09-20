@@ -16,7 +16,8 @@ export function toMonthKey(date: Date): string {
 
 /**
  * Months that fill themselves from the previous limits on first view (story S4): the current
- * calendar month and the next one, so limits can be planned ahead. Any other month needs an explicit action.
+ * calendar month and the next one, so limits can be planned ahead. Any other month needs an explicit action,
+ * as does one of these two once its limits were touched: removing the last limit must not bring them back.
  */
 export function isAutoInheritMonth(month: string, now = new Date()): boolean {
     const current = toMonthKey(now);
@@ -28,6 +29,8 @@ export function isAutoInheritMonth(month: string, now = new Date()): boolean {
 export interface MonthBudgets {
     budgets: BudgetDto[];
     inheritedFrom: string | null;
+    /** The month did not fill itself because its limits were touched before: it was emptied on purpose. */
+    emptied: boolean;
 }
 
 /** One list row: every household category, with its limit and what was spent against it. */

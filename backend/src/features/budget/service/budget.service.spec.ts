@@ -25,6 +25,8 @@ function makeRepo(overrides: Partial<BudgetRepository> = {}) {
             .mockImplementation((entity: Budget) => Promise.resolve(entity)),
         delete: vi.fn().mockResolvedValue(true),
         latestMonthBefore: vi.fn().mockResolvedValue('2026-08'),
+        isMonthTouched: vi.fn().mockResolvedValue(false),
+        markMonthTouched: vi.fn().mockResolvedValue(undefined),
         insertMany: vi
             .fn()
             .mockImplementation((rows: Budget[]) => Promise.resolve(rows)),
@@ -187,8 +189,36 @@ describe('BudgetService', () => {
 
             await expect(
                 service.copyFromPrevious('hh-1', '2026-10'),
-            ).resolves.toEqual({ sourceMonth: null, budgets: [] });
+            ).resolves.toEqual({
+                sourceMonth: null,
+                budgets: [],
+                skipped: false,
+            });
             expect(repo.insertMany).not.toHaveBeenCalled();
+            expect(repo.markMonthTouched).not.toHaveBeenCalled();
+        });
+
+        it('auto leaves a touched month alone, explicit still fills it', async () => {
+            const repo = makeCopyRepo({
+                isMonthTouched: vi.fn().mockResolvedValue(true),
+            });
+            const service = new BudgetService(repo, makeCategories());
+
+            await expect(
+                service.copyFromPrevious('hh-1', '2026-10', true),
+            ).resolves.toEqual({
+                sourceMonth: null,
+                budgets: [],
+                skipped: true,
+            });
+            expect(repo.insertMany).not.toHaveBeenCalled();
+
+            const explicit = await service.copyFromPrevious('hh-1', '2026-10');
+            expect(explicit.sourceMonth).toBe('2026-08');
+            expect(repo.markMonthTouched).toHaveBeenCalledWith(
+                'hh-1',
+                '2026-10',
+            );
         });
 
         it('refuses a month that already has limits', async () => {

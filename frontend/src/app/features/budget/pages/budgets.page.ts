@@ -172,13 +172,13 @@ export class BudgetsPage {
         () => this.budgets.value()?.inheritedFrom ?? null,
     );
 
-    /** Past and far-future months do not fill themselves; offer it while the month is empty. */
+    /** Past, far-future and deliberately emptied months do not fill themselves; offer it while the month is empty. */
     readonly canInherit = computed(() => {
         const loaded = this.budgets.value();
         return (
             !!loaded &&
             loaded.budgets.length === 0 &&
-            !isAutoInheritMonth(this.month())
+            (!isAutoInheritMonth(this.month()) || loaded.emptied)
         );
     });
 
@@ -251,6 +251,7 @@ export class BudgetsPage {
                 this.budgets.set({
                     budgets: copied.budgets,
                     inheritedFrom: copied.sourceMonth,
+                    emptied: false,
                 });
             }
         } catch {

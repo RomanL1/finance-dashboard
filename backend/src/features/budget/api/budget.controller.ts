@@ -25,6 +25,7 @@ import {
     BudgetDto,
     BudgetListQueryDto,
     CopiedBudgetsDto,
+    CopyPreviousQueryDto,
     SetBudgetDto,
 } from '../model/budget.dto.js';
 import { BudgetService } from '../service/budget.service.js';
@@ -93,9 +94,14 @@ export class BudgetController {
     async copyPreviousBudgets(
         @Param('householdId') householdId: Id,
         @Param('month') month: string,
+        @Query() query: CopyPreviousQueryDto,
     ): Promise<CopiedBudgetsDto> {
         return toCopiedBudgetsDto(
-            await this.budgets.copyFromPrevious(householdId, month),
+            await this.budgets.copyFromPrevious(
+                householdId,
+                month,
+                query.auto ?? false,
+            ),
         );
     }
 

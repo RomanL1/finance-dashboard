@@ -250,6 +250,10 @@ export type CopiedBudgetsDto = {
      */
     sourceMonth: string | null;
     budgets: Array<BudgetDto>;
+    /**
+     * True when an automatic take-over left the month alone because its limits were touched before
+     */
+    skipped: boolean;
 };
 
 export type HealthHealthData = {
@@ -814,7 +818,12 @@ export type BudgetCopyPreviousBudgetsData = {
          */
         month: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Take-over on first view: does nothing when the limits of the month were set, removed or taken over before
+         */
+        auto?: boolean;
+    };
     url: '/api/households/{householdId}/budgets/{month}/copy-previous';
 };
 

@@ -22,9 +22,11 @@ export function toBudgetsDto(budgets: Budget[]): BudgetDto[] {
 export function toCopiedBudgetsDto({
     sourceMonth,
     budgets,
+    skipped,
 }: CopiedBudgets): CopiedBudgetsDto {
     const dto = new CopiedBudgetsDto();
     dto.sourceMonth = sourceMonth;
     dto.budgets = toBudgetsDto(budgets);
+    dto.skipped = skipped;
     return dto;
 }

@@ -212,7 +212,91 @@ describe('budget (e2e)', () => {
             .post(`${base()}/2026-01/copy-previous`)
             .set('Cookie', cookie)
             .expect(200);
-        expect(res.body).toEqual({ sourceMonth: null, budgets: [] });
+        expect(res.body).toEqual({
+            sourceMonth: null,
+            budgets: [],
+            skipped: false,
+        });
+    });
+
+    it('a month emptied on purpose stays empty for the automatic take-over, not the explicit one', async () => {
+        await server()
+            .delete(`${base()}/${categoryId}/2026-08`)
+            .set('Cookie', cookie)
+            .expect(204);
+
+        const auto = await server()
+            .post(`${base()}/2026-08/copy-previous?auto=true`)
+            .set('Cookie', cookie)
+            .expect(200);
+        expect(auto.body).toEqual({
+            sourceMonth: null,
+            budgets: [],
+            skipped: true,
+        });
+        const list = await server()
+            .get(`${base()}?month=2026-08`)
+            .set('Cookie', cookie)
+            .expect(200);
+        expect(list.body).toEqual([]);
+
+        const explicit = await server()
+            .post(`${base()}/2026-08/copy-previous`)
+            .set('Cookie', cookie)
+            .expect(200);
+        expect(explicit.body.sourceMonth).toBe('2026-06');
+    });
+
+    it('the automatic take-over fills a month nobody touched', async () => {
+        const res = await server()
+            .post(`${base()}/2026-11/copy-previous?auto=true`)
+            .set('Cookie', cookie)
+            .expect(200);
+        expect(res.body.skipped).toBe(false);
+        expect(res.body.budgets).toHaveLength(1);
+    });
+
+    it('full loop: auto-fill, empty, stays empty, explicit refill, empty again, stays empty', async () => {
+        const loopMonth = '2026-12';
+        const auto = () =>
+            server()
+                .post(`${base()}/${loopMonth}/copy-previous?auto=true`)
+                .set('Cookie', cookie)
+                .expect(200);
+        const removeAll = async (budgets: { categoryId: string }[]) => {
+            for (const b of budgets) {
+                await server()
+                    .delete(`${base()}/${b.categoryId}/${loopMonth}`)
+                    .set('Cookie', cookie)
+                    .expect(204);
+            }
+        };
+        const list = () =>
+            server()
+                .get(`${base()}?month=${loopMonth}`)
+                .set('Cookie', cookie)
+                .expect(200);
+
+        // 1. first view fills the month
+        const first = await auto();
+        expect(first.body.budgets.length).toBeGreaterThan(0);
+
+        // 2.-3. delete all, reload: stays empty
+        await removeAll(first.body.budgets);
+        expect((await auto()).body.skipped).toBe(true);
+        expect((await list()).body).toEqual([]);
+
+        // 4. explicit take-over brings the limits back
+        const explicit = await server()
+            .post(`${base()}/${loopMonth}/copy-previous`)
+            .set('Cookie', cookie)
+            .expect(200);
+        expect(explicit.body.budgets.length).toBeGreaterThan(0);
+
+        // 5. delete again, reload: still empty
+        await removeAll(explicit.body.budgets);
+        expect((await auto()).body.skipped).toBe(true);
+        expect((await list()).body).toEqual([]);
     });
 
     it('POST copy-previous rejects a malformed month with 400', async () => {
