@@ -169,6 +169,28 @@ describe('CategoryService', () => {
             ).rejects.toBeInstanceOf(ValidationError);
         });
 
+        it('throws NotFoundError before transferring when the source is not in the household', async () => {
+            const repo = makeRepo({
+                findById: vi
+                    .fn()
+                    .mockImplementation((_hh: string, id: string) =>
+                        Promise.resolve(
+                            id === 'cat-2'
+                                ? { ...dummyCategory, id: 'cat-2' }
+                                : null,
+                        ),
+                    ),
+            });
+            const service = new CategoryService(repo);
+
+            await expect(
+                service.delete('household-1', 'foreign', {
+                    transferTo: 'cat-2',
+                }),
+            ).rejects.toBeInstanceOf(NotFoundError);
+            expect(repo.deleteCategory).not.toHaveBeenCalled();
+        });
+
         it('throws NotFoundError when category does not exist in household', async () => {
             const repo = makeRepo({
                 findById: vi.fn().mockResolvedValue(null),

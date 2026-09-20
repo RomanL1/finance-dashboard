@@ -111,6 +111,11 @@ export class CategoryService {
             if (!target) {
                 throw new NotFoundError('Category', options.transferTo);
             }
+            // The source too, before anything is written: the transfer runs ahead of the delete.
+            const categoryExists = await this.categories.findById(householdId, id);
+            if (!categoryExists) {
+                throw new NotFoundError('Category', id);
+            }
         }
 
         const deleted = await this.categories.deleteCategory(

@@ -117,7 +117,7 @@ describe('transaction (e2e)', () => {
             .get(url())
             .set('Cookie', cookie)
             .expect(200);
-        expect(list.body).toEqual([]);
+        expect(list.body.items).toEqual([]);
     });
 
     it('DELETE account is refused while it has transactions', async () => {

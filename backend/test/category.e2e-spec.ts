@@ -199,7 +199,7 @@ describe('category (e2e)', () => {
                 .get(`/api/households/${householdId}/transactions`)
                 .set('Cookie', cookie)
                 .expect(200);
-            return res.body.map(
+            return res.body.items.map(
                 (t: { categoryId: string | null }) => t.categoryId,
             );
         };
@@ -241,6 +241,48 @@ describe('category (e2e)', () => {
                 .set('Cookie', cookie)
                 .expect(404);
             expect(await countOf(fromId)).toBe(2);
+        });
+
+        it('DELETE with transferTo cannot touch a category of another household', async () => {
+            const signUp = await request(app.getHttpServer())
+                .post('/api/auth/sign-up/email')
+                .send({
+                    email: 'intruder@finance.local',
+                    password: 'intruder-password',
+                    name: 'Intruder',
+                })
+                .expect(200);
+            const intruder = signUp.headers['set-cookie'][0].split(';')[0];
+            const onboarding = await request(app.getHttpServer())
+                .post('/api/households/onboarding')
+                .set('Cookie', intruder)
+                .send({
+                    name: 'Other',
+                    categoryNames: ['Mine'],
+                    accounts: [
+                        {
+                            description: 'Cash',
+                            type: 'cash',
+                            currency: 'CHF',
+                            initialValue: 0,
+                            startDate: '2026-01-01',
+                        },
+                    ],
+                })
+                .expect(201);
+            const otherUrl = `/api/households/${onboarding.body.id}/categories`;
+            const own = await request(app.getHttpServer())
+                .get(otherUrl)
+                .set('Cookie', intruder)
+                .expect(200);
+
+            await request(app.getHttpServer())
+                .delete(`${otherUrl}/${fromId}?transferTo=${own.body[0].id}`)
+                .set('Cookie', intruder)
+                .expect(404);
+
+            expect(await countOf(fromId)).toBe(2);
+            expect(await transactionCategories()).toEqual([fromId, fromId]);
         });
 
         it('DELETE with transferTo moves the transactions', async () => {
