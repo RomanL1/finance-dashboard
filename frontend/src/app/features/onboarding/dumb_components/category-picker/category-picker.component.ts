@@ -26,8 +26,8 @@ import type {
     DefaultCategoryDto,
 } from '../../onboarding.types';
 
-/** Always-on fallback bucket. Selected by default and cannot be unchecked. */
-const LOCKED_DEFAULT_KEY = 'MISC';
+/** Suggested catch-all, ticked at the start like any other suggestion. Transactions without a category need none (ADR-1). */
+const DEFAULT_SELECTED_KEY = 'MISC';
 
 @Component({
     selector: 'app-category-picker',
@@ -67,7 +67,6 @@ const LOCKED_DEFAULT_KEY = 'MISC';
                     ) {
                         <mat-checkbox
                             [checked]="selected().has(category.translateKey)"
-                            [disabled]="category.translateKey === lockedKey"
                             (change)="toggle(category.translateKey)"
                         >
                             {{
@@ -137,7 +136,7 @@ const LOCKED_DEFAULT_KEY = 'MISC';
             <app-button
                 type="button"
                 variant="filled"
-                [disabled]="busy()"
+                [disabled]="busy() || !hasSelection()"
                 (clicked)="submit()"
             >
                 {{ 'onboarding.categories.submit' | translate }}
@@ -152,10 +151,8 @@ export class CategoryPickerComponent {
     readonly errorMessage = input<string | null>(null);
     readonly submitted = output<CategorySelection>();
 
-    readonly lockedKey = LOCKED_DEFAULT_KEY;
-
     private readonly _selected = signal<ReadonlySet<string>>(
-        new Set([LOCKED_DEFAULT_KEY]),
+        new Set([DEFAULT_SELECTED_KEY]),
     );
     readonly selected = this._selected.asReadonly();
 
@@ -168,6 +165,11 @@ export class CategoryPickerComponent {
             this.categories().every((c) => this.selected().has(c.translateKey)),
     );
 
+    /** The household needs at least one category; the server rejects an empty list. */
+    readonly hasSelection = computed(
+        () => this.selected().size > 0 || this.customNames().length > 0,
+    );
+
     readonly customForm = new FormGroup({
         name: new FormControl('', {
             nonNullable: true,
@@ -176,7 +178,6 @@ export class CategoryPickerComponent {
     });
 
     toggle(translateKey: string): void {
-        if (translateKey === LOCKED_DEFAULT_KEY) return;
         const next = new Set(this._selected());
         if (next.has(translateKey)) {
             next.delete(translateKey);
@@ -189,7 +190,7 @@ export class CategoryPickerComponent {
     toggleAll(): void {
         this._selected.set(
             this.allSelected()
-                ? new Set([LOCKED_DEFAULT_KEY])
+                ? new Set<string>()
                 : new Set(this.categories().map((c) => c.translateKey)),
         );
     }
@@ -206,7 +207,7 @@ export class CategoryPickerComponent {
     }
 
     submit(): void {
-        if (this.busy()) return;
+        if (this.busy() || !this.hasSelection()) return;
         this.submitted.emit({
             translateKeys: [...this.selected()],
             customNames: [...this.customNames()],
