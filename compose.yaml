@@ -1,13 +1,13 @@
 # Production bundle: `docker compose up` builds both images locally and starts the stack
 # at http://localhost:${APP_PORT:-8080}. Rebuild after code changes with `docker compose up --build`.
-# Demo login: demo@finance.local / demo-password. Override defaults via a root .env file (see .env.example).
+# Demo login: demo@finance.local / demo-password. Requires a root .env with BETTER_AUTH_SECRET (see .env.example).
 services:
   api:
     build: ./backend
     environment:
       SEED_DEMO: ${SEED_DEMO:-true}
-      # Unset -> insecure default + loud warning in the api log. Set it before exposing the instance.
-      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-}
+      # Required: signs session cookies. Generate one with `openssl rand -base64 32`.
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?set BETTER_AUTH_SECRET in .env (openssl rand -base64 32)}
       # Public origin as seen by the browser (nginx forwards Host).
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:${APP_PORT:-8080}}
       TRUSTED_ORIGINS: ${TRUSTED_ORIGINS:-http://localhost:${APP_PORT:-8080},http://127.0.0.1:${APP_PORT:-8080}}

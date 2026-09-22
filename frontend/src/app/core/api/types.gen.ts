@@ -80,7 +80,7 @@ export type CreateAccountDto = {
     type: 'checking' | 'savings' | 'cash' | 'credit_card' | 'other';
     currency: 'CHF' | 'EUR' | 'USD' | 'GBP';
     /**
-     * Minor units (cents)
+     * Minor units (cents), negative for debt
      */
     initialValue: number;
     startDate: string;
@@ -105,7 +105,7 @@ export type OnboardingAccountDto = {
     type: 'checking' | 'savings' | 'cash' | 'credit_card' | 'other';
     currency: 'CHF' | 'EUR' | 'USD' | 'GBP';
     /**
-     * Minor units (cents)
+     * Minor units (cents), negative for debt
      */
     initialValue: number;
     startDate: string;

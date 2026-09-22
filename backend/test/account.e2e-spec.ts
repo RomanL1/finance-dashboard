@@ -4,6 +4,7 @@ import request from 'supertest';
 import { AppModule } from '../src/app.module.js';
 import { setupApp } from '../src/shared/infra/app.setup.js';
 import { DEMO_USER } from '../src/shared/infra/db/seed.js';
+import { MAX_AMOUNT } from '../src/shared/kernel/index.js';
 import { prepareTestDb } from './setup-db.js';
 
 /** Account numbers are per household, start at 1, and follow the current max (deleting the highest frees its number). */
@@ -158,5 +159,53 @@ describe('account (e2e)', () => {
         expect(
             list.body.find((a: { id: string }) => a.id === used.body.id).amount,
         ).toBe(-500);
+    });
+
+    it('POST accepts initialValue at ±cap and rejects beyond', async () => {
+        const post = (initialValue: number) =>
+            request(app.getHttpServer())
+                .post(url())
+                .set('Cookie', cookie)
+                .send({
+                    description: 'Capped',
+                    currency: 'CHF',
+                    type: 'checking',
+                    initialValue,
+                    startDate: '2026-01-01',
+                });
+        await post(MAX_AMOUNT).expect(201);
+        await post(-MAX_AMOUNT).expect(201);
+        await post(MAX_AMOUNT + 1).expect(400);
+        await post(-MAX_AMOUNT - 1).expect(400);
+    });
+
+    it('onboarding accepts initialValue at ±cap and rejects beyond', async () => {
+        const signUp = await request(app.getHttpServer())
+            .post('/api/auth/sign-up/email')
+            .send({
+                email: 'cap@finance.local',
+                password: 'cap-password',
+                name: 'Cap',
+            })
+            .expect(200);
+        const capCookie = signUp.headers['set-cookie'][0].split(';')[0];
+        const onboard = (...initialValues: number[]) =>
+            request(app.getHttpServer())
+                .post('/api/households/onboarding')
+                .set('Cookie', capCookie)
+                .send({
+                    name: 'Cap Haushalt',
+                    categoryNames: ['Utilities'],
+                    accounts: initialValues.map((initialValue, i) => ({
+                        description: `Account ${i + 1}`,
+                        currency: 'CHF',
+                        type: 'checking',
+                        initialValue,
+                        startDate: '2026-01-01',
+                    })),
+                });
+        await onboard(MAX_AMOUNT + 1).expect(400);
+        await onboard(-MAX_AMOUNT - 1).expect(400);
+        await onboard(MAX_AMOUNT, -MAX_AMOUNT).expect(201);
     });
 });

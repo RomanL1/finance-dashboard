@@ -24,7 +24,14 @@
                                 "input": "public"
                             }
                         ],
-                        "styles": ["src/material-theme.scss", "src/styles.css"]
+                        "styles": [
+                            "@fontsource/roboto/300.css",
+                            "@fontsource/roboto/400.css",
+                            "@fontsource/roboto/500.css",
+                            "material-icons/iconfont/filled.css",
+                            "src/material-theme.scss",
+                            "src/styles.css"
+                        ]
                     },
                     "configurations": {
                         "production": {
@@ -40,6 +47,14 @@
                                     "maximumError": "8kB"
                                 }
                             ],
+                            "optimization": {
+                                "scripts": true,
+                                "styles": {
+                                    "minify": true,
+                                    "inlineCritical": false
+                                },
+                                "fonts": true
+                            },
                             "outputHashing": "all"
                         },
                         "development": {

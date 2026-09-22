@@ -1,6 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsInt, IsOptional, Matches, Min } from 'class-validator';
+import {
+    IsBoolean,
+    IsInt,
+    IsOptional,
+    Matches,
+    Max,
+    Min,
+} from 'class-validator';
+import { MAX_AMOUNT } from '../../../shared/kernel/index.js';
 
 const MONTH_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/;
 
@@ -34,9 +42,11 @@ export class SetBudgetDto {
         description:
             'Limit in minor units of the household currency, 0 or more',
         example: 50000,
+        maximum: MAX_AMOUNT,
     })
     @IsInt()
     @Min(0)
+    @Max(MAX_AMOUNT)
     amount!: number;
 }
 

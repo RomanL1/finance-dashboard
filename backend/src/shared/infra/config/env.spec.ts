@@ -30,21 +30,32 @@ async function loadEnv(overrides: Record<string, string | undefined>) {
 describe('env', () => {
     afterEach(() => vi.resetModules());
 
-    it('falls back to the insecure default secret when BETTER_AUTH_SECRET is unset', async () => {
+    it('refuses to load in production without BETTER_AUTH_SECRET', async () => {
+        await expect(
+            loadEnv({
+                NODE_ENV: 'production',
+                DB_FILE_NAME: 'file::memory:',
+                BETTER_AUTH_SECRET: undefined,
+            }),
+        ).rejects.toThrow('BETTER_AUTH_SECRET');
+    });
+
+    it('allows an unset secret outside production', async () => {
         const mod = await loadEnv({
+            NODE_ENV: 'development',
             DB_FILE_NAME: 'file::memory:',
             BETTER_AUTH_SECRET: undefined,
         });
-        expect(mod.env.auth.secret).toBe(mod.INSECURE_DEFAULT_SECRET);
-        expect(mod.isInsecureSecret).toBe(true);
+        expect(mod.env.auth.secret).toBeUndefined();
     });
 
     it('uses the configured secret when set', async () => {
         const mod = await loadEnv({
+            NODE_ENV: 'production',
             DB_FILE_NAME: 'file::memory:',
             BETTER_AUTH_SECRET: 'a-real-secret-that-is-long-enough',
         });
-        expect(mod.isInsecureSecret).toBe(false);
+        expect(mod.env.auth.secret).toBe('a-real-secret-that-is-long-enough');
     });
 
     it('parses SEED_DEMO as a boolean flag', async () => {

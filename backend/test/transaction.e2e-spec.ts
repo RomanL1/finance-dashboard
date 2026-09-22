@@ -4,6 +4,7 @@ import request from 'supertest';
 import { AppModule } from '../src/app.module.js';
 import { setupApp } from '../src/shared/infra/app.setup.js';
 import { DEMO_USER } from '../src/shared/infra/db/seed.js';
+import { MAX_AMOUNT } from '../src/shared/kernel/index.js';
 import { prepareTestDb } from './setup-db.js';
 
 /** Balance is derived from transactions: create, edit and delete must all be reflected. */
@@ -78,6 +79,34 @@ describe('transaction (e2e)', () => {
             .send(body('expense', 1250))
             .expect(201);
         transactionId = res.body.id;
+        expect(await balance()).toBe(98750);
+    });
+
+    it('POST accepts an amount at the cap and rejects one above', async () => {
+        const res = await request(app.getHttpServer())
+            .post(url())
+            .set('Cookie', cookie)
+            .send(body('income', MAX_AMOUNT))
+            .expect(201);
+        await request(app.getHttpServer())
+            .delete(`${url()}/${res.body.id}`)
+            .set('Cookie', cookie)
+            .expect(204);
+
+        await request(app.getHttpServer())
+            .post(url())
+            .set('Cookie', cookie)
+            .send(body('expense', MAX_AMOUNT + 1))
+            .expect(400);
+        expect(await balance()).toBe(98750);
+    });
+
+    it('PATCH rejects an amount above the cap', async () => {
+        await request(app.getHttpServer())
+            .patch(`${url()}/${transactionId}`)
+            .set('Cookie', cookie)
+            .send(body('expense', MAX_AMOUNT + 1))
+            .expect(400);
         expect(await balance()).toBe(98750);
     });
 

@@ -4,6 +4,7 @@ import request from 'supertest';
 import { AppModule } from '../src/app.module.js';
 import { setupApp } from '../src/shared/infra/app.setup.js';
 import { DEMO_USER } from '../src/shared/infra/db/seed.js';
+import { MAX_AMOUNT } from '../src/shared/kernel/index.js';
 import { prepareTestDb } from './setup-db.js';
 
 describe('budget (e2e)', () => {
@@ -124,6 +125,19 @@ describe('budget (e2e)', () => {
             .put(`${base()}/${categoryId}/${month}`)
             .set('Cookie', cookie)
             .send({ amount: 10.5 })
+            .expect(400);
+    });
+
+    it('PUT accepts an amount at the cap and rejects one above', async () => {
+        await server()
+            .put(`${base()}/${categoryId}/${month}`)
+            .set('Cookie', cookie)
+            .send({ amount: MAX_AMOUNT })
+            .expect(200);
+        await server()
+            .put(`${base()}/${categoryId}/${month}`)
+            .set('Cookie', cookie)
+            .send({ amount: MAX_AMOUNT + 1 })
             .expect(400);
     });
 

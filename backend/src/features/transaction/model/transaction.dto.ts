@@ -12,6 +12,7 @@ import {
     IsString,
     MaxLength,
 } from 'class-validator';
+import { MAX_AMOUNT } from '../../../shared/kernel/index.js';
 import { TRANSACTION_TYPES } from './transaction.schema.js';
 import { MAX_PAGE_SIZE, PAGE_SIZE, UNCATEGORIZED } from './transaction.js';
 
@@ -100,9 +101,14 @@ export class CreateTransactionDto {
     @IsIn(TRANSACTION_TYPES)
     type!: (typeof TRANSACTION_TYPES)[number];
 
-    @ApiProperty({ description: 'Minor units (cents)', example: 1250 })
+    @ApiProperty({
+        description: 'Minor units (cents)',
+        example: 1250,
+        maximum: MAX_AMOUNT,
+    })
     @IsInt()
     @IsPositive()
+    @Max(MAX_AMOUNT)
     amount!: number;
 
     @ApiProperty({

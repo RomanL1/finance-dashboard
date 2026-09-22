@@ -7,9 +7,14 @@ import {
     IsNotEmpty,
     IsOptional,
     IsString,
+    Max,
     MaxLength,
+    Min,
 } from 'class-validator';
-import { SUPPORTED_CURRENCIES } from '../../../shared/kernel/index.js';
+import {
+    MAX_AMOUNT,
+    SUPPORTED_CURRENCIES,
+} from '../../../shared/kernel/index.js';
 import { ACCOUNT_TYPES } from './account.schema.js';
 
 export class AccountDto {
@@ -45,8 +50,15 @@ export class CreateAccountDto {
     @IsIn(SUPPORTED_CURRENCIES)
     currency!: string;
 
-    @ApiProperty({ description: 'Minor units (cents)', example: 100000 })
+    @ApiProperty({
+        description: 'Minor units (cents), negative for debt',
+        example: 100000,
+        minimum: -MAX_AMOUNT,
+        maximum: MAX_AMOUNT,
+    })
     @IsInt()
+    @Min(-MAX_AMOUNT)
+    @Max(MAX_AMOUNT)
     initialValue!: number;
 
     @ApiProperty({ example: '2026-01-01' })

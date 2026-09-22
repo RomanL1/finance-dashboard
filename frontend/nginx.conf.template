@@ -1,4 +1,16 @@
 # Rendered by the nginx image entrypoint (envsubst on ${API_UPSTREAM} only; nginx's own $vars are untouched).
+
+# All add_header directives live at server level: a location with its own add_header would drop them.
+map $uri $cache_control {
+    # Backend responses keep their own caching headers.
+    ~^/api/                                                     "";
+    # Angular content-hashed bundles and fonts are immutable.
+    ~*^/(chunk|main|styles|polyfills)-[A-Za-z0-9_-]+\.(js|css)$ "public, max-age=31536000, immutable";
+    ~^/media/                                                   "public, max-age=31536000, immutable";
+    # Unhashed files (index.html, assets/, favicon) are not.
+    default                                                     "no-cache";
+}
+
 server {
     listen 8080;
     listen [::]:8080;
@@ -9,8 +21,17 @@ server {
     gzip on;
     gzip_types text/plain text/css application/json application/javascript image/svg+xml;
 
+    add_header Cache-Control $cache_control;
+    # Fonts are self-hosted and the API is same-origin, so everything is 'self'.
+    # style-src needs 'unsafe-inline': Angular injects component styles as <style> elements.
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" always;
+    add_header X-Frame-Options "DENY" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
     # Backend API (controllers under /api/*, better-auth under /api/auth/*).
     # Host is forwarded so better-auth sees the public origin (BETTER_AUTH_URL / TRUSTED_ORIGINS).
+    # X-Real-IP is overwritten with the peer address; better-auth rate-limits on it.
     location /api/ {
         proxy_pass http://${API_UPSTREAM};
         proxy_http_version 1.1;
@@ -20,15 +41,12 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    # Angular content-hashed bundles are immutable. Unhashed files (index.html, assets/, favicon) are not.
     location ~* ^/(chunk|main|styles|polyfills)-[A-Za-z0-9_-]+\.(js|css)$ {
         try_files $uri =404;
-        add_header Cache-Control "public, max-age=31536000, immutable";
     }
 
-    # SPA: unknown paths resolve to index.html, which must never be cached.
+    # SPA: unknown paths resolve to index.html.
     location / {
         try_files $uri $uri/ /index.html;
-        add_header Cache-Control "no-cache";
     }
 }

@@ -11,9 +11,10 @@ export const auth = betterAuth({
     trustedOrigins: env.auth.trustedOrigins,
     database: drizzleAdapter(db, { provider: 'sqlite', schema }),
     emailAndPassword: { enabled: true },
-    // Behind the compose nginx proxy the client IP arrives via X-Forwarded-For (rate limiting).
+    // Rate limiting keys on the client IP. The compose nginx overwrites X-Real-IP with $remote_addr;
+    // X-Forwarded-For is client-controlled and would allow bypassing the limit by rotating it.
     advanced: {
-        ipAddress: { ipAddressHeaders: ['x-forwarded-for', 'x-real-ip'] },
+        ipAddress: { ipAddressHeaders: ['x-real-ip'] },
     },
 });
 
