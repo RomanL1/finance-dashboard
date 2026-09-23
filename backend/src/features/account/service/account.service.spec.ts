@@ -4,7 +4,9 @@ import {
     NotFoundError,
     ValidationError,
 } from '../../../shared/kernel/index.js';
-import type { Account, CreateAccount } from '../model/account.js';
+import { makeHousehold } from '../../../../test/fixtures/household.js';
+import type { SupportedCurrency } from '../../../shared/kernel/index.js';
+import type { Account } from '../model/account.js';
 import type { AccountRepository } from '../repository/account.repository.js';
 import type { HouseholdService } from '../../household/service/household.service.js';
 import { AccountService } from './account.service.js';
@@ -31,35 +33,59 @@ const input = {
     startDate: new Date('2026-01-01'),
 };
 
-function makeRepo(overrides: Partial<AccountRepository> = {}) {
+/** The repository methods AccountService calls. */
+type RepoFake = Pick<
+    AccountRepository,
+    | 'listByHouseholdId'
+    | 'createAccount'
+    | 'updateAccount'
+    | 'hasTransactions'
+    | 'deleteAccount'
+>;
+
+function makeRepo(overrides: Partial<RepoFake> = {}): RepoFake {
     return {
-        listByHouseholdId: vi.fn().mockResolvedValue([dummyAccount]),
-        createAccount: vi
-            .fn()
-            .mockImplementation((entity: CreateAccount, householdId: string) =>
-                Promise.resolve({
-                    ...entity,
-                    amount: entity.initialValue,
-                    householdId,
-                    number: 1,
-                    createdAt: new Date('2026-01-01'),
-                }),
-            ),
-        updateAccount: vi.fn().mockResolvedValue(dummyAccount),
-        hasTransactions: vi.fn().mockResolvedValue(false),
-        deleteAccount: vi.fn().mockResolvedValue(true),
+        listByHouseholdId: vi
+            .fn<RepoFake['listByHouseholdId']>()
+            .mockResolvedValue([dummyAccount]),
+        createAccount: vi.fn<RepoFake['createAccount']>((entity, householdId) =>
+            Promise.resolve({
+                ...entity,
+                amount: entity.initialValue,
+                householdId,
+                number: 1,
+                createdAt: new Date('2026-01-01'),
+            }),
+        ),
+        updateAccount: vi
+            .fn<RepoFake['updateAccount']>()
+            .mockResolvedValue(dummyAccount),
+        hasTransactions: vi
+            .fn<RepoFake['hasTransactions']>()
+            .mockResolvedValue(false),
+        deleteAccount: vi
+            .fn<RepoFake['deleteAccount']>()
+            .mockResolvedValue(true),
         ...overrides,
-    } as unknown as AccountRepository;
+    };
 }
 
-function makeHouseholds(baseCurrency = 'CHF') {
+function makeHouseholds(
+    baseCurrency: SupportedCurrency = 'CHF',
+): Pick<HouseholdService, 'getById'> {
     return {
-        getById: vi.fn().mockResolvedValue({ id: 'household-1', baseCurrency }),
-    } as unknown as HouseholdService;
+        getById: vi
+            .fn<HouseholdService['getById']>()
+            .mockResolvedValue(makeHousehold(baseCurrency)),
+    };
 }
 
-function makeService(repo: AccountRepository, baseCurrency = 'CHF') {
-    return new AccountService(repo, makeHouseholds(baseCurrency));
+function makeService(repo: RepoFake, baseCurrency: SupportedCurrency = 'CHF') {
+    // The fakes cover every method AccountService calls; the rest of each class is never touched.
+    return new AccountService(
+        repo as AccountRepository,
+        makeHouseholds(baseCurrency) as HouseholdService,
+    );
 }
 
 describe('AccountService currency rule', () => {
@@ -154,6 +180,18 @@ describe('AccountService', () => {
                 }),
             ).rejects.toBeInstanceOf(ValidationError);
         });
+
+        it('trims the description', async () => {
+            const repo = makeRepo();
+            await makeService(repo).create('household-1', {
+                ...input,
+                description: '  Checking  ',
+            });
+            expect(repo.createAccount).toHaveBeenCalledWith(
+                expect.objectContaining({ description: 'Checking' }),
+                'household-1',
+            );
+        });
     });
 
     describe('update', () => {
@@ -173,6 +211,27 @@ describe('AccountService', () => {
                 ...editable,
                 archivedAt,
             });
+        });
+
+        it('unarchives when archivedAt is left out', async () => {
+            const repo = makeRepo();
+            const { initialValue: _fixed, ...editable } = input;
+            await makeService(repo).update('household-1', 'acc-1', editable);
+            expect(repo.updateAccount).toHaveBeenCalledWith(
+                'household-1',
+                expect.objectContaining({ id: 'acc-1', archivedAt: null }),
+            );
+        });
+
+        it('throws ValidationError for a blank description', async () => {
+            const repo = makeRepo();
+            await expect(
+                makeService(repo).update('household-1', 'acc-1', {
+                    ...input,
+                    description: ' ',
+                }),
+            ).rejects.toBeInstanceOf(ValidationError);
+            expect(repo.updateAccount).not.toHaveBeenCalled();
         });
 
         it('throws NotFoundError when the repository returns null', async () => {

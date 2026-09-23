@@ -1,5 +1,7 @@
-import type { ExecutionContext } from '@nestjs/common';
+import { ExecutionContextHost } from '@nestjs/core/helpers/execution-context-host.js';
 import { describe, expect, it, vi } from 'vitest';
+import { makeSession } from '../../../../test/fixtures/auth-session.js';
+import { makeHousehold } from '../../../../test/fixtures/household.js';
 import { ForbiddenError } from '../../../shared/kernel/index.js';
 import type { HouseholdMembership } from '../model/household.js';
 import type { HouseholdService } from '../service/household.service.js';
@@ -10,76 +12,79 @@ import {
 
 const dummyMembership: HouseholdMembership = {
     role: 'member',
-    household: {
-        id: 'h1',
-        name: 'Home',
-        onboardingComplete: false,
-        baseCurrency: 'CHF',
-        createdAt: new Date('2026-01-01'),
-    },
+    household: makeHousehold('CHF', 'h1'),
 };
 
-function createMockContext(
-    request: Partial<HouseholdAuthorizedRequest>,
-): ExecutionContext {
+function makeGuard(assertMember = vi.fn<HouseholdService['assertMember']>()) {
+    const households: Pick<HouseholdService, 'assertMember'> = { assertMember };
+    // The fake covers the one method the guard calls.
     return {
-        switchToHttp: () => ({
-            getRequest: () => request,
-        }),
-    } as unknown as ExecutionContext;
+        guard: new HouseholdMemberGuard(households as HouseholdService),
+        assertMember,
+    };
+}
+
+function contextWith(request: Partial<HouseholdAuthorizedRequest>) {
+    return new ExecutionContextHost([request]);
 }
 
 describe('HouseholdMemberGuard', () => {
     it('throws ForbiddenError if householdId param is missing', async () => {
-        const householdService = {
-            assertMember: vi.fn(),
-        } as unknown as HouseholdService;
-        const guard = new HouseholdMemberGuard(householdService);
-        const context = createMockContext({
-            params: {},
-            session: {
-                user: { id: 'u1' },
-            } as unknown as HouseholdAuthorizedRequest['session'],
-        });
+        const { guard, assertMember } = makeGuard();
 
-        await expect(guard.canActivate(context)).rejects.toBeInstanceOf(
-            ForbiddenError,
-        );
-        expect(householdService.assertMember).not.toHaveBeenCalled();
+        await expect(
+            guard.canActivate(
+                contextWith({ params: {}, session: makeSession('u1') }),
+            ),
+        ).rejects.toBeInstanceOf(ForbiddenError);
+        expect(assertMember).not.toHaveBeenCalled();
     });
 
     it('throws ForbiddenError if user session is missing', async () => {
-        const householdService = {
-            assertMember: vi.fn(),
-        } as unknown as HouseholdService;
-        const guard = new HouseholdMemberGuard(householdService);
-        const context = createMockContext({
-            params: { householdId: 'h1' },
-            session: undefined,
-        });
+        const { guard, assertMember } = makeGuard();
 
-        await expect(guard.canActivate(context)).rejects.toBeInstanceOf(
-            ForbiddenError,
-        );
-        expect(householdService.assertMember).not.toHaveBeenCalled();
+        await expect(
+            guard.canActivate(
+                contextWith({
+                    params: { householdId: 'h1' },
+                    session: undefined,
+                }),
+            ),
+        ).rejects.toBeInstanceOf(ForbiddenError);
+        expect(assertMember).not.toHaveBeenCalled();
     });
 
     it('attaches householdMembership to request and returns true on valid membership', async () => {
-        const householdService = {
-            assertMember: vi.fn().mockResolvedValue(dummyMembership),
-        } as unknown as HouseholdService;
-        const guard = new HouseholdMemberGuard(householdService);
+        const { guard, assertMember } = makeGuard(
+            vi
+                .fn<HouseholdService['assertMember']>()
+                .mockResolvedValue(dummyMembership),
+        );
         const request: Partial<HouseholdAuthorizedRequest> = {
             params: { householdId: 'h1' },
-            session: {
-                user: { id: 'u1' },
-            } as unknown as HouseholdAuthorizedRequest['session'],
+            session: makeSession('u1'),
         };
-        const context = createMockContext(request);
 
-        const result = await guard.canActivate(context);
+        const result = await guard.canActivate(contextWith(request));
         expect(result).toBe(true);
-        expect(householdService.assertMember).toHaveBeenCalledWith('h1', 'u1');
+        expect(assertMember).toHaveBeenCalledWith('h1', 'u1');
         expect(request.householdMembership).toEqual(dummyMembership);
+    });
+
+    it('propagates the rejection of a non-member and attaches nothing', async () => {
+        const { guard } = makeGuard(
+            vi
+                .fn<HouseholdService['assertMember']>()
+                .mockRejectedValue(new ForbiddenError('not a member')),
+        );
+        const request: Partial<HouseholdAuthorizedRequest> = {
+            params: { householdId: 'h2' },
+            session: makeSession('u1'),
+        };
+
+        await expect(
+            guard.canActivate(contextWith(request)),
+        ).rejects.toBeInstanceOf(ForbiddenError);
+        expect(request.householdMembership).toBeUndefined();
     });
 });

@@ -1,3 +1,4 @@
+import { describe, expect, it, vi } from 'vitest';
 import {
     ForbiddenError,
     NotFoundError,
@@ -20,19 +21,34 @@ const membership = (
     },
 });
 
-function makeRepo(overrides: Partial<HouseholdRepository> = {}) {
+/** The repository methods HouseholdService calls. */
+type RepoFake = Pick<
+    HouseholdRepository,
+    'findById' | 'findMembershipByUserId' | 'findMembership' | 'update'
+>;
+
+function makeRepo(overrides: Partial<RepoFake> = {}): RepoFake {
     return {
-        findById: vi.fn().mockResolvedValue(null),
-        findMembershipByUserId: vi.fn().mockResolvedValue(null),
-        findMembership: vi.fn().mockResolvedValue(null),
-        update: vi.fn().mockImplementation((_id: string, changes: object) =>
+        findById: vi.fn<RepoFake['findById']>().mockResolvedValue(null),
+        findMembershipByUserId: vi
+            .fn<RepoFake['findMembershipByUserId']>()
+            .mockResolvedValue(null),
+        findMembership: vi
+            .fn<RepoFake['findMembership']>()
+            .mockResolvedValue(null),
+        update: vi.fn<RepoFake['update']>((_id, changes) =>
             Promise.resolve({
                 ...membership('owner').household,
                 ...changes,
             }),
         ),
         ...overrides,
-    } as unknown as HouseholdRepository;
+    };
+}
+
+function makeService(repo: RepoFake) {
+    // The fake covers every method HouseholdService calls; the rest of the class is never touched.
+    return new HouseholdService(repo as HouseholdRepository);
 }
 
 describe('HouseholdService', () => {
@@ -40,20 +56,20 @@ describe('HouseholdService', () => {
         const repo = makeRepo({
             findById: vi.fn().mockResolvedValue(membership('owner').household),
         });
-        await expect(new HouseholdService(repo).getById('h1')).resolves.toEqual(
+        await expect(makeService(repo).getById('h1')).resolves.toEqual(
             membership('owner').household,
         );
     });
 
     it('getById throws NotFoundError when household does not exist', async () => {
-        const service = new HouseholdService(makeRepo());
+        const service = makeService(makeRepo());
         await expect(service.getById('h1')).rejects.toBeInstanceOf(
             NotFoundError,
         );
     });
 
     it('throws NotFoundError when user has no household', async () => {
-        const service = new HouseholdService(makeRepo());
+        const service = makeService(makeRepo());
         await expect(service.getForUser('u1')).rejects.toBeInstanceOf(
             NotFoundError,
         );
@@ -65,24 +81,22 @@ describe('HouseholdService', () => {
                 .fn()
                 .mockResolvedValue(membership('member')),
         });
-        await expect(
-            new HouseholdService(repo).getForUser('u1'),
-        ).resolves.toEqual(membership('member'));
+        await expect(makeService(repo).getForUser('u1')).resolves.toEqual(
+            membership('member'),
+        );
     });
 
     it('hasHousehold reflects whether the user already belongs to one', async () => {
-        await expect(
-            new HouseholdService(makeRepo()).hasHousehold('u1'),
-        ).resolves.toBe(false);
+        await expect(makeService(makeRepo()).hasHousehold('u1')).resolves.toBe(
+            false,
+        );
 
         const repo = makeRepo({
             findMembershipByUserId: vi
                 .fn()
                 .mockResolvedValue(membership('owner')),
         });
-        await expect(
-            new HouseholdService(repo).hasHousehold('u1'),
-        ).resolves.toBe(true);
+        await expect(makeService(repo).hasHousehold('u1')).resolves.toBe(true);
     });
 
     it('assertMember returns membership when user belongs to household', async () => {
@@ -90,7 +104,7 @@ describe('HouseholdService', () => {
             findMembership: vi.fn().mockResolvedValue(membership('member')),
         });
         await expect(
-            new HouseholdService(repo).assertMember('h1', 'u1'),
+            makeService(repo).assertMember('h1', 'u1'),
         ).resolves.toEqual(membership('member'));
     });
 
@@ -99,7 +113,7 @@ describe('HouseholdService', () => {
             findMembership: vi.fn().mockResolvedValue(null),
         });
         await expect(
-            new HouseholdService(repo).assertMember('h1', 'u1'),
+            makeService(repo).assertMember('h1', 'u1'),
         ).rejects.toBeInstanceOf(ForbiddenError);
     });
 
@@ -108,7 +122,7 @@ describe('HouseholdService', () => {
             const repo = makeRepo({
                 findMembership: vi.fn().mockResolvedValue(membership('owner')),
             });
-            const result = await new HouseholdService(repo).update('h1', 'u1', {
+            const result = await makeService(repo).update('h1', 'u1', {
                 name: '  Casa  ',
                 baseCurrency: 'EUR',
             });
@@ -128,9 +142,17 @@ describe('HouseholdService', () => {
                 findMembership: vi.fn().mockResolvedValue(membership('member')),
             });
             await expect(
-                new HouseholdService(repo).update('h1', 'u1', {
+                makeService(repo).update('h1', 'u1', {
                     baseCurrency: 'EUR',
                 }),
+            ).rejects.toBeInstanceOf(ForbiddenError);
+            expect(repo.update).not.toHaveBeenCalled();
+        });
+
+        it('rejects non-members', async () => {
+            const repo = makeRepo();
+            await expect(
+                makeService(repo).update('h1', 'u1', { name: 'Casa' }),
             ).rejects.toBeInstanceOf(ForbiddenError);
             expect(repo.update).not.toHaveBeenCalled();
         });
@@ -140,8 +162,35 @@ describe('HouseholdService', () => {
                 findMembership: vi.fn().mockResolvedValue(membership('owner')),
             });
             await expect(
-                new HouseholdService(repo).update('h1', 'u1', { name: '   ' }),
+                makeService(repo).update('h1', 'u1', { name: '   ' }),
             ).rejects.toBeInstanceOf(ValidationError);
+            expect(repo.update).not.toHaveBeenCalled();
+        });
+
+        it('changes only the fields that are given', async () => {
+            const repo = makeRepo({
+                findMembership: vi.fn().mockResolvedValue(membership('owner')),
+            });
+            const result = await makeService(repo).update('h1', 'u1', {
+                baseCurrency: 'USD',
+            });
+            expect(repo.update).toHaveBeenCalledWith('h1', {
+                baseCurrency: 'USD',
+            });
+            expect(result.household).toMatchObject({
+                name: 'Home',
+                baseCurrency: 'USD',
+            });
+        });
+
+        it('throws NotFoundError when the household vanished meanwhile', async () => {
+            const repo = makeRepo({
+                findMembership: vi.fn().mockResolvedValue(membership('owner')),
+                update: vi.fn().mockResolvedValue(null),
+            });
+            await expect(
+                makeService(repo).update('h1', 'u1', { name: 'Casa' }),
+            ).rejects.toBeInstanceOf(NotFoundError);
         });
 
         it('is a no-op without changes', async () => {
@@ -149,7 +198,7 @@ describe('HouseholdService', () => {
                 findMembership: vi.fn().mockResolvedValue(membership('owner')),
             });
             await expect(
-                new HouseholdService(repo).update('h1', 'u1', {}),
+                makeService(repo).update('h1', 'u1', {}),
             ).resolves.toEqual(membership('owner'));
             expect(repo.update).not.toHaveBeenCalled();
         });

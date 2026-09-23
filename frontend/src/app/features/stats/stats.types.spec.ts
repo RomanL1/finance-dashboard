@@ -1,6 +1,7 @@
 import { registerLocaleData } from '@angular/common';
 import localeDe from '@angular/common/locales/de';
 import {
+    isSamePeriod,
     parsePeriodParams,
     periodLabel,
     periodOf,
@@ -59,6 +60,22 @@ describe('shiftPeriod / periodRange', () => {
     });
 });
 
+describe('isSamePeriod', () => {
+    it('needs the same kind and the same start', () => {
+        const month = periodOf('month', NOW);
+        expect(
+            isSamePeriod(month, periodOf('month', new Date(2026, 8, 30))),
+        ).toBe(true);
+        expect(isSamePeriod(month, shiftPeriod(month, 1))).toBe(false);
+        expect(
+            isSamePeriod(
+                periodOf('month', new Date(2026, 5, 1)),
+                periodOf('week', new Date(2026, 5, 1)),
+            ),
+        ).toBe(false);
+    });
+});
+
 describe('periodLabel', () => {
     it('labels month, year and week', () => {
         expect(periodLabel(periodOf('month', NOW), 'en')).toBe('Sep 2026');
@@ -93,6 +110,11 @@ describe('period url params', () => {
         expect(parsePeriodParams(undefined, undefined, NOW)).toEqual(
             periodOf('month', NOW),
         );
-        expect(parsePeriodParams('week', '2026-13-40', NOW).kind).toBe('week');
+        expect(parsePeriodParams('week', '2026-13-40', NOW)).toEqual(
+            periodOf('week', NOW),
+        );
+        expect(parsePeriodParams('month', '2026-02-30', NOW)).toEqual(
+            periodOf('month', NOW),
+        );
     });
 });

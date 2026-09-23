@@ -123,12 +123,12 @@ export function parsePeriodParams(
         : 'month';
     const match = start && /^(\d{4})-(\d{2})-(\d{2})$/.exec(start);
     if (!match) return periodOf(safeKind, now);
-    const parsed = new Date(
-        Number(match[1]),
-        Number(match[2]) - 1,
-        Number(match[3]),
-    );
-    if (Number.isNaN(parsed.getTime())) return periodOf(safeKind, now);
+    const [year, month, day] = [match[1], match[2], match[3]].map(Number);
+    const parsed = new Date(year, month - 1, day);
+    // `Date` rolls impossible days over (2026-02-30 → March 2); only a round-trip proves it existed.
+    if (parsed.getMonth() !== month - 1 || parsed.getDate() !== day) {
+        return periodOf(safeKind, now);
+    }
     // Normalise so a mid-period start still resolves to its period.
     return periodOf(safeKind, parsed);
 }

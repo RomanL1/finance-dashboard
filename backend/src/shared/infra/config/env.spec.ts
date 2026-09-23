@@ -76,4 +76,38 @@ describe('env', () => {
             ).env.seedDemo,
         ).toBe(false);
     });
+
+    it('refuses to load without DB_FILE_NAME', async () => {
+        await expect(loadEnv({ DB_FILE_NAME: undefined })).rejects.toThrow(
+            'DB_FILE_NAME',
+        );
+    });
+
+    it('defaults port, auth URL and trusted origins for local development', async () => {
+        const { env, isProduction } = await loadEnv({
+            NODE_ENV: undefined,
+            DB_FILE_NAME: 'file::memory:',
+            PORT: undefined,
+            BETTER_AUTH_URL: undefined,
+            TRUSTED_ORIGINS: undefined,
+        });
+        expect(env.nodeEnv).toBe('development');
+        expect(isProduction).toBe(false);
+        expect(env.port).toBe(3000);
+        expect(env.auth.baseUrl).toBe('http://localhost:3000');
+        expect(env.auth.trustedOrigins).toEqual(['http://localhost:4200']);
+    });
+
+    it('splits TRUSTED_ORIGINS on commas, trimming and dropping blanks', async () => {
+        const { env } = await loadEnv({
+            DB_FILE_NAME: 'file::memory:',
+            PORT: '8080',
+            TRUSTED_ORIGINS: ' https://a.example , ,https://b.example,',
+        });
+        expect(env.port).toBe(8080);
+        expect(env.auth.trustedOrigins).toEqual([
+            'https://a.example',
+            'https://b.example',
+        ]);
+    });
 });

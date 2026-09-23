@@ -8,7 +8,7 @@ import {
 import { Reflector } from '@nestjs/core';
 import { fromNodeHeaders } from 'better-auth/node';
 import { AUTH } from './auth.tokens.js';
-import type { Auth } from './auth.js';
+import type { SessionLookup } from './auth.js';
 import { IS_PUBLIC } from './public.decorator.js';
 import type { AuthenticatedRequest } from './session.decorator.js';
 
@@ -16,7 +16,7 @@ import type { AuthenticatedRequest } from './session.decorator.js';
 export class AuthGuard implements CanActivate {
     constructor(
         private readonly reflector: Reflector,
-        @Inject(AUTH) private readonly auth: Auth,
+        @Inject(AUTH) private readonly auth: SessionLookup,
     ) {}
 
     async canActivate(context: ExecutionContext): Promise<boolean> {

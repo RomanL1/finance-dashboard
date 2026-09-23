@@ -3,10 +3,8 @@ import {
     NotFoundError,
     ValidationError,
 } from '../../../shared/kernel/index.js';
-import type {
-    CategoryExpense,
-    CreateTransaction,
-} from '../model/transaction.js';
+import { makeHousehold } from '../../../../test/fixtures/household.js';
+import type { CategoryExpense } from '../model/transaction.js';
 import type { TransactionRepository } from '../repository/transaction.repository.js';
 import type { HouseholdService } from '../../household/service/household.service.js';
 import { TransactionService } from './transaction.service.js';
@@ -21,37 +19,67 @@ const input = {
     date: new Date('2026-01-15'),
 };
 
-function makeRepo(overrides: Partial<TransactionRepository> = {}) {
+/** The repository methods TransactionService calls. */
+type RepoFake = Pick<
+    TransactionRepository,
+    | 'listByHouseholdId'
+    | 'countByHouseholdId'
+    | 'accountExists'
+    | 'categoryExists'
+    | 'createTransaction'
+    | 'updateTransaction'
+    | 'deleteTransaction'
+    | 'sumByRange'
+    | 'sumExpensesByCategory'
+>;
+
+function makeRepo(overrides: Partial<RepoFake> = {}): RepoFake {
     return {
-        listByHouseholdId: vi.fn().mockResolvedValue([]),
-        countByHouseholdId: vi.fn().mockResolvedValue(0),
-        accountExists: vi.fn().mockResolvedValue(true),
-        categoryExists: vi.fn().mockResolvedValue(true),
-        createTransaction: vi
-            .fn()
-            .mockImplementation((entity: CreateTransaction) =>
-                Promise.resolve({ ...entity, createdAt: new Date() }),
-            ),
-        updateTransaction: vi
-            .fn()
-            .mockImplementation((_h: string, entity: CreateTransaction) =>
-                Promise.resolve({ ...entity, createdAt: new Date() }),
-            ),
-        deleteTransaction: vi.fn().mockResolvedValue(true),
-        sumByRange: vi.fn().mockResolvedValue({ income: 0, expenses: 0 }),
-        sumExpensesByCategory: vi.fn().mockResolvedValue([]),
+        listByHouseholdId: vi
+            .fn<RepoFake['listByHouseholdId']>()
+            .mockResolvedValue([]),
+        countByHouseholdId: vi
+            .fn<RepoFake['countByHouseholdId']>()
+            .mockResolvedValue(0),
+        accountExists: vi
+            .fn<RepoFake['accountExists']>()
+            .mockResolvedValue(true),
+        categoryExists: vi
+            .fn<RepoFake['categoryExists']>()
+            .mockResolvedValue(true),
+        createTransaction: vi.fn<RepoFake['createTransaction']>((entity) =>
+            Promise.resolve({ ...entity, createdAt: new Date() }),
+        ),
+        updateTransaction: vi.fn<RepoFake['updateTransaction']>((_h, entity) =>
+            Promise.resolve({ ...entity, createdAt: new Date() }),
+        ),
+        deleteTransaction: vi
+            .fn<RepoFake['deleteTransaction']>()
+            .mockResolvedValue(true),
+        sumByRange: vi
+            .fn<RepoFake['sumByRange']>()
+            .mockResolvedValue({ income: 0, expenses: 0 }),
+        sumExpensesByCategory: vi
+            .fn<RepoFake['sumExpensesByCategory']>()
+            .mockResolvedValue([]),
         ...overrides,
-    } as unknown as TransactionRepository;
+    };
 }
 
-function makeHouseholds(baseCurrency = 'CHF') {
+function makeHouseholds(): Pick<HouseholdService, 'getById'> {
     return {
-        getById: vi.fn().mockResolvedValue({ id: 'h-1', baseCurrency }),
-    } as unknown as HouseholdService;
+        getById: vi
+            .fn<HouseholdService['getById']>()
+            .mockResolvedValue(makeHousehold('CHF', 'h-1')),
+    };
 }
 
-function makeService(repo: TransactionRepository) {
-    return new TransactionService(repo, makeHouseholds());
+function makeService(repo: RepoFake) {
+    // The fakes cover every method TransactionService calls; the rest of each class is never touched.
+    return new TransactionService(
+        repo as TransactionRepository,
+        makeHouseholds() as HouseholdService,
+    );
 }
 
 describe('TransactionService.getPage', () => {
@@ -77,6 +105,12 @@ describe('TransactionService.getPage', () => {
             page: 3,
             pageSize: 50,
         });
+    });
+
+    it('starts the first page at offset zero', async () => {
+        const repo = makeRepo();
+        await makeService(repo).getPage('h-1', {}, 1);
+        expect(repo.listByHouseholdId).toHaveBeenCalledWith('h-1', {}, 50, 0);
     });
 
     it('honours an explicit page size', async () => {
@@ -138,6 +172,7 @@ describe('TransactionService.create', () => {
         await expect(
             makeService(noCategory).create('h-1', input),
         ).rejects.toBeInstanceOf(NotFoundError);
+        expect(noCategory.createTransaction).not.toHaveBeenCalled();
     });
 });
 
@@ -163,9 +198,43 @@ describe('TransactionService.update', () => {
             makeService(repo).update('h-1', 'tx-1', input),
         ).rejects.toBeInstanceOf(NotFoundError);
     });
+
+    it('refuses to move the row to an account or category outside the household', async () => {
+        const noAccount = makeRepo({
+            accountExists: vi.fn().mockResolvedValue(false),
+        });
+        await expect(
+            makeService(noAccount).update('h-1', 'tx-1', input),
+        ).rejects.toBeInstanceOf(NotFoundError);
+        expect(noAccount.updateTransaction).not.toHaveBeenCalled();
+
+        const noCategory = makeRepo({
+            categoryExists: vi.fn().mockResolvedValue(false),
+        });
+        await expect(
+            makeService(noCategory).update('h-1', 'tx-1', input),
+        ).rejects.toBeInstanceOf(NotFoundError);
+        expect(noCategory.updateTransaction).not.toHaveBeenCalled();
+    });
+
+    it('rejects a non-positive amount', async () => {
+        const repo = makeRepo();
+        await expect(
+            makeService(repo).update('h-1', 'tx-1', { ...input, amount: -1 }),
+        ).rejects.toBeInstanceOf(ValidationError);
+        expect(repo.updateTransaction).not.toHaveBeenCalled();
+    });
 });
 
 describe('TransactionService.delete', () => {
+    it('deletes the row of the household', async () => {
+        const repo = makeRepo();
+        await expect(
+            makeService(repo).delete('h-1', 'tx-1'),
+        ).resolves.toBeUndefined();
+        expect(repo.deleteTransaction).toHaveBeenCalledWith('h-1', 'tx-1');
+    });
+
     it('throws NotFound when nothing was deleted', async () => {
         const repo = makeRepo({
             deleteTransaction: vi.fn().mockResolvedValue(false),
@@ -200,6 +269,19 @@ describe('TransactionService.getStats', () => {
         expect(repo.sumByRange).toHaveBeenCalledWith('h-1', range);
     });
 
+    it('reports a negative net when expenses exceed income', async () => {
+        const repo = makeRepo({
+            sumByRange: vi
+                .fn()
+                .mockResolvedValue({ income: 100, expenses: 250 }),
+        });
+        const stats = await makeService(repo).getStats('h-1', {
+            from: new Date('2026-09-01'),
+            to: new Date('2026-10-01'),
+        });
+        expect(stats.net).toBe(-150);
+    });
+
     it('is all zeros for an empty range', async () => {
         await expect(
             makeService(makeRepo()).getStats('h-1', {
@@ -220,6 +302,9 @@ describe('TransactionService.getStats', () => {
                 from: new Date('2026-10-01'),
                 to: day,
             }),
+        ).rejects.toBeInstanceOf(ValidationError);
+        await expect(
+            service.getStats('h-1', { from: new Date('nope'), to: day }),
         ).rejects.toBeInstanceOf(ValidationError);
     });
 });

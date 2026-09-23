@@ -2,3 +2,4 @@
 backend/tsconfig.build.tsbuildinfo
 .idea
 .env
+.angular/cache

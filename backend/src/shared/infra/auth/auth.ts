@@ -21,3 +21,10 @@ export const auth = betterAuth({
 export type Auth = typeof auth;
 export type AuthSession = Auth['$Infer']['Session'];
 export type SessionUser = AuthSession['user'];
+
+/** The one thing request guards need from better-auth; lets specs pass a plain fake. */
+export interface SessionLookup {
+    api: {
+        getSession(options: { headers: Headers }): Promise<AuthSession | null>;
+    };
+}

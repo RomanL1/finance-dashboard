@@ -5,6 +5,7 @@ import {
     pageCount,
     parseTransactionParams,
     toTransactionGroups,
+    sameQuery,
     toTransactionParams,
 } from './transaction.types';
 
@@ -195,6 +196,18 @@ describe('parseTransactionParams', () => {
         expect(
             toTransactionParams({ accountId: 'a1', categoryId: 'c1', page: 2 }),
         ).toEqual({ account: 'a1', category: 'c1', page: '2' });
+    });
+});
+
+describe('sameQuery', () => {
+    it('compares filter and page by value', () => {
+        const query = { accountId: 'a1', categoryId: 'none', page: 2 };
+        expect(sameQuery(query, { ...query })).toBe(true);
+        expect(sameQuery(query, { ...query, page: 3 })).toBe(false);
+        expect(sameQuery(query, { ...query, accountId: undefined })).toBe(
+            false,
+        );
+        expect(sameQuery(query, { ...query, categoryId: 'c1' })).toBe(false);
     });
 });
 

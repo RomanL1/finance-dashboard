@@ -16,35 +16,72 @@ const dummyBudget: Budget = {
     amount: 50000,
 };
 
-function makeRepo(overrides: Partial<BudgetRepository> = {}) {
+/** The repository methods BudgetService calls. */
+type RepoFake = Pick<
+    BudgetRepository,
+    | 'listByMonth'
+    | 'upsert'
+    | 'delete'
+    | 'latestMonthBefore'
+    | 'isMonthTouched'
+    | 'markMonthTouched'
+    | 'insertMany'
+>;
+
+function makeRepo(overrides: Partial<RepoFake> = {}): RepoFake {
     return {
-        listByMonth: vi.fn().mockResolvedValue([dummyBudget]),
-        find: vi.fn().mockResolvedValue(dummyBudget),
-        upsert: vi
-            .fn()
-            .mockImplementation((entity: Budget) => Promise.resolve(entity)),
-        delete: vi.fn().mockResolvedValue(true),
-        latestMonthBefore: vi.fn().mockResolvedValue('2026-08'),
-        isMonthTouched: vi.fn().mockResolvedValue(false),
-        markMonthTouched: vi.fn().mockResolvedValue(undefined),
-        insertMany: vi
-            .fn()
-            .mockImplementation((rows: Budget[]) => Promise.resolve(rows)),
+        listByMonth: vi
+            .fn<RepoFake['listByMonth']>()
+            .mockResolvedValue([dummyBudget]),
+        upsert: vi.fn<RepoFake['upsert']>((entity) => Promise.resolve(entity)),
+        delete: vi.fn<RepoFake['delete']>().mockResolvedValue(true),
+        latestMonthBefore: vi
+            .fn<RepoFake['latestMonthBefore']>()
+            .mockResolvedValue('2026-08'),
+        isMonthTouched: vi
+            .fn<RepoFake['isMonthTouched']>()
+            .mockResolvedValue(false),
+        markMonthTouched: vi
+            .fn<RepoFake['markMonthTouched']>()
+            .mockResolvedValue(undefined),
+        insertMany: vi.fn<RepoFake['insertMany']>((rows) =>
+            Promise.resolve(rows),
+        ),
         ...overrides,
-    } as unknown as BudgetRepository;
+    };
 }
 
-function makeCategories(ids: string[] = ['cat-1']) {
+function makeCategories(
+    ids: string[] = ['cat-1'],
+): Pick<CategoryService, 'getAll'> {
     return {
-        getAll: vi.fn().mockResolvedValue(ids.map((id) => ({ id, name: id }))),
-    } as unknown as CategoryService;
+        getAll: vi.fn<CategoryService['getAll']>().mockResolvedValue(
+            ids.map((id) => ({
+                id,
+                name: id,
+                createdAt: new Date('2026-01-01'),
+                transactionCount: 0,
+            })),
+        ),
+    };
+}
+
+function makeService(
+    repo: RepoFake,
+    categories: Pick<CategoryService, 'getAll'>,
+) {
+    // The fakes cover every method BudgetService calls; the rest of each class is never touched.
+    return new BudgetService(
+        repo as BudgetRepository,
+        categories as CategoryService,
+    );
 }
 
 describe('BudgetService', () => {
     describe('getByMonth', () => {
         it('returns the limits of the month', async () => {
             const repo = makeRepo();
-            const service = new BudgetService(repo, makeCategories());
+            const service = makeService(repo, makeCategories());
 
             await expect(
                 service.getByMonth('hh-1', '2026-09'),
@@ -53,7 +90,7 @@ describe('BudgetService', () => {
         });
 
         it('rejects a malformed month', async () => {
-            const service = new BudgetService(makeRepo(), makeCategories());
+            const service = makeService(makeRepo(), makeCategories());
 
             await expect(service.getByMonth('hh-1', '2026-13')).rejects.toThrow(
                 ValidationError,
@@ -67,7 +104,7 @@ describe('BudgetService', () => {
     describe('set', () => {
         it('upserts a limit for a category of the household', async () => {
             const repo = makeRepo();
-            const service = new BudgetService(repo, makeCategories());
+            const service = makeService(repo, makeCategories());
 
             const result = await service.set('hh-1', {
                 categoryId: 'cat-1',
@@ -82,11 +119,32 @@ describe('BudgetService', () => {
             });
             expect(result.id).toBeDefined();
             expect(repo.upsert).toHaveBeenCalledOnce();
+            expect(repo.markMonthTouched).toHaveBeenCalledWith(
+                'hh-1',
+                '2026-09',
+            );
+        });
+
+        it('rejects a malformed month before touching anything', async () => {
+            const repo = makeRepo();
+            const categories = makeCategories();
+            const service = makeService(repo, categories);
+
+            await expect(
+                service.set('hh-1', {
+                    categoryId: 'cat-1',
+                    month: '2026-13',
+                    amount: 100,
+                }),
+            ).rejects.toThrow(ValidationError);
+            expect(categories.getAll).not.toHaveBeenCalled();
+            expect(repo.upsert).not.toHaveBeenCalled();
+            expect(repo.markMonthTouched).not.toHaveBeenCalled();
         });
 
         it('rejects a category of another household', async () => {
             const repo = makeRepo();
-            const service = new BudgetService(repo, makeCategories(['other']));
+            const service = makeService(repo, makeCategories(['other']));
 
             await expect(
                 service.set('hh-1', {
@@ -100,7 +158,7 @@ describe('BudgetService', () => {
 
         it.each([-1, 1.5, Number.NaN])('rejects amount %s', async (amount) => {
             const repo = makeRepo();
-            const service = new BudgetService(repo, makeCategories());
+            const service = makeService(repo, makeCategories());
 
             await expect(
                 service.set('hh-1', {
@@ -116,7 +174,7 @@ describe('BudgetService', () => {
     describe('remove', () => {
         it('deletes the limit', async () => {
             const repo = makeRepo();
-            const service = new BudgetService(repo, makeCategories());
+            const service = makeService(repo, makeCategories());
 
             await service.remove('hh-1', 'cat-1', '2026-09');
 
@@ -125,15 +183,30 @@ describe('BudgetService', () => {
                 'cat-1',
                 '2026-09',
             );
+            expect(repo.markMonthTouched).toHaveBeenCalledWith(
+                'hh-1',
+                '2026-09',
+            );
         });
 
         it('throws when there is no limit to remove', async () => {
             const repo = makeRepo({ delete: vi.fn().mockResolvedValue(false) });
-            const service = new BudgetService(repo, makeCategories());
+            const service = makeService(repo, makeCategories());
 
             await expect(
                 service.remove('hh-1', 'cat-1', '2026-09'),
             ).rejects.toThrow(NotFoundError);
+            expect(repo.markMonthTouched).not.toHaveBeenCalled();
+        });
+
+        it('rejects a malformed month', async () => {
+            const repo = makeRepo();
+            const service = makeService(repo, makeCategories());
+
+            await expect(
+                service.remove('hh-1', 'cat-1', '2026-9'),
+            ).rejects.toThrow(ValidationError);
+            expect(repo.delete).not.toHaveBeenCalled();
         });
     });
 
@@ -156,7 +229,7 @@ describe('BudgetService', () => {
 
         it('copies every limit of the nearest earlier month as new rows', async () => {
             const repo = makeCopyRepo();
-            const service = new BudgetService(repo, makeCategories());
+            const service = makeService(repo, makeCategories());
 
             const result = await service.copyFromPrevious('hh-1', '2026-10');
 
@@ -179,13 +252,44 @@ describe('BudgetService', () => {
                 '2026-10',
             );
             expect(repo.insertMany).toHaveBeenCalledOnce();
+            expect(repo.listByMonth).toHaveBeenCalledWith('hh-1', '2026-08');
+            expect(repo.markMonthTouched).toHaveBeenCalledWith(
+                'hh-1',
+                '2026-10',
+            );
+            expect(result.skipped).toBe(false);
+        });
+
+        it('auto fills a month nobody touched yet', async () => {
+            const repo = makeCopyRepo();
+            const service = makeService(repo, makeCategories());
+
+            const result = await service.copyFromPrevious(
+                'hh-1',
+                '2026-10',
+                true,
+            );
+
+            expect(repo.isMonthTouched).toHaveBeenCalledWith('hh-1', '2026-10');
+            expect(result.sourceMonth).toBe('2026-08');
+            expect(result.budgets).toHaveLength(2);
+            expect(result.skipped).toBe(false);
+        });
+
+        it('explicit copy does not ask whether the month was touched', async () => {
+            const repo = makeCopyRepo();
+            const service = makeService(repo, makeCategories());
+
+            await service.copyFromPrevious('hh-1', '2026-10');
+
+            expect(repo.isMonthTouched).not.toHaveBeenCalled();
         });
 
         it('returns nothing when no earlier month has limits', async () => {
             const repo = makeCopyRepo({
                 latestMonthBefore: vi.fn().mockResolvedValue(null),
             });
-            const service = new BudgetService(repo, makeCategories());
+            const service = makeService(repo, makeCategories());
 
             await expect(
                 service.copyFromPrevious('hh-1', '2026-10'),
@@ -202,7 +306,7 @@ describe('BudgetService', () => {
             const repo = makeCopyRepo({
                 isMonthTouched: vi.fn().mockResolvedValue(true),
             });
-            const service = new BudgetService(repo, makeCategories());
+            const service = makeService(repo, makeCategories());
 
             await expect(
                 service.copyFromPrevious('hh-1', '2026-10', true),
@@ -225,7 +329,7 @@ describe('BudgetService', () => {
             const repo = makeCopyRepo({
                 listByMonth: vi.fn().mockResolvedValue(august),
             });
-            const service = new BudgetService(repo, makeCategories());
+            const service = makeService(repo, makeCategories());
 
             await expect(
                 service.copyFromPrevious('hh-1', '2026-10'),
@@ -234,7 +338,7 @@ describe('BudgetService', () => {
         });
 
         it('rejects a malformed month', async () => {
-            const service = new BudgetService(makeCopyRepo(), makeCategories());
+            const service = makeService(makeCopyRepo(), makeCategories());
 
             await expect(
                 service.copyFromPrevious('hh-1', '2026-1'),
