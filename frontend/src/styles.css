@@ -116,10 +116,27 @@
         opacity: 0;
     }
 }
+/* Static spinner in index.html's <app-root>: first paint before the app boots.
+   Angular replaces it with the first rendered route. */
+.app-boot-spinner {
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    stroke: var(--mat-sys-primary);
+    animation: app-boot-spin 1s linear infinite;
+}
+@keyframes app-boot-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
 @media (prefers-reduced-motion: reduce) {
     .fade-in,
     .fade-out {
         animation-duration: 1ms;
+    }
+    .app-boot-spinner {
+        animation: none;
     }
     .animate-pulse {
         animation: none;

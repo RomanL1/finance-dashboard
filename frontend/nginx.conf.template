@@ -19,6 +19,8 @@ server {
     index index.html;
 
     gzip on;
+    # Default level 1 leaves ~14% on the table for the JS bundles; 6 is the usual size/CPU sweet spot.
+    gzip_comp_level 6;
     gzip_types text/plain text/css application/json application/javascript image/svg+xml;
 
     add_header Cache-Control $cache_control;

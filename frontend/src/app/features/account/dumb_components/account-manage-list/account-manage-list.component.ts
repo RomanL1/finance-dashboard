@@ -86,7 +86,7 @@ import { isActiveAccount, type AccountDto } from '../../account.types';
                             [matMenuTriggerData]="{ account }"
                             [ariaLabel]="'account.manage.actions' | translate"
                         >
-                            <mat-icon>more_vert</mat-icon>
+                            <mat-icon svgIcon="more_vert" />
                         </app-icon-button>
                         @if (!last) {
                             <span
@@ -104,7 +104,7 @@ import { isActiveAccount, type AccountDto } from '../../account.types';
                         type="button"
                         (click)="edit.emit(account.id)"
                     >
-                        <mat-icon>edit</mat-icon>
+                        <mat-icon svgIcon="edit" />
                         {{ 'account.manage.edit' | translate }}
                     </button>
                     @if (account.archivedAt) {
@@ -113,7 +113,7 @@ import { isActiveAccount, type AccountDto } from '../../account.types';
                             type="button"
                             (click)="unarchive.emit(account.id)"
                         >
-                            <mat-icon>unarchive</mat-icon>
+                            <mat-icon svgIcon="unarchive" />
                             {{ 'account.manage.unarchive' | translate }}
                         </button>
                     } @else {
@@ -122,7 +122,7 @@ import { isActiveAccount, type AccountDto } from '../../account.types';
                             type="button"
                             (click)="archive.emit(account.id)"
                         >
-                            <mat-icon>archive</mat-icon>
+                            <mat-icon svgIcon="archive" />
                             {{ 'account.manage.archive' | translate }}
                         </button>
                     }
@@ -131,7 +131,7 @@ import { isActiveAccount, type AccountDto } from '../../account.types';
                         type="button"
                         (click)="remove.emit(account.id)"
                     >
-                        <mat-icon>delete</mat-icon>
+                        <mat-icon svgIcon="delete" />
                         {{ 'account.manage.delete' | translate }}
                     </button>
                 </ng-template>

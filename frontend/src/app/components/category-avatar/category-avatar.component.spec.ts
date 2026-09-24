@@ -43,7 +43,9 @@ describe('CategoryAvatarComponent', () => {
     it('shows a neutral icon for uncategorized entries', () => {
         const el = avatar(null, null);
 
-        expect(el.querySelector('mat-icon')!.textContent).toBe('label');
+        expect(
+            el.querySelector('mat-icon')!.getAttribute('data-mat-icon-name'),
+        ).toBe('label');
         expect(el.getAttribute('style')).toBeNull();
     });
 });

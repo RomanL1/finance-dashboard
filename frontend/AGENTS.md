@@ -184,6 +184,14 @@ constructor(
 - Ensure text and controls meet WCAG AA color-contrast requirements.
 - Use Angular Material accessibility behavior instead of recreating it manually.
 
+## Icons
+
+- Icons are Material Symbols SVGs (filled, weight 400) from `@material-symbols/svg-400`,
+  registered by name in `src/app/core/icons/icons.ts` (`APP_ICONS`). There is no icon font.
+- Use `<mat-icon svgIcon="home" />`; type dynamic icon names as `AppIcon`.
+- A new icon: add its import and entry to `APP_ICONS`. An unregistered name renders
+  nothing and logs "Unable to find icon".
+
 ## Images
 
 - Use `NgOptimizedImage` for static images unless there is a specific documented

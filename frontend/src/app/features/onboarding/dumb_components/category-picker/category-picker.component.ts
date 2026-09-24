@@ -119,7 +119,7 @@ const DEFAULT_SELECTED_KEY = 'MISC';
                                     "
                                     (clicked)="removeCustom(name)"
                                 >
-                                    <mat-icon>close</mat-icon>
+                                    <mat-icon svgIcon="close" />
                                 </app-icon-button>
                             </span>
                         }

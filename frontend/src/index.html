@@ -3,6 +3,10 @@
     <head>
         <meta charset="utf-8" />
         <title>finance-dashboard</title>
+        <meta
+            name="description"
+            content="Household finance dashboard: track budgets, expenses and income."
+        />
         <base href="/" />
         <meta
             name="viewport"
@@ -11,6 +15,24 @@
         <link rel="icon" type="image/x-icon" href="favicon.ico" />
     </head>
     <body>
-        <app-root></app-root>
+        <app-root>
+            <svg
+                class="app-boot-spinner"
+                viewBox="0 0 48 48"
+                width="48"
+                height="48"
+                aria-hidden="true"
+            >
+                <circle
+                    cx="24"
+                    cy="24"
+                    r="20"
+                    fill="none"
+                    stroke-width="4"
+                    stroke-linecap="round"
+                    stroke-dasharray="90 126"
+                />
+            </svg>
+        </app-root>
     </body>
 </html>

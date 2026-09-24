@@ -59,7 +59,7 @@ import {
                     [ariaLabel]="'stats.period.previous' | translate"
                     (clicked)="shift(-1)"
                 >
-                    <mat-icon>chevron_left</mat-icon>
+                    <mat-icon svgIcon="chevron_left" />
                 </app-icon-button>
                 <button
                     type="button"
@@ -74,7 +74,7 @@ import {
                     [ariaLabel]="'stats.period.next' | translate"
                     (clicked)="shift(1)"
                 >
-                    <mat-icon>chevron_right</mat-icon>
+                    <mat-icon svgIcon="chevron_right" />
                 </app-icon-button>
             </div>
             @if (!isCurrent()) {

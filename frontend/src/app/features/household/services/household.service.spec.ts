@@ -47,6 +47,22 @@ describe('HouseholdService', () => {
         await expect(service.getHouseholdOrNull()).resolves.toBeNull();
     });
 
+    it('seeds the session cache from a completed household', async () => {
+        const fetch = mockFetch(household);
+
+        await expect(service.getHouseholdOrNull()).resolves.toEqual(household);
+        await expect(service.getHousehold()).resolves.toEqual(household);
+        expect(fetch).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not seed the cache while onboarding is incomplete', async () => {
+        const fetch = mockFetch({ ...household, onboardingComplete: false });
+
+        await service.getHouseholdOrNull();
+        await service.getHousehold();
+        expect(fetch).toHaveBeenCalledTimes(2);
+    });
+
     it('update sends the changes and replaces the cached household', async () => {
         const renamed = { ...household, name: 'Casa' };
         const fetch = mockFetch(renamed);

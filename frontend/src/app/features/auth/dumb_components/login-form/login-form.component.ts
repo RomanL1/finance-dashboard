@@ -87,9 +87,9 @@ import type { LoginCredentials } from '../../auth.types';
                     "
                     [ariaPressed]="!hide()"
                 >
-                    <mat-icon>{{
-                        hide() ? 'visibility_off' : 'visibility'
-                    }}</mat-icon>
+                    <mat-icon
+                        [svgIcon]="hide() ? 'visibility_off' : 'visibility'"
+                    />
                 </app-icon-button>
                 @if (form.controls.password.hasError('required')) {
                     <mat-error>{{

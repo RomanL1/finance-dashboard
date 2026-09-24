@@ -28,7 +28,7 @@ import { CURRENCIES, type Currency } from '../../../core/constants/currencies';
 import { HouseholdService } from '../../household/services/household.service';
 import { AccountService } from '../../account/services/account.service';
 import { AccountManageListComponent } from '../../account/dumb_components/account-manage-list/account-manage-list.component';
-import { AccountDialogComponent } from '../../account/smart_components/account-dialog/account-dialog.component';
+import type { AccountDialogComponent } from '../../account/smart_components/account-dialog/account-dialog.component';
 import type {
     AccountDialogData,
     AccountDto,
@@ -36,14 +36,15 @@ import type {
 } from '../../account/account.types';
 import { CategoryService } from '../../category/services/category.service';
 import { CategoryManageListComponent } from '../../category/dumb_components/category-manage-list/category-manage-list.component';
-import { CategoryDeleteDialogComponent } from '../../category/dumb_components/category-delete-dialog/category-delete-dialog.component';
-import { CategoryDialogComponent } from '../../category/smart_components/category-dialog/category-dialog.component';
+import type { CategoryDeleteDialogComponent } from '../../category/dumb_components/category-delete-dialog/category-delete-dialog.component';
+import type { CategoryDialogComponent } from '../../category/smart_components/category-dialog/category-dialog.component';
 import type {
     CategoryDeleteChoice,
     CategoryDeleteDialogData,
     CategoryDialogData,
     CategoryDto,
 } from '../../category/category.types';
+import type { AppIcon } from '../../../core/icons/icons';
 
 @Component({
     selector: 'app-settings-page',
@@ -91,7 +92,7 @@ import type {
                             class="flex-1"
                             [value]="option.value"
                         >
-                            <mat-icon class="mr-1">{{ option.icon }}</mat-icon>
+                            <mat-icon class="mr-1" [svgIcon]="option.icon" />
                             {{
                                 'settings.appearance.' + option.value
                                     | translate
@@ -240,7 +241,7 @@ import type {
 export class SettingsPage {
     protected readonly themeOptions: {
         value: ThemePreference;
-        icon: string;
+        icon: AppIcon;
     }[] = [
         { value: 'system', icon: 'brightness_auto' },
         { value: 'light', icon: 'light_mode' },
@@ -285,16 +286,25 @@ export class SettingsPage {
         this.accounts.reload();
     }
 
-    openAccountDialog(householdId: string, accountId?: string): void {
-        const ref = this.dialogs.open<
+    async openAccountDialog(
+        householdId: string,
+        accountId?: string,
+    ): Promise<void> {
+        const ref = await this.dialogs.open<
             AccountDialogComponent,
             AccountDialogData,
             AccountDto
-        >(AccountDialogComponent, {
-            householdId,
-            currency: this.household.value()!.baseCurrency,
-            account: this.find(accountId),
-        });
+        >(
+            () =>
+                import('../../account/smart_components/account-dialog/account-dialog.component').then(
+                    (m) => m.AccountDialogComponent,
+                ),
+            {
+                householdId,
+                currency: this.household.value()!.baseCurrency,
+                account: this.find(accountId),
+            },
+        );
         ref.afterClosed().subscribe((saved) => {
             if (saved) this.accounts.reload();
         });
@@ -368,15 +378,24 @@ export class SettingsPage {
         if (archiveInstead) await this.setArchived(householdId, account, true);
     }
 
-    openCategoryDialog(householdId: string, categoryId?: string): void {
-        const ref = this.dialogs.open<
+    async openCategoryDialog(
+        householdId: string,
+        categoryId?: string,
+    ): Promise<void> {
+        const ref = await this.dialogs.open<
             CategoryDialogComponent,
             CategoryDialogData,
             CategoryDto
-        >(CategoryDialogComponent, {
-            householdId,
-            category: this.findCategory(categoryId),
-        });
+        >(
+            () =>
+                import('../../category/smart_components/category-dialog/category-dialog.component').then(
+                    (m) => m.CategoryDialogComponent,
+                ),
+            {
+                householdId,
+                category: this.findCategory(categoryId),
+            },
+        );
         ref.afterClosed().subscribe((saved) => {
             if (saved) this.categories.reload();
         });
@@ -403,16 +422,22 @@ export class SettingsPage {
             });
             if (!confirmed) return;
         } else {
-            const ref = this.dialogs.open<
+            const ref = await this.dialogs.open<
                 CategoryDeleteDialogComponent,
                 CategoryDeleteDialogData,
                 CategoryDeleteChoice
-            >(CategoryDeleteDialogComponent, {
-                category,
-                others: (this.categories.value() ?? []).filter(
-                    (c) => c.id !== categoryId,
-                ),
-            });
+            >(
+                () =>
+                    import('../../category/dumb_components/category-delete-dialog/category-delete-dialog.component').then(
+                        (m) => m.CategoryDeleteDialogComponent,
+                    ),
+                {
+                    category,
+                    others: (this.categories.value() ?? []).filter(
+                        (c) => c.id !== categoryId,
+                    ),
+                },
+            );
             const choice = await firstValueFrom(ref.afterClosed());
             if (!choice) return;
             transferTo = choice.transferTo ?? undefined;

@@ -40,7 +40,10 @@ import type { TransactionGroup } from '../../transaction.types';
             <div
                 class="flex flex-col items-center gap-2 py-10 text-center text-on-surface-variant"
             >
-                <mat-icon class="!h-12 !w-12 !text-5xl">receipt_long</mat-icon>
+                <mat-icon
+                    class="!h-12 !w-12 !text-5xl"
+                    svgIcon="receipt_long"
+                />
                 <p class="type-body-large text-on-surface">
                     {{ 'transaction.list.empty' | translate }}
                 </p>
@@ -64,9 +67,8 @@ import type { TransactionGroup } from '../../transaction.types';
                                     <mat-icon
                                         class="!h-5 !w-5 !text-xl transition-transform duration-150 motion-reduce:transition-none"
                                         [class.rotate-90]="upcomingOpen()"
-                                    >
-                                        chevron_right
-                                    </mat-icon>
+                                        svgIcon="chevron_right"
+                                    />
                                     {{
                                         'transaction.list.group.upcoming'
                                             | translate
@@ -158,7 +160,7 @@ import type { TransactionGroup } from '../../transaction.types';
                                                     | translate
                                             "
                                         >
-                                            <mat-icon>more_vert</mat-icon>
+                                            <mat-icon svgIcon="more_vert" />
                                         </app-icon-button>
                                         @if (!last) {
                                             <!-- Inset divider: starts at the text edge, not under the avatar. -->
@@ -178,11 +180,11 @@ import type { TransactionGroup } from '../../transaction.types';
             <mat-menu #menu="matMenu">
                 <ng-template matMenuContent let-id="id">
                     <button mat-menu-item (click)="edit.emit(id)">
-                        <mat-icon>edit</mat-icon>
+                        <mat-icon svgIcon="edit" />
                         {{ 'transaction.list.edit' | translate }}
                     </button>
                     <button mat-menu-item (click)="remove.emit(id)">
-                        <mat-icon>delete</mat-icon>
+                        <mat-icon svgIcon="delete" />
                         {{ 'transaction.list.delete' | translate }}
                     </button>
                 </ng-template>

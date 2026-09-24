@@ -35,7 +35,7 @@ import {
 import { BudgetListComponent } from '../dumb_components/budget-list/budget-list.component';
 import { BudgetSummaryComponent } from '../dumb_components/budget-summary/budget-summary.component';
 import { BudgetService } from '../services/budget.service';
-import { BudgetDialogComponent } from '../smart_components/budget-dialog/budget-dialog.component';
+import type { BudgetDialogComponent } from '../smart_components/budget-dialog/budget-dialog.component';
 
 /**
  * Limits, spending and what is left per category for one calendar month. Spending comes from the same
@@ -264,16 +264,22 @@ export class BudgetsPage {
     async openDialog(row: BudgetRow): Promise<void> {
         const household = this.household.value();
         if (!household) return;
-        const ref = this.dialogs.open<
+        const ref = await this.dialogs.open<
             BudgetDialogComponent,
             BudgetDialogData,
             BudgetDialogResult
-        >(BudgetDialogComponent, {
-            householdId: household.id,
-            month: this.month(),
-            currency: household.baseCurrency,
-            row,
-        });
+        >(
+            () =>
+                import('../smart_components/budget-dialog/budget-dialog.component').then(
+                    (m) => m.BudgetDialogComponent,
+                ),
+            {
+                householdId: household.id,
+                month: this.month(),
+                currency: household.baseCurrency,
+                row,
+            },
+        );
         const result = await firstValueFrom(ref.afterClosed());
         if (result) this.budgets.reload();
     }

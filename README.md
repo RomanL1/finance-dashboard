@@ -6,7 +6,7 @@ Household finance tracking without bank integration. See `docs/proposal.pdf`.
 
 ```bash
 [ -f .env ] || echo "BETTER_AUTH_SECRET=$(openssl rand -base64 32)" > .env
-docker compose up
+docker compose up --build
 ```
 
 `BETTER_AUTH_SECRET` is required: it signs session cookies, and the api refuses to start in production without it. Builds both images and starts the stack at http://localhost:8080. Demo login: `demo@finance.local` / `demo-password`.

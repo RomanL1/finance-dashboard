@@ -21,10 +21,18 @@ export class HouseholdService {
         return this.cached;
     }
 
-    /** Resolves `null` instead of throwing when the user has no household yet. */
+    /**
+     * Resolves `null` instead of throwing when the user has no household yet.
+     * Always fetches; a completed household seeds the session cache so the first page
+     * after the onboarding guard does not fetch it again.
+     */
     async getHouseholdOrNull(): Promise<HouseholdMineResponse | null> {
         const response = await householdMine();
-        return response.data ?? null;
+        const household = response.data ?? null;
+        if (household?.onboardingComplete) {
+            this.cached = Promise.resolve(household);
+        }
+        return household;
     }
 
     /** Owners only. The session cache takes the response so every tab sees the change. */

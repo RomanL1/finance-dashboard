@@ -30,7 +30,7 @@ import { categoryColor } from './category-color';
                 class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-high text-on-surface-variant"
                 aria-hidden="true"
             >
-                <mat-icon>label</mat-icon>
+                <mat-icon svgIcon="label" />
             </span>
         }
     `,

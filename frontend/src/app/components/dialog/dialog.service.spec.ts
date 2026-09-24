@@ -19,10 +19,12 @@ describe('DialogService', () => {
         return TestBed.inject(DialogService);
     }
 
-    it('opens form dialogs full-width with their data', () => {
+    it('loads form dialogs lazily and opens them full-width with their data', async () => {
         const service = setup();
 
-        service.open(FormDialogComponent, { id: 1 });
+        await service.open(() => Promise.resolve(FormDialogComponent), {
+            id: 1,
+        });
 
         expect(open).toHaveBeenCalledWith(FormDialogComponent, {
             data: { id: 1 },
@@ -35,7 +37,11 @@ describe('DialogService', () => {
     it('focuses a hidden input synchronously so iOS opens the keyboard', () => {
         const service = setup();
 
-        service.open(FormDialogComponent, {});
+        /* Not awaited: the focus must happen before the dialog chunk loads. */
+        void service.open(
+            () => new Promise<typeof FormDialogComponent>(() => undefined),
+            {},
+        );
 
         const focused = document.activeElement as HTMLInputElement;
         expect(focused.tagName).toBe('INPUT');

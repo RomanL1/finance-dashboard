@@ -10,6 +10,7 @@ import {
 import { TranslatePipe } from '@ngx-translate/core';
 import { APP_PATHS } from '../../../config/paths.config';
 import { AuthService } from '../../../core/auth/auth.service';
+import type { AppIcon } from '../../../core/icons/icons';
 
 /**
  * Authenticated layout: M3 top app bar, navigation bar at the bottom on phones and a tab row
@@ -80,7 +81,7 @@ import { AuthService } from '../../../core/auth/auth.service';
                                         : 'max-md:scale-[0.85]'
                                 "
                             >
-                                <mat-icon>{{ tab.icon }}</mat-icon>
+                                <mat-icon [svgIcon]="tab.icon" />
                             </span>
                             <span class="type-label-medium md:type-label-large">
                                 {{ tab.label | translate }}
@@ -118,7 +119,7 @@ export class ShellPage {
         paths: 'exact',
     };
 
-    readonly tabs = [
+    readonly tabs: { path: string; icon: AppIcon; label: string }[] = [
         { path: APP_PATHS.HOME, icon: 'home', label: 'nav.home' },
         {
             path: APP_PATHS.TRANSACTIONS,

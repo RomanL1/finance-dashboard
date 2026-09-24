@@ -6,6 +6,43 @@ import {
 } from '../features/household/services/onboarding.guard';
 import { ANALYTICS_PATHS, APP_PATHS } from './paths.config';
 
+const loadShellPage = () =>
+    import('../features/shell/pages/shell.page').then((m) => m.ShellPage);
+const loadHomePage = () =>
+    import('../features/household/pages/home.page').then((m) => m.HomePage);
+const loadTransactionsPage = () =>
+    import('../features/transaction/pages/transactions.page').then(
+        (m) => m.TransactionsPage,
+    );
+const loadAnalyticsPage = () =>
+    import('../features/analytics/pages/analytics.page').then(
+        (m) => m.AnalyticsPage,
+    );
+const loadSettingsPage = () =>
+    import('../features/settings/pages/settings.page').then(
+        (m) => m.SettingsPage,
+    );
+
+/** Shell tab by first URL segment. */
+const TAB_PAGES: Record<string, () => Promise<unknown>> = {
+    [APP_PATHS.HOME]: loadHomePage,
+    [APP_PATHS.TRANSACTIONS]: loadTransactionsPage,
+    [APP_PATHS.ANALYTICS]: loadAnalyticsPage,
+    [APP_PATHS.SETTINGS]: loadSettingsPage,
+};
+
+/**
+ * The router loads a route's components only after its guards pass, and the shell guards
+ * wait on the session and household requests. Called at boot, this starts the shell and
+ * tab downloads for `pathname` right away so they overlap those requests.
+ */
+export function prefetchShellTab(pathname: string): void {
+    const loadTab = TAB_PAGES[pathname.split('/')[1] ?? ''];
+    if (!loadTab) return;
+    void loadShellPage();
+    void loadTab();
+}
+
 export const routes: Routes = [
     {
         path: APP_PATHS.LOGIN,
@@ -26,32 +63,20 @@ export const routes: Routes = [
         /** Layout route: tab bar + outlet. Guards run once for every tab. */
         path: APP_PATHS.HOME,
         canActivate: [AuthGuard, OnboardingGuard],
-        loadComponent: () =>
-            import('../features/shell/pages/shell.page').then(
-                (m) => m.ShellPage,
-            ),
+        loadComponent: loadShellPage,
         children: [
             {
                 path: APP_PATHS.HOME,
-                loadComponent: () =>
-                    import('../features/household/pages/home.page').then(
-                        (m) => m.HomePage,
-                    ),
+                loadComponent: loadHomePage,
             },
             {
                 path: APP_PATHS.TRANSACTIONS,
-                loadComponent: () =>
-                    import('../features/transaction/pages/transactions.page').then(
-                        (m) => m.TransactionsPage,
-                    ),
+                loadComponent: loadTransactionsPage,
             },
             {
                 /** Layout route: analytics tab row + outlet; both tabs share the `?period&start` params. */
                 path: APP_PATHS.ANALYTICS,
-                loadComponent: () =>
-                    import('../features/analytics/pages/analytics.page').then(
-                        (m) => m.AnalyticsPage,
-                    ),
+                loadComponent: loadAnalyticsPage,
                 children: [
                     {
                         path: '',
@@ -76,10 +101,7 @@ export const routes: Routes = [
             },
             {
                 path: APP_PATHS.SETTINGS,
-                loadComponent: () =>
-                    import('../features/settings/pages/settings.page').then(
-                        (m) => m.SettingsPage,
-                    ),
+                loadComponent: loadSettingsPage,
             },
         ],
     },

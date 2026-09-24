@@ -70,7 +70,7 @@ import type { CategoryDto } from '../../category.types';
                             [matMenuTriggerData]="{ id: category.id }"
                             [ariaLabel]="'category.manage.actions' | translate"
                         >
-                            <mat-icon>more_vert</mat-icon>
+                            <mat-icon svgIcon="more_vert" />
                         </app-icon-button>
                         @if (!last) {
                             <span
@@ -84,7 +84,7 @@ import type { CategoryDto } from '../../category.types';
             <mat-menu #menu="matMenu">
                 <ng-template matMenuContent let-id="id">
                     <button mat-menu-item type="button" (click)="edit.emit(id)">
-                        <mat-icon>edit</mat-icon>
+                        <mat-icon svgIcon="edit" />
                         {{ 'category.manage.edit' | translate }}
                     </button>
                     <button
@@ -92,7 +92,7 @@ import type { CategoryDto } from '../../category.types';
                         type="button"
                         (click)="remove.emit(id)"
                     >
-                        <mat-icon>delete</mat-icon>
+                        <mat-icon svgIcon="delete" />
                         {{ 'category.manage.delete' | translate }}
                     </button>
                 </ng-template>

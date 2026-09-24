@@ -88,9 +88,9 @@ describe('AccountManageListComponent', () => {
 
         const items = menuOf(0);
         expect(items.map((b) => b.textContent!.trim())).toEqual([
-            'edit account.manage.edit',
-            'archive account.manage.archive',
-            'delete account.manage.delete',
+            'account.manage.edit',
+            'account.manage.archive',
+            'account.manage.delete',
         ]);
         items[1].click();
 

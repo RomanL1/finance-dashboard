@@ -34,7 +34,7 @@ import {
     type TransactionFilter,
     type TransactionQuery,
 } from '../../transaction.types';
-import { TransactionDialogComponent } from '../transaction-dialog/transaction-dialog.component';
+import type { TransactionDialogComponent } from '../transaction-dialog/transaction-dialog.component';
 
 const RECENT_COUNT = 10;
 
@@ -73,12 +73,18 @@ const RECENT_COUNT = 10;
                     </a>
                 </app-section-header>
             } @else {
-                <app-transaction-filter
-                    [accounts]="accounts()"
-                    [categories]="categories()"
-                    [filter]="query()"
-                    (filterChange)="setFilter($event)"
-                />
+                <!-- Deferred: mat-select pulls in @angular/forms, which the home page's recent mode never needs.
+                     Placeholder = form-field height, so nothing shifts when it loads. -->
+                @defer (on immediate) {
+                    <app-transaction-filter
+                        [accounts]="accounts()"
+                        [categories]="categories()"
+                        [filter]="query()"
+                        (filterChange)="setFilter($event)"
+                    />
+                } @placeholder {
+                    <div class="h-14"></div>
+                }
             }
             @if (page.value(); as page) {
                 <app-transaction-list
@@ -100,7 +106,7 @@ const RECENT_COUNT = 10;
                             "
                             (clicked)="setPage(page.page - 1)"
                         >
-                            <mat-icon>chevron_left</mat-icon>
+                            <mat-icon svgIcon="chevron_left" />
                         </app-icon-button>
                         <span
                             class="type-label-large text-on-surface-variant"
@@ -117,7 +123,7 @@ const RECENT_COUNT = 10;
                             [ariaLabel]="'transaction.pager.next' | translate"
                             (clicked)="setPage(page.page + 1)"
                         >
-                            <mat-icon>chevron_right</mat-icon>
+                            <mat-icon svgIcon="chevron_right" />
                         </app-icon-button>
                     </nav>
                 }
@@ -137,7 +143,7 @@ const RECENT_COUNT = 10;
                 [attr.aria-label]="'transaction.dialog.title' | translate"
                 (click)="openDialog()"
             >
-                <mat-icon>add</mat-icon>
+                <mat-icon svgIcon="add" />
                 <span class="hidden md:inline">
                     {{ 'home.add' | translate }}
                 </span>
@@ -232,18 +238,24 @@ export class TransactionHistoryComponent {
     }
 
     /** With `transactionId` the dialog edits that row instead of creating one. */
-    openDialog(transactionId?: string): void {
-        const ref = this.dialogs.open<
+    async openDialog(transactionId?: string): Promise<void> {
+        const ref = await this.dialogs.open<
             TransactionDialogComponent,
             TransactionDialogData,
             TransactionDto
-        >(TransactionDialogComponent, {
-            householdId: this.householdId(),
-            categories: this.categories(),
-            transaction: this.page
-                .value()
-                ?.items.find((t) => t.id === transactionId),
-        });
+        >(
+            () =>
+                import('../transaction-dialog/transaction-dialog.component').then(
+                    (m) => m.TransactionDialogComponent,
+                ),
+            {
+                householdId: this.householdId(),
+                categories: this.categories(),
+                transaction: this.page
+                    .value()
+                    ?.items.find((t) => t.id === transactionId),
+            },
+        );
         ref.afterClosed().subscribe((saved) => {
             if (saved) this.reload();
         });
