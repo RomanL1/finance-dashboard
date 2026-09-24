@@ -6,7 +6,7 @@ import { AppModule } from './app.module.js';
 import { setupApp } from './shared/infra/app.setup.js';
 import { env, isProduction } from './shared/infra/config/env.js';
 import { db } from './shared/infra/db/db.js';
-import { ensureDemoUser } from './shared/infra/db/seed.js';
+import { ensureDemoUser, ensureSampleUser } from './shared/infra/db/seed.js';
 import {
     buildOpenApiDocument,
     writeOpenApiDocument,
@@ -21,6 +21,7 @@ async function bootstrap() {
     if (env.seedDemo) {
         // Create-only: never resets existing demo data across restarts (unlike `bun run db:seed`).
         await ensureDemoUser();
+        await ensureSampleUser();
     }
 
     const app = setupApp(await NestFactory.create(AppModule));

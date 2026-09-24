@@ -1,6 +1,6 @@
 # Production bundle: `docker compose up` builds both images locally and starts the stack
 # at http://localhost:${APP_PORT:-8080}. Rebuild after code changes with `docker compose up --build`.
-# Demo login: demo@finance.local / demo-password. Requires a root .env with BETTER_AUTH_SECRET (see .env.example).
+# Demo login: demo@finance.local / demo-password, sample data: sample@finance.local / sample-password. Requires a root .env with BETTER_AUTH_SECRET (see .env.example).
 services:
   api:
     build: ./backend

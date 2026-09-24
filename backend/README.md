@@ -8,7 +8,7 @@ NestJS 12 (express) · drizzle-orm 1.x on libsql/sqlite · better-auth 1.7 · bu
 bun install
 cp .env.example .env        # set BETTER_AUTH_SECRET
 bun run db:migrate          # apply drizzle migrations
-bun run db:seed             # demo user + household (idempotent)
+bun run db:seed             # demo user + sample user with household (idempotent)
 bun run start:dev           # http://localhost:3000, swagger at /docs
 ```
 
@@ -19,6 +19,8 @@ Demo login (seeded, use while real auth UI does not exist yet — user story M1)
 | email    | `demo@finance.local` |
 | password | `demo-password`      |
 
+The demo user has no household and lands on onboarding. `sample@finance.local` / `sample-password` has a finished household with 4 accounts, 9 categories, monthly budgets and 200 random transactions over the last 6 months. `db:seed` resets both.
+
 `requests.http` contains ready-to-run requests (VS Code REST Client / IntelliJ).
 
 ## Scripts
@@ -27,7 +29,7 @@ Demo login (seeded, use while real auth UI does not exist yet — user story M1)
 | -------------------- | ------------------------------------------------------------------------------------- |
 | `db:generate`        | create a migration from the drizzle schema barrel                                     |
 | `db:migrate`         | apply migrations to `DB_FILE_NAME`                                                    |
-| `db:seed`            | seed demo user + household                                                            |
+| `db:seed`            | seed demo user (no household) + sample user (household, 200 transactions)            |
 | `db:reset`           | delete `local.db`, migrate, seed                                                      |
 | `openapi:generate`   | write `openapi.json` without starting the server (dev start writes it too)            |
 | `auth:generate`      | regenerate better-auth tables into `shared/infra/auth/auth.schema.ts`; see note below |

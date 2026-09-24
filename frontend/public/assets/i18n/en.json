@@ -5,7 +5,7 @@
     "auth": {
         "login": {
             "title": "Login",
-            "demo": "Demo: demo@finance.local / demo-password",
+            "demo": "Demo: demo@finance.local / demo-password · With sample data: sample@finance.local / sample-password",
             "emailLabel": "Email",
             "emailRequired": "Email is required",
             "emailInvalid": "Please enter a valid email address",

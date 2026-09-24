@@ -9,10 +9,10 @@ Household finance tracking without bank integration. See `docs/proposal.pdf`.
 docker compose up --build
 ```
 
-`BETTER_AUTH_SECRET` is required: it signs session cookies, and the api refuses to start in production without it. Builds both images and starts the stack at http://localhost:8080. Demo login: `demo@finance.local` / `demo-password`.
+`BETTER_AUTH_SECRET` is required: it signs session cookies, and the api refuses to start in production without it. Builds both images and starts the stack at http://localhost:8080. Demo login: `demo@finance.local` / `demo-password` (lands on onboarding), or `sample@finance.local` / `sample-password` (household with 200 random transactions).
 Data lives in the `db-data` volume and survives restarts. Migrations run automatically on boot. Rebuild after code changes with `docker compose up --build`.
 
-Optional overrides go in the same `.env` (see `.env.example`): `APP_PORT`, `SEED_DEMO=false` to skip the demo user, `BETTER_AUTH_URL` / `TRUSTED_ORIGINS` when served from another origin.
+The app listens on host port **8080** by default (`APP_PORT` changes it). Optional overrides go in the same `.env` (see `.env.example`): `APP_PORT`, `SEED_DEMO=false` to skip the demo and sample users, `BETTER_AUTH_URL` / `TRUSTED_ORIGINS` when served from another origin.
 
 Swagger (`/docs`) is only mounted outside production; run the backend locally to browse it.
 
@@ -23,7 +23,7 @@ Swagger (`/docs`) is only mounted outside production; run the backend locally to
 | `backend/`  | NestJS 12 · drizzle-orm · sqlite (libsql) · better-auth | `bun run db:reset && bun run start:dev` |
 | `frontend/` | Angular 22 · signals · Tailwind 4 · better-auth client  | `bun run start`                         |
 
-Demo login after seeding: `demo@finance.local` / `demo-password`.
+Demo login after seeding: `demo@finance.local` / `demo-password` (onboarding) or `sample@finance.local` / `sample-password` (sample data).
 
 ## Tests
 
