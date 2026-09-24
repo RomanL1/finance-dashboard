@@ -18,9 +18,20 @@ Swagger (`/docs`) is only mounted outside production; run the backend locally to
 
 ## Development
 
-| part       | stack                                                   | start                                   |
-| ---------- | ------------------------------------------------------- | --------------------------------------- |
-| `backend/` | NestJS 12 · drizzle-orm · sqlite (libsql) · better-auth | `bun run db:reset && bun run start:dev` |
-| `frontend/`| Angular 22 · signals · Tailwind 4 · better-auth client  | `bun run start`                         |
+| part        | stack                                                   | start                                   |
+| ----------- | ------------------------------------------------------- | --------------------------------------- |
+| `backend/`  | NestJS 12 · drizzle-orm · sqlite (libsql) · better-auth | `bun run db:reset && bun run start:dev` |
+| `frontend/` | Angular 22 · signals · Tailwind 4 · better-auth client  | `bun run start`                         |
 
 Demo login after seeding: `demo@finance.local` / `demo-password`.
+
+## Tests
+
+| layer                   | where                        | run (in that folder) |
+| ----------------------- | ---------------------------- | -------------------- |
+| backend unit            | `backend/src/**/*.spec.ts`   | `bun run test`       |
+| backend API (e2e)       | `backend/test/*.e2e-spec.ts` | `bun run test:e2e`   |
+| frontend unit           | `frontend/src/**/*.spec.ts`  | `bun run test`       |
+| end-to-end (Playwright) | `frontend/playwright/e2e/`   | `bun run e2e`        |
+
+Playwright needs Chromium once per machine (`bunx playwright install chromium` in `frontend/`) and starts its own backend and frontend on `:3100` / `:4300`, so it runs alongside the dev servers. Details in `frontend/README.md`.

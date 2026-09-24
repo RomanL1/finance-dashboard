@@ -46,13 +46,40 @@ ng test
 
 ## Running end-to-end tests
 
-For end-to-end (e2e) testing, run:
+End-to-end tests use [Playwright](https://playwright.dev/) and live in `playwright/e2e/`.
+
+One-time setup per machine (downloads Chromium):
 
 ```bash
-ng e2e
+bunx playwright install chromium
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+Run the suite:
+
+```bash
+bun run e2e
+```
+
+Playwright starts its own servers, so nothing needs to be running beforehand:
+
+- backend on `:3100` from `../backend` (`bun src/main.ts`), in-memory sqlite, demo user seeded
+- `ng serve` on `:4300`, proxying `/api` to `:3100` (`playwright/proxy.conf.json`)
+
+Your dev servers on `:3000` / `:4200` are not touched, and every run starts from an empty database.
+If `:3100` is already taken (e.g. a leftover run), the backend refuses to start; stop that process first.
+
+Every spec runs twice: in the `desktop` project and in the `mobile` project (Pixel 7 viewport).
+
+| Command                                     | What it does                                  |
+| ------------------------------------------- | --------------------------------------------- |
+| `bun run e2e`                               | all specs, desktop + mobile, headless         |
+| `bun run e2e --project=desktop`             | desktop only                                  |
+| `bun run e2e playwright/e2e/budget.spec.ts` | a single spec file                            |
+| `bun run e2e --headed`                      | watch the browser while tests run             |
+| `bun run e2e:ui`                            | Playwright UI mode (pick, rerun, time-travel) |
+
+Covered flows: login, onboarding, transaction add/edit/delete with balance, home figures,
+account create/rename, budget overspend. Conventions for writing new tests are in `AGENTS.md`.
 
 ## Additional Resources
 

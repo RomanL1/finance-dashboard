@@ -155,7 +155,7 @@ constructor(
 - General service classes end in `Service`.
 - Shared type files end in `.type.ts`; feature type files end in `.types.ts`.
 - Unit tests sit beside their implementation as `<name>.spec.ts`.
-- End-to-end tests live under `playwright/e2e` as `<feature>.cy.ts`.
+- End-to-end tests live under `playwright/e2e` as `<feature>.spec.ts`.
 - Use the `app-` prefix for application component selectors.
 
 ## Internationalization (i18n)
@@ -200,3 +200,20 @@ constructor(
   state transitions.
 - Keep Playwright tests focused on complete user-visible flows.
 - Add stable `data-testid` attributes only when semantic selectors are insufficient.
+
+### End-to-end (Playwright)
+
+- `bun run e2e` (or `bun run e2e:ui`) starts its own backend on :3100 (in-memory sqlite,
+  demo user seeded) and `ng serve` on :4300, so the dev servers on :3000/:4200 stay untouched.
+  First run on a machine: `bunx playwright install chromium`.
+- Cover only the core flows of the proposal (M18): login, onboarding, transaction lifecycle
+  with balance, home figures, account create/rename, budget overspend. Edge cases belong in
+  unit or backend e2e tests.
+- Every spec runs twice: `desktop` and `mobile` (Pixel 7) projects, covering M15. Filter with
+  `bun run e2e --project=desktop`.
+- Assert the numbers the user sees (balances, totals, budget rest), not only that a dialog closed.
+- Never mutate the seeded demo user. Use the fixtures in `playwright/fixtures/test.ts`:
+  `user` signs up a fresh user (lands on onboarding), `household` also completes onboarding
+  through the API. API helpers live in `playwright/support/api.ts`, shared UI steps
+  (add transaction, row menus, balance locators) in `playwright/support/ui.ts`.
+- Select by role and label with the English strings; tests run in the default `en` locale.
