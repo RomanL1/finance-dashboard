@@ -30,12 +30,17 @@ export class DialogService {
     /**
      * Form dialogs: call synchronously from the click handler so the mobile keyboard opens.
      * `load` imports the dialog lazily, so its form stack stays out of the page's own chunks.
+     * `focusInput: false` (editing) skips the keyboard and focuses the dialog itself.
      */
     async open<T, D, R>(
         load: () => Promise<ComponentType<T>>,
         data: D,
+        { focusInput = true }: { focusInput?: boolean } = {},
     ): Promise<MatDialogRef<T, R>> {
-        this.keyboardOpener.focus({ preventScroll: true });
+        /* Captured before the opener steals focus: restoring to the hidden input would make
+           the next open's focus() a no-op, and iOS then keeps the keyboard closed. */
+        const trigger = document.activeElement;
+        if (focusInput) this.keyboardOpener.focus({ preventScroll: true });
         const component = await load();
         return this.dialog.open<T, D, R>(component, {
             data,
@@ -43,7 +48,12 @@ export class DialogService {
             /* No inline `width`: CDK aligns 100%-wide panes flush-left instead of centering. */
             maxWidth: '100vw',
             /* `true`: focuses `cdkFocusInitial` if the content marks one, else the first tabbable. */
-            autoFocus: true,
+            autoFocus: focusInput ? true : 'dialog',
+            restoreFocus:
+                trigger instanceof HTMLElement &&
+                trigger !== this.keyboardOpener
+                    ? trigger
+                    : false,
         });
     }
 

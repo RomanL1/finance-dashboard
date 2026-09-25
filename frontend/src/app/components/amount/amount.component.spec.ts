@@ -8,18 +8,25 @@ import { AmountComponent } from './amount.component';
         [amount]="amount()"
         currency="CHF"
         [showPlus]="showPlus()"
+        [showCurrency]="showCurrency()"
     />`,
 })
 class HostComponent {
     readonly amount = signal(0);
     readonly showPlus = signal(true);
+    readonly showCurrency = signal(true);
 }
 
 describe('AmountComponent', () => {
-    function render(amount: number, showPlus = true): string {
+    function render(
+        amount: number,
+        showPlus = true,
+        showCurrency = true,
+    ): string {
         const fixture = TestBed.createComponent(HostComponent);
         fixture.componentInstance.amount.set(amount);
         fixture.componentInstance.showPlus.set(showPlus);
+        fixture.componentInstance.showCurrency.set(showCurrency);
         fixture.detectChanges();
         // Spacing between number and currency is a CSS gap, so join the spans explicitly.
         const spans = (fixture.nativeElement as HTMLElement).querySelectorAll(
@@ -48,5 +55,9 @@ describe('AmountComponent', () => {
 
     it('renders zero unsigned', () => {
         expect(render(0)).toBe('0.00 CHF');
+    });
+
+    it('drops the currency code for dense lists', () => {
+        expect(render(-1250, true, false)).toBe('−12.50');
     });
 });

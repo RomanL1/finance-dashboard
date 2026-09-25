@@ -7,16 +7,9 @@ import {
 } from '@angular/core';
 import { MatRipple } from '@angular/material/core';
 import { MatIcon } from '@angular/material/icon';
-import {
-    MatMenu,
-    MatMenuContent,
-    MatMenuItem,
-    MatMenuTrigger,
-} from '@angular/material/menu';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AccountBadgeComponent } from '../../../../components/account-badge/account-badge.component';
 import { AmountComponent } from '../../../../components/amount/amount.component';
-import { IconButtonComponent } from '../../../../components/button/button.component';
 import { CategoryAvatarComponent } from '../../../../components/category-avatar/category-avatar.component';
 import type { TransactionGroup } from '../../transaction.types';
 
@@ -25,12 +18,7 @@ import type { TransactionGroup } from '../../transaction.types';
     imports: [
         TranslatePipe,
         MatIcon,
-        MatMenu,
-        MatMenuContent,
-        MatMenuItem,
-        MatMenuTrigger,
         MatRipple,
-        IconButtonComponent,
         AccountBadgeComponent,
         AmountComponent,
         CategoryAvatarComponent,
@@ -97,71 +85,74 @@ import type { TransactionGroup } from '../../transaction.types';
                                     track row.id;
                                     let last = $last
                                 ) {
-                                    <li
-                                        matRipple
-                                        class="relative grid grid-cols-[auto_1fr_auto_auto] items-center gap-x-3 py-2.5"
-                                    >
-                                        <app-category-avatar
-                                            [categoryId]="row.categoryId"
-                                            [name]="row.category"
-                                        />
-                                        <div class="min-w-0">
-                                            <p
-                                                class="type-body-large truncate text-on-surface"
-                                            >
-                                                {{
-                                                    row.title ??
-                                                        ('transaction.list.uncategorized'
-                                                            | translate)
-                                                }}
-                                            </p>
-                                            <p
-                                                class="type-body-medium flex min-w-0 items-center gap-1.5 text-on-surface-variant"
-                                            >
-                                                @if (
-                                                    row.category &&
-                                                    row.category !== row.title
-                                                ) {
-                                                    <span class="truncate">{{
-                                                        row.category
-                                                    }}</span>
-                                                    <span aria-hidden="true"
-                                                        >·</span
-                                                    >
-                                                }
-                                                <app-account-badge
-                                                    [number]="row.accountNumber"
-                                                    size="sm"
-                                                />
-                                                <span class="truncate">{{
-                                                    row.accountName
-                                                }}</span>
-                                            </p>
-                                        </div>
-                                        <div class="flex flex-col items-end">
-                                            <app-amount
-                                                [amount]="row.amount"
-                                                [currency]="row.currency"
-                                            />
-                                            <time
-                                                [attr.datetime]="row.date"
-                                                class="type-label-small whitespace-nowrap text-on-surface-variant"
-                                            >
-                                                {{ row.when }}
-                                            </time>
-                                        </div>
-                                        <app-icon-button
-                                            [matMenuTriggerFor]="menu"
-                                            [matMenuTriggerData]="{
-                                                id: row.id,
-                                            }"
-                                            [ariaLabel]="
-                                                'transaction.list.actions'
-                                                    | translate
-                                            "
+                                    <li class="relative">
+                                        <!-- Whole row edits; delete lives in the edit dialog. No trailing menu keeps the text column wide on phones. -->
+                                        <button
+                                            type="button"
+                                            matRipple
+                                            class="grid w-full grid-cols-[auto_1fr_auto] items-center gap-x-3 py-2.5 text-left"
+                                            (click)="edit.emit(row.id)"
                                         >
-                                            <mat-icon svgIcon="more_vert" />
-                                        </app-icon-button>
+                                            <app-category-avatar
+                                                [categoryId]="row.categoryId"
+                                                [name]="row.category"
+                                            />
+                                            <div class="min-w-0">
+                                                <p
+                                                    class="type-body-large truncate text-on-surface"
+                                                >
+                                                    {{
+                                                        row.title ??
+                                                            ('transaction.list.uncategorized'
+                                                                | translate)
+                                                    }}
+                                                </p>
+                                                <p
+                                                    class="type-body-medium flex min-w-0 items-center gap-1.5 text-on-surface-variant"
+                                                >
+                                                    @if (
+                                                        row.category &&
+                                                        row.category !==
+                                                            row.title
+                                                    ) {
+                                                        <!-- Category stays readable; the account name gives way first (its badge still identifies it). -->
+                                                        <span
+                                                            class="max-w-[70%] shrink-0 truncate"
+                                                            >{{
+                                                                row.category
+                                                            }}</span
+                                                        >
+                                                        <span aria-hidden="true"
+                                                            >·</span
+                                                        >
+                                                    }
+                                                    <app-account-badge
+                                                        [number]="
+                                                            row.accountNumber
+                                                        "
+                                                        size="sm"
+                                                    />
+                                                    <span class="truncate">{{
+                                                        row.accountName
+                                                    }}</span>
+                                                </p>
+                                            </div>
+                                            <div
+                                                class="flex flex-col items-end"
+                                            >
+                                                <app-amount
+                                                    [amount]="row.amount"
+                                                    [currency]="row.currency"
+                                                    [showCurrency]="false"
+                                                />
+                                                <time
+                                                    [attr.datetime]="row.date"
+                                                    class="type-label-small whitespace-nowrap text-on-surface-variant"
+                                                >
+                                                    {{ row.when }}
+                                                </time>
+                                            </div>
+                                        </button>
                                         @if (!last) {
                                             <!-- Inset divider: starts at the text edge, not under the avatar. -->
                                             <span
@@ -176,19 +167,6 @@ import type { TransactionGroup } from '../../transaction.types';
                     </section>
                 }
             </div>
-            <!-- One menu for every row; the trigger passes the row id in. -->
-            <mat-menu #menu="matMenu">
-                <ng-template matMenuContent let-id="id">
-                    <button mat-menu-item (click)="edit.emit(id)">
-                        <mat-icon svgIcon="edit" />
-                        {{ 'transaction.list.edit' | translate }}
-                    </button>
-                    <button mat-menu-item (click)="remove.emit(id)">
-                        <mat-icon svgIcon="delete" />
-                        {{ 'transaction.list.delete' | translate }}
-                    </button>
-                </ng-template>
-            </mat-menu>
         }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -196,7 +174,6 @@ import type { TransactionGroup } from '../../transaction.types';
 export class TransactionListComponent {
     readonly groups = input.required<TransactionGroup[]>();
     readonly edit = output<string>();
-    readonly remove = output<string>();
     /** Future entries are collapsed by default; resets when the component is recreated. */
     protected readonly upcomingOpen = signal(false);
 

@@ -174,7 +174,9 @@
             "cancel": "Cancel",
             "save": "Save",
             "failed": "Could not save the transaction.",
-            "editTitle": "Edit transaction"
+            "editTitle": "Edit transaction",
+            "delete": "Delete",
+            "deleteFailed": "Could not delete the transaction."
         },
         "form": {
             "typeLabel": "Type",
@@ -193,9 +195,6 @@
             "title": "Transactions",
             "empty": "No transactions yet.",
             "uncategorized": "Uncategorized",
-            "actions": "Transaction actions",
-            "edit": "Edit",
-            "delete": "Delete",
             "group": {
                 "upcoming": "Upcoming ({{count}})",
                 "today": "Today",

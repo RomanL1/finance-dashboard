@@ -30,7 +30,6 @@ import {
     toTransactionGroups,
     toTransactionParams,
     type TransactionDialogData,
-    type TransactionDto,
     type TransactionFilter,
     type TransactionQuery,
 } from '../../transaction.types';
@@ -90,7 +89,6 @@ const RECENT_COUNT = 10;
                 <app-transaction-list
                     [groups]="groups()"
                     (edit)="openDialog($event)"
-                    (remove)="remove($event)"
                 />
                 @if (mode() === 'full' && pages() > 1) {
                     <nav
@@ -242,7 +240,7 @@ export class TransactionHistoryComponent {
         const ref = await this.dialogs.open<
             TransactionDialogComponent,
             TransactionDialogData,
-            TransactionDto
+            boolean
         >(
             () =>
                 import('../transaction-dialog/transaction-dialog.component').then(
@@ -255,22 +253,12 @@ export class TransactionHistoryComponent {
                     .value()
                     ?.items.find((t) => t.id === transactionId),
             },
+            /* Editing: no keyboard popping up over the prefilled form. */
+            { focusInput: !transactionId },
         );
-        ref.afterClosed().subscribe((saved) => {
-            if (saved) this.reload();
+        ref.afterClosed().subscribe((changed) => {
+            if (changed) this.reload();
         });
-    }
-
-    async remove(transactionId: string): Promise<void> {
-        const confirmed = await this.dialogs.confirm({
-            title: 'transaction.delete.title',
-            message: 'transaction.delete.message',
-            confirm: 'transaction.delete.confirm',
-            cancel: 'transaction.dialog.cancel',
-        });
-        if (!confirmed) return;
-        await this.transactionService.delete(this.householdId(), transactionId);
-        this.reload();
     }
 
     /** Merge keeps the period params the stats card owns on the same URL. */

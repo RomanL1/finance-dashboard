@@ -13,6 +13,8 @@ describe('DialogService', () => {
 
     function setup(closedWith?: unknown): DialogService {
         open = vi.fn(() => ({ afterClosed: () => of(closedWith) }));
+        /* Each service appends its own hidden input; start every test unfocused. */
+        (document.activeElement as HTMLElement | null)?.blur();
         TestBed.configureTestingModule({
             providers: [{ provide: MatDialog, useValue: { open } }],
         });
@@ -31,7 +33,36 @@ describe('DialogService', () => {
             panelClass: 'app-dialog',
             maxWidth: '100vw',
             autoFocus: true,
+            restoreFocus: document.body,
         });
+    });
+
+    it('restores focus to the trigger, never to the hidden input', async () => {
+        const service = setup();
+        const trigger = document.createElement('button');
+        document.body.append(trigger);
+        trigger.focus();
+
+        await service.open(() => Promise.resolve(FormDialogComponent), {});
+        await service.open(() => Promise.resolve(FormDialogComponent), {});
+
+        expect(open.mock.calls[0][1].restoreFocus).toBe(trigger);
+        /* Second open starts with the hidden input focused (no dialog here to move it). */
+        expect(open.mock.calls[1][1].restoreFocus).toBe(false);
+        trigger.remove();
+    });
+
+    it('skips the keyboard and focuses the dialog when editing', async () => {
+        const service = setup();
+
+        await service.open(
+            () => Promise.resolve(FormDialogComponent),
+            {},
+            { focusInput: false },
+        );
+
+        expect(document.activeElement).toBe(document.body);
+        expect(open.mock.calls[0][1].autoFocus).toBe('dialog');
     });
 
     it('focuses a hidden input synchronously so iOS opens the keyboard', () => {

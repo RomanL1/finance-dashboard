@@ -23,9 +23,11 @@ import {
             [class.font-medium]="emphasis() === 'stat'"
         >
             <span>{{ sign() }}{{ absolute() / 100 | number: '1.2-2' }}</span>
-            <span class="type-label-small text-on-surface-variant">{{
-                currency()
-            }}</span>
+            @if (showCurrency()) {
+                <span class="type-label-small text-on-surface-variant">{{
+                    currency()
+                }}</span>
+            }
         </span>
     `,
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -39,6 +41,8 @@ export class AmountComponent {
     readonly showPlus = input<boolean>(true);
     /** Limits and sums are not a direction either: `false` keeps the text in the surrounding color. */
     readonly colored = input<boolean>(true);
+    /** Dense lists drop the code: a household has one currency, repeating it per row costs width. */
+    readonly showCurrency = input<boolean>(true);
 
     protected readonly absolute = computed(() => Math.abs(this.amount()));
     /** Real minus sign (U+2212) so it lines up with the digits. */

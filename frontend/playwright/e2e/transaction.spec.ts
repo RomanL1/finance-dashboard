@@ -1,10 +1,5 @@
 import { expect, test } from '../fixtures/test';
-import {
-    accountChip,
-    addTransaction,
-    rowAction,
-    transactionRow,
-} from '../support/ui';
+import { accountChip, addTransaction, transactionRow } from '../support/ui';
 
 /** M8, M9, M11, M3: the balance follows every add, edit and delete, and data survives a reload. */
 test('adds, edits and deletes an expense while the balance follows', async ({
@@ -22,12 +17,7 @@ test('adds, edits and deletes an expense while the balance follows', async ({
     await expect(accountChip(page, 'Main account')).toContainText('987.50');
 
     await page.goto('/transactions');
-    await rowAction(
-        page,
-        transactionRow(page, 'Coffee beans'),
-        'Transaction actions',
-        'Edit',
-    );
+    await transactionRow(page, 'Coffee beans').getByRole('button').click();
     const dialog = page.getByRole('dialog');
     await expect(
         dialog.getByRole('heading', { name: 'Edit transaction' }),
@@ -41,14 +31,11 @@ test('adds, edits and deletes an expense while the balance follows', async ({
     await expect(accountChip(page, 'Main account')).toContainText('980.00');
 
     await page.goto('/transactions');
-    await rowAction(
-        page,
-        transactionRow(page, 'Coffee beans'),
-        'Transaction actions',
-        'Delete',
-    );
+    await transactionRow(page, 'Coffee beans').getByRole('button').click();
+    await dialog.getByRole('button', { name: 'Delete' }).click();
+    /* The confirmation stacks on top of the edit dialog. */
     await page
-        .getByRole('dialog')
+        .getByRole('dialog', { name: 'Delete transaction?' })
         .getByRole('button', { name: 'Delete' })
         .click();
     await expect(page.getByText('No transactions yet.')).toBeVisible();

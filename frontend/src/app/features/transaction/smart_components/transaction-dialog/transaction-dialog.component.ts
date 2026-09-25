@@ -13,17 +13,16 @@ import {
     MatDialogRef,
     MatDialogTitle,
 } from '@angular/material/dialog';
-import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AccountService } from '../../../account/services/account.service';
 import { ButtonComponent } from '../../../../components/button/button.component';
+import { DialogService } from '../../../../components/dialog/dialog.service';
 import { TransactionFormComponent } from '../../dumb_components/transaction-form/transaction-form.component';
 import { TransactionService } from '../../services/transaction.service';
 import type {
     CreateTransactionDto,
     TransactionDefaults,
     TransactionDialogData,
-    TransactionDto,
 } from '../../transaction.types';
 
 @Component({
@@ -35,7 +34,6 @@ import type {
         MatDialogClose,
         ButtonComponent,
         TransactionFormComponent,
-        MatProgressSpinner,
         TranslatePipe,
     ],
     template: `
@@ -48,17 +46,15 @@ import type {
             }}
         </h2>
         <mat-dialog-content>
-            @if (accounts.value(); as accts) {
-                <app-transaction-form
-                    [formId]="formId"
-                    [accounts]="accts"
-                    [categories]="data.categories"
-                    [defaults]="defaults"
-                    (submitted)="save($event)"
-                />
-            } @else {
-                <mat-spinner class="mx-auto" diameter="40" />
-            }
+            <!-- Rendered before the accounts arrive: the dialog focuses the amount field once,
+                 right after opening, and the field must exist by then. -->
+            <app-transaction-form
+                [formId]="formId"
+                [accounts]="accounts.value() ?? []"
+                [categories]="data.categories"
+                [defaults]="defaults"
+                (submitted)="save($event)"
+            />
             @if (error()) {
                 <p role="alert" class="mt-2 type-body-medium text-error">
                     {{ error() }}
@@ -66,6 +62,16 @@ import type {
             }
         </mat-dialog-content>
         <mat-dialog-actions align="end" class="gap-2">
+            @if (data.transaction) {
+                <app-button
+                    variant="text"
+                    class="delete mr-auto"
+                    [disabled]="busy()"
+                    (clicked)="remove()"
+                >
+                    {{ 'transaction.dialog.delete' | translate }}
+                </app-button>
+            }
             <app-button variant="text" mat-dialog-close>
                 {{ 'transaction.dialog.cancel' | translate }}
             </app-button>
@@ -78,6 +84,11 @@ import type {
                 {{ 'transaction.dialog.save' | translate }}
             </app-button>
         </mat-dialog-actions>
+    `,
+    styles: `
+        .delete {
+            --mat-button-text-label-text-color: var(--mat-sys-error);
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -93,12 +104,14 @@ export class TransactionDialogComponent {
 
     constructor(
         @Inject(MAT_DIALOG_DATA) readonly data: TransactionDialogData,
+        /** Closes with `true` after a save or delete, so the opener reloads. */
         private readonly dialogRef: MatDialogRef<
             TransactionDialogComponent,
-            TransactionDto
+            boolean
         >,
         private readonly transactions: TransactionService,
         private readonly accountService: AccountService,
+        private readonly dialogs: DialogService,
         private readonly translate: TranslateService,
     ) {
         this.defaults = data.transaction ?? transactions.lastUsed();
@@ -108,16 +121,46 @@ export class TransactionDialogComponent {
         this.busy.set(true);
         this.error.set(null);
         try {
-            const saved = this.data.transaction
-                ? await this.transactions.update(
-                      this.data.householdId,
-                      this.data.transaction.id,
-                      dto,
-                  )
-                : await this.transactions.create(this.data.householdId, dto);
-            this.dialogRef.close(saved);
+            if (this.data.transaction) {
+                await this.transactions.update(
+                    this.data.householdId,
+                    this.data.transaction.id,
+                    dto,
+                );
+            } else {
+                await this.transactions.create(this.data.householdId, dto);
+            }
+            this.dialogRef.close(true);
         } catch {
             this.error.set(this.translate.instant('transaction.dialog.failed'));
+        } finally {
+            this.busy.set(false);
+        }
+    }
+
+    /** Edit mode only. Asks first; the confirm opens on top of this dialog. */
+    async remove(): Promise<void> {
+        const transaction = this.data.transaction;
+        if (!transaction) return;
+        const confirmed = await this.dialogs.confirm({
+            title: 'transaction.delete.title',
+            message: 'transaction.delete.message',
+            confirm: 'transaction.delete.confirm',
+            cancel: 'transaction.dialog.cancel',
+        });
+        if (!confirmed) return;
+        this.busy.set(true);
+        this.error.set(null);
+        try {
+            await this.transactions.delete(
+                this.data.householdId,
+                transaction.id,
+            );
+            this.dialogRef.close(true);
+        } catch {
+            this.error.set(
+                this.translate.instant('transaction.dialog.deleteFailed'),
+            );
         } finally {
             this.busy.set(false);
         }

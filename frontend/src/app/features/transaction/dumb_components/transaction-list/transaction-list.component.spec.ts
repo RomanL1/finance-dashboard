@@ -33,9 +33,6 @@ describe('TransactionListComponent', () => {
         fixture.componentInstance.edit.subscribe((id) =>
             events.push(`edit:${id}`),
         );
-        fixture.componentInstance.remove.subscribe((id) =>
-            events.push(`remove:${id}`),
-        );
         const el = fixture.nativeElement as HTMLElement;
         return { fixture, el, events };
     }
@@ -111,22 +108,22 @@ describe('TransactionListComponent', () => {
         );
     });
 
-    it('emits edit and delete for the row whose menu was opened', () => {
+    it('emits edit for the tapped row', () => {
         groups.set([{ kind: 'today', rows: [row('t1'), row('t2')] }]);
-        const { fixture, el, events } = create();
-        const menuOf = (i: number) => {
-            el.querySelectorAll<HTMLButtonElement>('app-icon-button button')[
-                i
-            ].click();
-            fixture.detectChanges();
-            return document.querySelectorAll<HTMLButtonElement>(
-                '.mat-mdc-menu-panel button[mat-menu-item]',
-            );
-        };
+        const { el, events } = create();
+        const rows = el.querySelectorAll<HTMLButtonElement>('li > button');
 
-        menuOf(1)[0].click();
-        menuOf(0)[1].click();
+        rows[1].click();
+        rows[0].click();
 
-        expect(events).toEqual(['edit:t2', 'remove:t1']);
+        expect(events).toEqual(['edit:t2', 'edit:t1']);
+    });
+
+    it('leaves the currency code out of rows', () => {
+        groups.set([{ kind: 'today', rows: [row('t1')] }]);
+        const { el } = create();
+
+        expect(el.querySelector('li')!.textContent).toContain('12.50');
+        expect(el.querySelector('li')!.textContent).not.toContain('CHF');
     });
 });

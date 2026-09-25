@@ -41,7 +41,7 @@ export function transactionRow(page: Page, title: string): Locator {
     return page.getByRole('listitem').filter({ hasText: title });
 }
 
-/** Opens a row's action menu (transactions and accounts share the pattern) and picks an item. */
+/** Opens an account row's action menu and picks an item. Transaction rows open the edit dialog on tap instead. */
 export async function rowAction(
     page: Page,
     row: Locator,

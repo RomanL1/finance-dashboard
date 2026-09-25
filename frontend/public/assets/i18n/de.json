@@ -174,7 +174,9 @@
             "cancel": "Abbrechen",
             "save": "Speichern",
             "failed": "Transaktion konnte nicht gespeichert werden.",
-            "editTitle": "Transaktion bearbeiten"
+            "editTitle": "Transaktion bearbeiten",
+            "delete": "Löschen",
+            "deleteFailed": "Transaktion konnte nicht gelöscht werden."
         },
         "form": {
             "typeLabel": "Art",
@@ -193,9 +195,6 @@
             "title": "Transaktionen",
             "empty": "Noch keine Transaktionen.",
             "uncategorized": "Ohne Kategorie",
-            "actions": "Aktionen",
-            "edit": "Bearbeiten",
-            "delete": "Löschen",
             "group": {
                 "upcoming": "Bevorstehend ({{count}})",
                 "today": "Heute",
