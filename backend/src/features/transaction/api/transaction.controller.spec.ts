@@ -37,7 +37,6 @@ function makeController() {
         create: vi.fn<TransactionService['create']>().mockResolvedValue(saved),
         update: vi.fn<TransactionService['update']>().mockResolvedValue(saved),
     };
-    // The fake covers every service method these tests reach.
     return {
         controller: new TransactionController(service as TransactionService),
         service,

@@ -41,9 +41,7 @@ import type { BudgetDialogComponent } from '../smart_components/budget-dialog/bu
  * Limits, spending and what is left per category for one calendar month. Spending comes from the same
  * category statistics as the Categories tab, over the same client-built range, so both tabs agree.
  * Shares the `?period&start` params with the other tabs, coerced to a month.
- *
- * An empty current or next month fills itself with the previous limits on first view (story S4);
- * any other empty month offers a button for it. Copies are independent rows, so the source month stays as it was.
+ * Empty months take over earlier limits automatically or via a button; see ADR-2.
  */
 @Component({
     selector: 'app-budgets-page',
@@ -156,7 +154,7 @@ export class BudgetsPage {
         loader: ({ params }) => this.categoryService.list(params),
     });
 
-    /** Loads the month; an empty current or next month is filled from the previous limits first. */
+    /** Loads the month via `BudgetService.loadMonth` (ADR-2 take-over). */
     readonly budgets = resource({
         params: () => {
             const householdId = this.household.value()?.id;

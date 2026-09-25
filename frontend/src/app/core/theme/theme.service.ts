@@ -6,10 +6,6 @@ export type ThemePreference = 'system' | 'light' | 'dark';
 const STORAGE_KEY = 'theme';
 const PREFERENCES: ThemePreference[] = ['system', 'light', 'dark'];
 
-/**
- * Light / dark / follow-system. Material and every app token are `light-dark()` pairs, so
- * the whole theme switches by setting `color-scheme` on `<body>`. Persisted per browser.
- */
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
     private readonly document = inject(DOCUMENT);

@@ -1,9 +1,6 @@
 @import 'tailwindcss';
 
-/* Tailwind color names that resolve to Material system tokens. Templates use
-   `bg-surface-low`, `text-on-surface-variant`, `text-income` instead of raw palette
-   colors, so the app follows the Material theme and dark mode for free.
-   Rule: no `gray-*`, `red-*`, `green-*` (or any Tailwind palette color) inside `src/app`. */
+/* Semantic colors only in templates; see arc42 chapter 8. */
 @theme inline {
     --color-surface: var(--mat-sys-surface);
     --color-surface-dim: var(--mat-sys-surface-dim);
@@ -35,7 +32,6 @@
     --color-used-up: var(--app-used-up);
     --color-on-account: var(--app-on-account);
 
-    /* Material shape tokens. */
     --radius-m3-sm: var(--mat-sys-corner-small);
     --radius-m3-md: var(--mat-sys-corner-medium);
     --radius-m3-lg: var(--mat-sys-corner-large);

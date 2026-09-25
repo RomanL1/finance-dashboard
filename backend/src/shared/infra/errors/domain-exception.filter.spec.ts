@@ -7,7 +7,6 @@ import {
     type DomainError,
     ForbiddenError,
     NotFoundError,
-    UnavailableError,
     ValidationError,
 } from '../../kernel/index.js';
 import { DomainExceptionFilter } from './domain-exception.filter.js';
@@ -27,7 +26,6 @@ describe('DomainExceptionFilter', () => {
         [new ForbiddenError(), HttpStatus.FORBIDDEN],
         [new ConflictError('taken'), HttpStatus.CONFLICT],
         [new ValidationError('bad'), HttpStatus.BAD_REQUEST],
-        [new UnavailableError('down'), HttpStatus.SERVICE_UNAVAILABLE],
     ])('maps %s to %i', (error, status) => {
         const { host, response } = makeHost();
 

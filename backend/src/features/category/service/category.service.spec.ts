@@ -15,7 +15,6 @@ const dummyCategory: Category = {
     transactionCount: 0,
 };
 
-/** The repository methods CategoryService calls. */
 type RepoFake = Pick<
     CategoryRepository,
     | 'listByHouseholdId'
@@ -55,7 +54,6 @@ function makeRepo(overrides: Partial<RepoFake> = {}): RepoFake {
 }
 
 function makeService(repo: RepoFake) {
-    // The fake covers every method CategoryService calls; the rest of the class is never touched.
     return new CategoryService(repo as CategoryRepository);
 }
 

@@ -51,12 +51,7 @@ export class BudgetService {
         await this.budgets.markMonthTouched(householdId, month);
     }
 
-    /**
-     * Fills an empty month with the limits of the nearest earlier month that has any (story S4).
-     * The copies are independent rows, so editing them leaves the source month untouched.
-     * `auto` is the take-over on first view: it leaves a month alone whose limits were touched before,
-     * so a month emptied on purpose stays empty. The explicit take-over still fills it.
-     */
+    /** Copies the nearest earlier limits into an empty month; `auto` skips touched months. See ADR-2. */
     async copyFromPrevious(
         householdId: Id,
         month: Month,

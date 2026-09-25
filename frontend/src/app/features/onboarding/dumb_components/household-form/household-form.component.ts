@@ -75,7 +75,6 @@ export class HouseholdFormComponent {
         }),
     });
 
-    /** Prefills the name control once the current household name is available. */
     constructor() {
         effect(() => {
             const name = this.initialName();

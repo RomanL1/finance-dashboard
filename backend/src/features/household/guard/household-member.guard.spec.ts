@@ -17,7 +17,6 @@ const dummyMembership: HouseholdMembership = {
 
 function makeGuard(assertMember = vi.fn<HouseholdService['assertMember']>()) {
     const households: Pick<HouseholdService, 'assertMember'> = { assertMember };
-    // The fake covers the one method the guard calls.
     return {
         guard: new HouseholdMemberGuard(households as HouseholdService),
         assertMember,

@@ -4,7 +4,6 @@ import {
     DomainError,
     ForbiddenError,
     NotFoundError,
-    UnavailableError,
     ValidationError,
 } from './domain-error.js';
 
@@ -14,7 +13,6 @@ describe('DomainError family', () => {
         [new ForbiddenError(), 'forbidden', 'ForbiddenError'],
         [new ConflictError('taken'), 'conflict', 'ConflictError'],
         [new ValidationError('bad'), 'validation', 'ValidationError'],
-        [new UnavailableError('down'), 'unavailable', 'UnavailableError'],
     ])('%s has kind %s and the subclass name', (error, kind, name) => {
         expect(error).toBeInstanceOf(DomainError);
         expect(error).toBeInstanceOf(Error);

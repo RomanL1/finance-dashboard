@@ -18,7 +18,6 @@ function makeController() {
                 skipped: false,
             }),
     };
-    // The fake covers every service method these tests reach.
     return {
         controller: new BudgetController(service as BudgetService),
         service,

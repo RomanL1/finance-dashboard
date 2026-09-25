@@ -10,8 +10,8 @@ import { category } from '../../category/model/category.schema.js';
 import { timestamps } from '../../../shared/infra/db/timestamp.schema.js';
 
 /**
- * Spending limit of one category for one calendar month. Belongs to a household through
- * its category. No row means "no limit"; an amount of 0 is a deliberate zero limit.
+ * Spending limit of one category for one calendar month. No row means "no limit";
+ * an amount of 0 is a deliberate zero limit.
  */
 export const budget = sqliteTable(
     'budget',
@@ -35,10 +35,7 @@ export const budget = sqliteTable(
     ],
 );
 
-/**
- * A month whose limits the household has touched: set, removed or taken over. Such a month never
- * fills itself again, so removing its last limit leaves it deliberately unbudgeted (stories S1, S3).
- */
+/** Months whose limits were set, removed or taken over; the automatic take-over skips them. See ADR-2. */
 export const budgetMonth = sqliteTable(
     'budget_month',
     {

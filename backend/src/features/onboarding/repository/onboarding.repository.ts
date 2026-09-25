@@ -55,6 +55,7 @@ export class OnboardingRepository {
             ),
         ];
 
+        // Keep batch: explicit transactions lose libsql's :memory: e2e DB (ADR-3).
         await this.db.batch(statements);
     }
 }

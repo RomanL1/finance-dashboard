@@ -24,10 +24,7 @@ export class BudgetService {
         return response.data;
     }
 
-    /**
-     * The month as every view should see it: an empty current or next month is first filled from the
-     * previous limits (story S4), so the dashboard and the budgets tab agree whichever is opened first.
-     */
+    /** Runs the automatic take-over (ADR-2) first, so the dashboard and the budgets tab agree whichever opens first. */
     async loadMonth(householdId: string, month: string): Promise<MonthBudgets> {
         const budgets = await this.list(householdId, month);
         if (budgets.length > 0 || !isAutoInheritMonth(month)) {
@@ -41,7 +38,6 @@ export class BudgetService {
         };
     }
 
-    /** Creates the limit or replaces its amount. */
     async set(
         householdId: string,
         categoryId: string,
@@ -67,11 +63,7 @@ export class BudgetService {
         });
     }
 
-    /**
-     * Fills an empty month with copies of the nearest earlier month's limits. `sourceMonth` is null
-     * when there was nothing to copy. Fails with 409 when the month already has limits.
-     * `auto` = take-over on first view: the server skips a month whose limits were touched before.
-     */
+    /** Take-over per ADR-2; `auto` skips touched months. `sourceMonth` null = nothing copied; 409 when the month has limits. */
     async copyPrevious(
         householdId: string,
         month: string,

@@ -100,8 +100,7 @@ export class CategoryRepository {
 
     /**
      * With `transferTo`, the category's transactions are reassigned atomically with the delete.
-     * `batch` rather than `db.transaction`: the libsql client swaps its connection after an
-     * explicit transaction, which loses an in-memory database (e2e).
+     * Keep batch: explicit transactions lose libsql's :memory: e2e DB (ADR-3).
      * Both ids must already be validated as belonging to `householdId`.
      */
     async deleteCategory(

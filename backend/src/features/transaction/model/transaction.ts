@@ -18,7 +18,6 @@ export interface CreateTransaction {
     date: Date;
 }
 
-/** Domain model. Independent of persistence and transport shapes. */
 export interface Transaction extends CreateTransaction {
     createdAt: Date;
 }
@@ -62,7 +61,6 @@ export interface CurrencyStats {
     currency: string;
     income: number;
     expenses: number;
-    /** `income - expenses` */
     net: number;
 }
 
@@ -102,7 +100,6 @@ export interface CreateTransactionInput {
     date: Date;
 }
 
-/** Domain rules for a new transaction, independent of how it is persisted. */
 export function buildTransaction(
     input: CreateTransactionInput,
 ): CreateTransaction {

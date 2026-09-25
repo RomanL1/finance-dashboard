@@ -21,7 +21,6 @@ const membership = (
     },
 });
 
-/** The repository methods HouseholdService calls. */
 type RepoFake = Pick<
     HouseholdRepository,
     'findById' | 'findMembershipByUserId' | 'findMembership' | 'update'
@@ -47,7 +46,6 @@ function makeRepo(overrides: Partial<RepoFake> = {}): RepoFake {
 }
 
 function makeService(repo: RepoFake) {
-    // The fake covers every method HouseholdService calls; the rest of the class is never touched.
     return new HouseholdService(repo as HouseholdRepository);
 }
 

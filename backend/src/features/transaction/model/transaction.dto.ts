@@ -151,7 +151,6 @@ export class StatsQueryDto {
     to!: string;
 }
 
-/** Sums over the range in the household currency. */
 export class CurrencyStatsDto {
     @ApiProperty({ example: 'CHF', description: 'Household currency' })
     currency!: string;
@@ -173,7 +172,6 @@ export class CategoryExpenseDto {
     expenses!: number;
 }
 
-/** Expenses per category in the household currency. */
 export class CategoryStatsDto {
     @ApiProperty({ example: 'CHF', description: 'Household currency' })
     currency!: string;

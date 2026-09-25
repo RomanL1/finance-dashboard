@@ -16,7 +16,6 @@ const dummyBudget: Budget = {
     amount: 50000,
 };
 
-/** The repository methods BudgetService calls. */
 type RepoFake = Pick<
     BudgetRepository,
     | 'listByMonth'
@@ -70,7 +69,6 @@ function makeService(
     repo: RepoFake,
     categories: Pick<CategoryService, 'getAll'>,
 ) {
-    // The fakes cover every method BudgetService calls; the rest of each class is never touched.
     return new BudgetService(
         repo as BudgetRepository,
         categories as CategoryService,

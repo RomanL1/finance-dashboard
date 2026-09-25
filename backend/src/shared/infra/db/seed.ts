@@ -1,5 +1,5 @@
 /**
- * Dev seed. Two users for the simulated login (user story M1):
+ * Dev seed. Two users for signing in (story M1; its simulated login is now a better-auth session):
  * - demo: deliberately has no household, so logging in always lands on onboarding
  *   from a clean, fully-incomplete state.
  * - sample: fully set up household with accounts, categories, monthly budgets and 200 random transactions.
@@ -218,6 +218,7 @@ async function insertSampleHousehold(userId: string): Promise<void> {
         })),
     );
 
+    // Keep batch: explicit transactions lose libsql's :memory: e2e DB (ADR-3).
     await db.batch([
         db.insert(household).values({
             id: householdId,

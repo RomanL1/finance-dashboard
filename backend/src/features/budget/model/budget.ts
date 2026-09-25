@@ -37,7 +37,6 @@ export function assertValidMonth(month: string): void {
     }
 }
 
-/** Domain rules for a limit, independent of whether it is created or replaced. */
 export function buildBudget(input: SetBudgetInput): Budget {
     assertValidMonth(input.month);
     if (!Number.isInteger(input.amount) || input.amount < 0) {

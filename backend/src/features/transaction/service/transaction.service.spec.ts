@@ -19,7 +19,6 @@ const input = {
     date: new Date('2026-01-15'),
 };
 
-/** The repository methods TransactionService calls. */
 type RepoFake = Pick<
     TransactionRepository,
     | 'listByHouseholdId'
@@ -75,7 +74,6 @@ function makeHouseholds(): Pick<HouseholdService, 'getById'> {
 }
 
 function makeService(repo: RepoFake) {
-    // The fakes cover every method TransactionService calls; the rest of each class is never touched.
     return new TransactionService(
         repo as TransactionRepository,
         makeHouseholds() as HouseholdService,

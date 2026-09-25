@@ -17,7 +17,6 @@ export interface CreateAccount {
     archivedAt: Date | null;
 }
 
-/** Domain model. Independent of persistence and transport shapes. */
 export interface Account {
     id: Id;
     householdId: Id;
@@ -47,7 +46,6 @@ export interface CreateAccountInput {
 export type UpdateAccountInput = Omit<CreateAccountInput, 'initialValue'>;
 export type UpdateAccount = Omit<CreateAccount, 'initialValue'>;
 
-/** Domain rules for a new account, independent of how it is persisted. */
 export function buildAccount(input: CreateAccountInput): CreateAccount {
     return { ...buildAccountUpdate(input), initialValue: input.initialValue };
 }

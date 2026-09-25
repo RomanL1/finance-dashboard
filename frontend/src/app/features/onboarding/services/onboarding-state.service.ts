@@ -14,8 +14,8 @@ const EMPTY_DRAFT: OnboardingDraft = {
 };
 
 /**
- * Caches wizard answers in localStorage so nothing is sent to the backend until the
- * final step, when the whole household is submitted in one request.
+ * Caches wizard answers in localStorage; validation requests do not write data.
+ * The complete household is persisted in one final request.
  */
 @Injectable({ providedIn: 'root' })
 export class OnboardingStateService {

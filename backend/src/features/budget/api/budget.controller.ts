@@ -35,7 +35,6 @@ import {
     toCopiedBudgetsDto,
 } from './budget.mapper.js';
 
-/** A limit is addressed by (category, month); there is at most one per pair, so PUT creates or replaces it. */
 @ApiTags('budget')
 @ApiCookieAuth()
 @ApiParam({ name: 'householdId', description: 'Household id', type: String })

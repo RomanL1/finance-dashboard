@@ -22,7 +22,6 @@ function makeController() {
         create: vi.fn<AccountService['create']>().mockResolvedValue(saved),
         update: vi.fn<AccountService['update']>().mockResolvedValue(saved),
     };
-    // The fake covers every service method these tests reach.
     return {
         controller: new AccountController(service as AccountService),
         service,

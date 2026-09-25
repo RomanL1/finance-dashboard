@@ -43,7 +43,6 @@ function makeService(
     repo: Pick<OnboardingRepository, 'insertHousehold'>,
     households = makeHouseholds(),
 ) {
-    // The fakes cover every method OnboardingService calls; the rest of each class is never touched.
     return new OnboardingService(
         repo as OnboardingRepository,
         households as HouseholdService,

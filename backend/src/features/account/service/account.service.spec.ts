@@ -33,7 +33,6 @@ const input = {
     startDate: new Date('2026-01-01'),
 };
 
-/** The repository methods AccountService calls. */
 type RepoFake = Pick<
     AccountRepository,
     | 'listByHouseholdId'
@@ -81,7 +80,6 @@ function makeHouseholds(
 }
 
 function makeService(repo: RepoFake, baseCurrency: SupportedCurrency = 'CHF') {
-    // The fakes cover every method AccountService calls; the rest of each class is never touched.
     return new AccountService(
         repo as AccountRepository,
         makeHouseholds(baseCurrency) as HouseholdService,

@@ -59,7 +59,6 @@ export class TransactionService {
         };
     }
 
-    /** Expenses per category in the household currency, largest first. */
     async getCategoryStats(
         householdId: Id,
         range: DateRange,

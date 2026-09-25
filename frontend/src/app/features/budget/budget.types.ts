@@ -14,11 +14,7 @@ export function toMonthKey(date: Date): string {
     return formatDate(date, 'yyyy-MM', 'en');
 }
 
-/**
- * Months that fill themselves from the previous limits on first view (story S4): the current
- * calendar month and the next one, so limits can be planned ahead. Any other month needs an explicit action,
- * as does one of these two once its limits were touched: removing the last limit must not bring them back.
- */
+/** Current and next month take over earlier limits automatically, unless touched. See ADR-2. */
 export function isAutoInheritMonth(month: string, now = new Date()): boolean {
     const current = toMonthKey(now);
     const next = toMonthKey(new Date(now.getFullYear(), now.getMonth() + 1, 1));

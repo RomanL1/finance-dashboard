@@ -68,7 +68,6 @@ export class CategoryController {
         );
     }
 
-    /** Transactions are uncategorized, or moved to `transferTo` when given. */
     @Delete(':categoryId')
     @ApiParam({ name: 'categoryId', description: 'Category id', type: String })
     @HttpCode(HttpStatus.NO_CONTENT)

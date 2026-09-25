@@ -27,7 +27,6 @@ export interface DefaultCategory {
     translateKey: string;
 }
 
-/** Domain rules for a new category, independent of how it is persisted. */
 export function buildCategory(name: string): CreateOrUpdateCategory {
     const trimmedName = name?.trim();
     if (!trimmedName) {

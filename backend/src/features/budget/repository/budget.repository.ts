@@ -14,7 +14,6 @@ const budgetColumns = {
     amount: budget.amount,
 };
 
-/** Every query joins the category so rows are scoped to the household without a redundant column. */
 @Injectable()
 export class BudgetRepository {
     constructor(@Inject(DRIZZLE) private readonly db: Db) {}

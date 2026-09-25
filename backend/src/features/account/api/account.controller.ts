@@ -80,7 +80,6 @@ export class AccountController {
         );
     }
 
-    /** Empty accounts only; one with transactions is archived instead. */
     @Delete(':accountId')
     @ApiParam({ name: 'accountId', description: 'Account id', type: String })
     @HttpCode(HttpStatus.NO_CONTENT)

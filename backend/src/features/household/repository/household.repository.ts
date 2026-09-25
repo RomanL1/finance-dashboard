@@ -41,6 +41,7 @@ export class HouseholdRepository {
             const [row] = await updateHousehold;
             return row ?? null;
         }
+        // Keep batch: explicit transactions lose libsql's :memory: e2e DB (ADR-3).
         const [rows] = await this.db.batch([
             updateHousehold,
             this.db

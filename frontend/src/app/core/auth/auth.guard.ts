@@ -3,7 +3,6 @@ import { CanActivate, Router, UrlTree } from '@angular/router';
 import { AuthService } from './auth.service';
 import { APP_PATHS } from '../../config/paths.config';
 
-/** Route guard: redirects anonymous users to /login. */
 @Injectable({ providedIn: 'root' })
 export class AuthGuard implements CanActivate {
     constructor(

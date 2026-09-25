@@ -5,7 +5,6 @@ import { timestamps } from '../../../shared/infra/db/timestamp.schema.js';
 
 export const TRANSACTION_TYPES = ['expense', 'income'] as const;
 
-/** Belongs to a household through its account. No redundant household_id. */
 export const transaction = sqliteTable(
     'transaction',
     {
