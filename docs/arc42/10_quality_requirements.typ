@@ -31,13 +31,13 @@
       + DevTools → Network: disable cache, throttle to "Slow 4G".
       + Reload `/transactions`.
     ],
-    [Shell and transactions chunks start before `get-session` and `households/me` return. Other route chunks start at least 3 s after the page renders.],
+    [Shell and transactions chunks start before `get-session` and `households/me` return. Other route chunks start 3 s after the first navigation completes.],
     [QS-3 \ Lighthouse],
     [
       + `docker compose up --build`, sign in as `sample@finance.local`.
       + DevTools → Lighthouse, all four categories, on Mobile and Desktop for each shell tab.
     ],
-    [Average of Performance, Accessibility, Best Practices, and SEO is at least 90 for Mobile and for Desktop.],
+    [The four category scores average 90 or more, on Mobile and on Desktop; a single category may be lower.],
     aspect[Usability],
     [QS-4 \ Phone layout (goal 2)],
     [
@@ -52,7 +52,7 @@
     ],
     [Keyboard is open when the dialog appears; account and category match the previous entry; the entry saves without touching another field.],
     aspect[Deployability],
-    [QS-6 \ One-command start],
+    [QS-6 \ Compose start (M20, ADR-6)],
     [
       + Fresh clone: `cp .env.example .env`, set `BETTER_AUTH_SECRET`.
       + `docker compose up --build`.
@@ -72,7 +72,7 @@
 
 == Lighthouse Results
 
-Production bundle via `docker compose` (port 8080), 2026-09-25. Every run meets QS-3.
+Production bundle via `docker compose` (port 8080), 2026-09-25. The three recorded runs meet QS-3; other tab and device combinations were not recorded.
 
 #let shot(file, caption) = figure(image("pictures/" + file, width: 80%), caption: caption)
 

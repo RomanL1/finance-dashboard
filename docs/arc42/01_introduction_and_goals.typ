@@ -27,7 +27,7 @@ The dashboard lets a household record accounts and transactions, plan monthly li
     - Create, show, change, and delete a self-defined resource, stored in a database and shown in at least two different views.
     - Responsive for desktop, tablet, and mobile.
     - Automated unit, integration, and end-to-end tests.
-    - Lighthouse average of at least 90 on mobile and desktop.
+    - Lighthouse scores average 90 or more on mobile and desktop.
     - Reproducible start via a public URL or one `docker compose up`.
     - Readable, extensible, well-structured code.
   ],

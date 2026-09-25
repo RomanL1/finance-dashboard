@@ -7,13 +7,16 @@ sequenceDiagram
   participant SV as OnboardingService
   participant R as OnboardingRepository
   participant DB as SQLite
-  loop each step: household · categories · accounts
+  loop steps 1–2: household name, categories
     U->>W: fills step
-    W->>C: POST /api/households/onboarding/validate-*
+    W->>C: POST …/validate-household or …/validate-categories
     C-->>W: 204 (no write) or 400
-    W->>LS: save draft (reload resumes)
+    W->>LS: save draft (name, categories)
   end
-  U->>W: submits
+  U->>W: fills first account, submits
+  W->>C: POST …/validate-accounts
+  C-->>W: 204 or 400
+  Note over W,LS: account fields are not in the draft
   W->>C: POST /api/households/onboarding
   C->>SV: onboard(userId, input)
   SV->>SV: 409 if user already has a household,<br/>build* validates domain values

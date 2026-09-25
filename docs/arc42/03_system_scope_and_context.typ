@@ -15,13 +15,13 @@
 
 == Technical Context
 
-#diagram("03_technical_context", [Everything reaches the system through one origin; the developer also uses CLI scripts.], width: 80%)
+#diagram("03_technical_context", [Users reach the Compose stack on port 8080; Swagger exists only on a locally started API.], width: 80%)
 
 #table(
   columns: (auto, auto, 1fr),
   inset: 6pt,
   table.header([*Partner*], [*Channel*], [*Details*]),
-  [Browser], [HTTP], [One origin on port 8080: the app bundle and the REST API under `/api/*` (ch. 7).],
+  [Browser], [HTTP], [Compose stack: one origin on port 8080 serves the app bundle and the REST API under `/api/*` (ch. 7).],
   [Developer], [CLI], [`bun run db:seed`, `bun run openapi:generate`.],
-  [Developer], [HTTP], [Swagger UI at `/docs` (ch. 8 Security).],
+  [Developer], [HTTP], [Swagger UI at `http://localhost:3000/docs` when the API runs locally; not in the Compose stack (ch. 8 Security).],
 )

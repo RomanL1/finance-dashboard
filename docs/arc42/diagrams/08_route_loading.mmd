@@ -17,6 +17,6 @@ sequenceDiagram
     R->>B: load nested child page now<br/>(CategoryStatsPage or BudgetsPage)
   end
   R-->>B: render shell + tab (tab chunk already cached)
-  R->>P: router ready
+  R->>P: first navigation ends
   Note over P: waits 3000 ms
   P->>B: preload remaining lazy routes<br/>(charts, forms)

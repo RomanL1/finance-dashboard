@@ -48,7 +48,7 @@ Three questions are left open by that sentence:
 
 - Copy independent `budget` rows from the nearest earlier month with limits; reads never inherit limits, so copies can change without changing their source and "no row" still means "no limit" (S3).
 - On first view, `POST …/:month/copy-previous?auto=true` applies only to the current and next month. Sequence: ch. 6 Monthly limits take-over. Other months need an explicit action; a month that already has limits returns 409.
-- `budget_month(household_id, month)` marks months whose limits were set, removed, or taken over. Automatic take-over skips touched months; the explicit action may refill them.
+- `budget_month(household_id, month)` marks months whose limits were set, removed, or taken over, in the same batch as the change (ADR-3). Automatic take-over skips touched months; the explicit action may refill them.
 
 #diagram("09_adr2_take_over", [Take-over decision as implemented in `BudgetService.copyFromPrevious` (backend) and `loadMonth` (frontend).], width: 60%)
 
@@ -65,7 +65,7 @@ Three questions are left open by that sentence:
 
 === Context
 
-Onboarding inserts a household, owner membership, categories, and accounts together. Category transfer updates transactions before deleting the category; a household currency change updates accounts with the household. In the libsql in-memory e2e database, `db.transaction` swaps the client's connection after an explicit transaction and loses that database.
+Onboarding inserts a household, owner membership, categories, and accounts together. Category transfer updates transactions before deleting the category; a household currency change updates accounts with the household; every limit change also marks its month (ADR-2). In the libsql in-memory e2e database, `db.transaction` swaps the client's connection after an explicit transaction and loses that database.
 
 === Options
 
@@ -80,7 +80,7 @@ Onboarding inserts a household, owner membership, categories, and accounts toget
 
 === Decision
 
-Use `db.batch()` in `OnboardingRepository`, `CategoryRepository.deleteCategory` when transferring, and `HouseholdRepository.update` when changing currency.
+Use `db.batch()` in `OnboardingRepository`, `CategoryRepository.deleteCategory` when transferring, `HouseholdRepository.update` when changing currency, and the `BudgetRepository` writes (`upsert`, `delete`, `insertMany`) together with the month marker.
 
 === Consequences
 
@@ -116,3 +116,63 @@ better-auth's Node handler needs the raw request body for `/api/auth/*`. Nest's 
 - Requests take two paths: better-auth answers `/api/auth/*` and owns validation and responses there; all other requests pass Nest's body parser, guards, validation pipe, and error filter.
 - The order in `app.setup.ts` and `auth.handler.ts` is part of the contract and must stay beside the code.
 - Revisit if Nest or better-auth gains an integration that preserves the raw stream and response behavior.
+
+== ADR-5: Real sessions replace the simulated login; onboarding creates the household
+
+*Status:* accepted · deviates from M1 and C1 in the proposal.
+
+=== Context
+
+M1 asks for a simulated login with a fixed household until real authentication exists. C1 (Could have) asks for a sign-up that creates the household with the user as owner. A usable household also needs a name, categories, and a first account (M4, M7).
+
+=== Options
+
+#table(
+  columns: (auto, 1fr),
+  inset: 6pt,
+  table.header([*Option*], [*Trade-off*]),
+  [Simulated login (M1)], [No auth code, but every request trusts one fixed user; must be replaced later.],
+  [Sign-up creates the household (C1)], [One step, but the household starts without categories or accounts.],
+  [Real sessions + onboarding], [better-auth from the start; one request creates a complete household.],
+)
+
+=== Decision
+
+- better-auth sessions from the start (ADR-4). Signing up creates only the user.
+- `POST /api/households/onboarding` creates the household with the user as owner, together with categories and the first account (ADR-3).
+- The frontend has a login page but no sign-up page; users come from the seed (ch. 7) or `POST /api/auth/sign-up/email`.
+
+=== Consequences
+
+- M1 is exceeded: real access control instead of a simulation.
+- C1 is partly met: sign-up works through the API only, and the household comes from onboarding, not from sign-up.
+- A sign-up page needs frontend work only; after sign-up, the onboarding guard takes over.
+
+== ADR-6: Require `BETTER_AUTH_SECRET` instead of shipping a default
+
+*Status:* accepted · qualifies M20 in the proposal.
+
+=== Context
+
+M20 asks that `docker compose up` starts the production bundle without extra knowledge. better-auth signs session cookies with `BETTER_AUTH_SECRET`; anyone who knows the secret can forge sessions.
+
+=== Options
+
+#table(
+  columns: (auto, 1fr),
+  inset: 6pt,
+  table.header([*Option*], [*Trade-off*]),
+  [Default secret in `compose.yaml`], [True one-command start, but every deployment that forgets to override it has forgeable sessions.],
+  [Generate on first start], [One command, but the secret must be persisted, or every restart signs everyone out.],
+  [Require it in `.env`], [One setup step before `docker compose up`; no known secret ever ships.],
+)
+
+=== Decision
+
+Compose refuses to start without `BETTER_AUTH_SECRET` (`${BETTER_AUTH_SECRET:?…}`), and `env.ts` requires it when `NODE_ENV=production`. `.env.example` documents the variable.
+
+=== Consequences
+
+- M20 holds with one setup step: `cp .env.example .env` and set the secret (QS-6).
+- Revisit if the stack gets a persistent secret store.
+

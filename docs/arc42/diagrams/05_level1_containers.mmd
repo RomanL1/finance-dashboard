@@ -1,14 +1,14 @@
 flowchart TB
   user(["Household member"])
   subgraph browser ["Browser"]
-    spa["Web app<br/>Angular 22 SPA · Material 3 · Tailwind 4"]
+    spa["Web app<br/>Angular SPA · Angular Material · Tailwind"]
   end
   subgraph boundary ["Personal Finance Dashboard (server side)"]
     nginx["Web server<br/>nginx · static bundle + reverse proxy"]
     subgraph apiproc ["API process · Bun"]
       direction LR
-      auth["Auth<br/>better-auth 1.7"]
-      api["API<br/>NestJS 12 REST controllers"]
+      auth["Auth<br/>better-auth"]
+      api["API<br/>NestJS REST controllers"]
     end
     db[("Database<br/>SQLite file · libsql + Drizzle")]
   end

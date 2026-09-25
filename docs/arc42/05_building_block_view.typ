@@ -39,7 +39,7 @@ New tables must be re-exported from `shared/infra/db/schema.ts`: drizzle-kit and
 
 == Level 2: Frontend Architecture
 
-#diagram("05_level2_frontend", [Every feature module has the same folders. Dumb components only get inputs and emit outputs; only services call the API.], width: 50%)
+#diagram("05_level2_frontend", [Feature modules use these folders as needed: `budget` and `transaction` have all four, `shell` and `settings` only pages. Dumb components only get inputs and emit outputs; only services call the API.], width: 50%)
 
 #table(
   columns: (auto, 1fr),

@@ -19,7 +19,7 @@
   columns: (auto, auto, 1fr),
   inset: 6pt,
   table.header([*Variable*], [*Required*], [*Purpose*]),
-  [`BETTER_AUTH_SECRET`], [Compose, prod], [Signs session cookies; no production fallback (ch. 8 Security).],
+  [`BETTER_AUTH_SECRET`], [Compose, prod], [Signs session cookies; no default value (ADR-6).],
   [`BETTER_AUTH_URL` \ `TRUSTED_ORIGINS`], [Other origin], [Must match the browser-facing origin when it is not `http://localhost:8080`.],
   [`SEED_DEMO`], [No], [Creates the seed users below on startup. Default `true` in Compose, `false` locally; disable outside demos.],
   [`APP_PORT`], [No], [Published HTTP port for `web`; defaults to 8080. TLS termination is outside this stack (ch. 11).],

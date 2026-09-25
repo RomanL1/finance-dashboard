@@ -31,7 +31,7 @@ Services throw HTTP-independent `DomainError` subclasses (`backend/src/shared/ke
 - better-auth owns sign-in and session cookies (ADR-4). `AuthModule` installs a global guard: every controller route needs a session unless marked `@Public()`, and household routes also pass `HouseholdMemberGuard`.
 - `setupApp` allows credentialed CORS only for `TRUSTED_ORIGINS`.
 - nginx is the Compose entry point and overwrites `X-Real-IP` with `$remote_addr`; better-auth rate limits on that header instead of client-controlled `X-Forwarded-For`. With an upstream proxy, `$remote_addr` is that proxy until trusted real-IP handling is configured (`frontend/nginx.conf.template`).
-- Production requires `BETTER_AUTH_SECRET` to prevent forgeable session cookies; Swagger `/docs` and OpenAPI generation run only outside production (`backend/src/shared/infra/config/env.ts`, `backend/src/main.ts`).
+- Production requires `BETTER_AUTH_SECRET` to prevent forgeable session cookies (ADR-6); Swagger `/docs` and OpenAPI generation run only outside production, so never in the Compose stack (`backend/src/shared/infra/config/env.ts`, `backend/src/main.ts`).
 
 == Theming
 
@@ -58,7 +58,7 @@ A repeat entry needs only the amount (quality goal 3).
 
 #diagram("08_route_loading", [The shell and the tab page download in parallel with the guard requests; everything else waits 3 s.], width: 85%)
 
-For `/analytics/*`, only the `AnalyticsPage` layout is prefetched; its nested child loads after the guards pass. Other lazy routes preload after 3 s so chart and form chunks do not compete with the first page on slow connections (QS-2, ch. 10).
+For `/analytics/*`, only the `AnalyticsPage` layout is prefetched; its nested child loads after the guards pass. Other lazy routes preload 3 s after the first navigation completes, so chart and form chunks do not compete with the first page on slow connections. The delay does not wait for the page's own data requests (QS-2, ch. 10).
 
 == Testing
 
@@ -70,12 +70,26 @@ Four suites cover unit, integration, and end-to-end level. All passed on 2026-09
   align: (left, left, right, right, left),
   table.header([*Suite*], [*Tool*], [*Files*], [*Tests*], [*What is tested*]),
   [Backend unit], [Vitest], [24], [191], [Model rules (`build*`: amounts, months, date ranges, unique names), services, controllers and mappers, guards, env config, `DomainExceptionFilter`.],
-  [Backend integration], [Vitest, supertest], [10], [108], [HTTP contract of every feature: auth, onboarding, accounts, categories, transactions and filters, statistics, budgets; household isolation (foreign household's URL or ids).],
+  [Backend integration], [Vitest, supertest], [10], [111], [HTTP contract of every feature: auth, onboarding, accounts, categories, transactions and filters, statistics, budgets; household isolation (foreign household's URL or ids); atomic budget writes (fault injection).],
   [Frontend unit], [Vitest, jsdom], [53], [277], [Services (API calls, onboarding draft, last-used defaults), dumb components (inputs, outputs, forms), smart components and dialogs, guards, theme, i18n, preload strategy.],
   [Browser end-to-end], [Playwright], [6], [8 × 2], [Login (anonymous redirect, wrong password), onboarding, account create and rename, transaction add/edit/delete with balance, income and expense on Home, budget overspend; each flow on desktop and mobile.],
 )
 
-- *Where:* backend `src/**/*.spec.ts` (`bun run test`) and `test/*.e2e-spec.ts` (`bun run test:e2e`); frontend `src/**/*.spec.ts` (`bun run test`) and `playwright/e2e/` (`bun run e2e`).
+Coverage (V8 provider, 2026-09-25):
+
+#table(
+  columns: (auto, auto, auto, auto, auto),
+  inset: 6pt,
+  align: (left, right, right, right, right),
+  table.header([*Suite*], [*Statements*], [*Branches*], [*Functions*], [*Lines*]),
+  [Backend unit], [76.2 %], [72.1 %], [54.0 %], [76.4 %],
+  [Backend integration], [89.3 %], [69.9 %], [87.2 %], [89.9 %],
+  [Frontend unit], [87.4 %], [79.7 %], [84.2 %], [87.0 %],
+)
+
+Backend unit specs fake repositories, so repositories, Drizzle schemas, and DTOs count as 0 % there; the integration suite covers them. Browser end-to-end runs are not measured.
+
+- *Where:* backend `src/**/*.spec.ts` (`bun run test`) and `test/*.e2e-spec.ts` (`bun run test:e2e`); frontend `src/**/*.spec.ts` (`bun run test`) and `playwright/e2e/` (`bun run e2e`). Coverage: `bun run test:cov` in both projects, `bun run test:e2e:cov` in the backend.
 - *Fakes over mocks:* unit specs replace collaborators with small fakes typed as `Pick<Repository, 'method'>` or `Pick<Service, 'method'>`, implementing only the methods the subject calls; a cast supplies the full class type.
 - *No mocks in integration:* backend integration specs run the real `AppModule`, including `setupApp()` and better-auth, on `:memory:` SQLite migrated and seeded per run (`test/setup-db.ts`).
 - *Isolated browser flows:* Playwright starts its own API (:3100, `:memory:`) and `ng serve` (:4300), in projects `desktop` (Desktop Chrome) and `mobile` (Pixel 7, QS-4). Fixtures in `playwright/fixtures/test.ts` sign up a fresh user, and onboard a household when needed, through the API for each test, so tests share no state and run fully parallel.

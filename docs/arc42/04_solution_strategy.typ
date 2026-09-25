@@ -7,11 +7,11 @@
   inset: 6pt,
   table.header([*Decision*], [*Reason (alternative beaten)*]),
   [SPA + REST API + SQLite], [Browser app, one API process, and one database file (ch. 5) cover a household-sized load; a file database needs no server (beat PostgreSQL).],
-  [Modular monolith by feature], [`backend/src/features/*` and `frontend/src/app/features/*` mirror the domain; one deployable (beat type folders such as `controllers/`, `services/`).],
+  [Modular monolith by feature], [`backend/src/features/*` and `frontend/src/app/features/*` mirror the domain; the backend stays one deployable API (beat type folders such as `controllers/`, `services/`).],
   [Drizzle ORM + drizzle-kit migrations], [Typed schema next to its feature; SQL-close queries (beat TypeORM decorators).],
-  [better-auth sessions], [Cookie sessions and rate limiting out of the box, tables in the same Drizzle schema (beat a hand-written JWT flow). Mounted before Nest's body parser (ADR-4).],
+  [better-auth sessions], [Cookie sessions and rate limiting out of the box, tables in the same Drizzle schema (beat a hand-written JWT flow). Mounted before Nest's body parser (ADR-4); replaces the simulated login (ADR-5).],
   [OpenAPI → generated client], [`@nestjs/swagger` spec generates `frontend/src/app/core/api/`; no duplicated DTOs.],
-  [Angular Material 3 + Tailwind 4], [Accessible components plus semantic color tokens (ch. 8 Theming).],
+  [Angular Material + Tailwind], [Accessible components plus semantic color tokens (ch. 8 Theming).],
   [Monorepo, Bun], [One repository for `frontend/` and `backend/`; Bun as package manager and runtime.],
 )
 

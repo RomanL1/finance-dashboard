@@ -12,7 +12,7 @@
 
 #diagram("06_onboarding", [Validation steps never write; the single submit creates the whole household in one libsql batch.])
 
-- A page reload resumes the wizard from the draft in localStorage; only the final submit writes (ADR-3).
+- A page reload resumes the wizard from the localStorage draft, which holds the household name and categories; account fields must be entered again. Only the final submit writes (ADR-3).
 
 == Monthly limits take-over
 
