@@ -4,7 +4,7 @@
 
 == Quality Tree
 
-#diagram("10_quality_tree", [Five aspects, seven scenarios. QS-1, QS-2, QS-4, and QS-5 check the quality goals of chapter 1; the others check the lecturer's requirements.], width: 70%)
+#diagram("10_quality_tree", [QS-1, QS-2, QS-4, and QS-5 check the quality goals of ch. 1; QS-3, QS-6, and QS-7 check the lecturer's requirements.], width: 70%)
 
 == Quality Scenarios
 

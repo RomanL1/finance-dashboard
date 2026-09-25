@@ -10,21 +10,26 @@
 
 M5 lets a transaction be entered without choosing a category, M6 lets a category be deleted without leaving its transactions unassigned. The proposal describes both with a _reserved catch-all category_ that such transactions fall into.
 
-A reserved category would be an ordinary row in `category` with special rules: created with every household, not renamable, not deletable, not selectable as a transfer target of itself, excluded from the suggested onboarding list, and recognisable by a flag or a magic name in every query that treats it differently.
+=== Options
+
+#table(
+  columns: (auto, 1fr),
+  inset: 6pt,
+  table.header([*Option*], [*Trade-off*]),
+  [Reserved category row], [Must be seeded per household, protected from rename/deletion/self-transfer, omitted from onboarding suggestions, and identified by a flag or magic name in special-case queries.],
+  [Nullable `category_id`], [Database handles deletion with `on delete set null`; the bucket cannot be renamed or given its own limit.],
+)
 
 === Decision
 
-`transaction.category_id` is nullable. `null` _is_ the catch-all: a transaction without a category belongs to the bucket "Uncategorized". The foreign key uses `on delete set null`, so deleting a category moves its transactions into that bucket in the same statement, unless the user picks another category to transfer them to.
-
-The bucket is a first-class value everywhere a category appears: the transaction list and the analytics chart label it "Uncategorized", the history filter offers it as an option (`categoryId=none`), and the category statistics group it as its own slice.
+- `transaction.category_id` is nullable; `null` means "Uncategorized". Deleting a category sets its transactions to `null` (`on delete set null`) unless the user transfers them to another category.
+- The transaction list, history filter (`categoryId=none`), statistics, and chart show "Uncategorized" as a bucket of its own.
 
 === Consequences
 
-- M5 and M6 hold as the user experiences them: entry is never blocked, and deleting a category offers "move to Uncategorized" or "move to another category". No transaction is ever without a visible assignment.
-- No special-case rows: nothing to seed, protect, migrate or filter out of the category management UI. The database enforces the fallback by itself.
-- The bucket cannot be renamed; its label comes from the translation files.
-- Limits are keyed by `(category_id, month)`, so uncategorized spending cannot get a limit of its own. It still counts as an expense in the monthly cashflow and therefore lowers Safe-to-Spend. No Should-have story asks for a limit on it.
-- Should a limit on uncategorized spending become a requirement, the migration is mechanical: insert one reserved category per household and update the `null` rows to it.
+- M5/M6 hold: entry needs no category, and deletion offers another category or "Uncategorized"; every transaction has a visible bucket. The database fallback needs no row to seed, protect, migrate, or hide.
+- The label comes from the translation files and cannot be renamed. Limits use `(category_id, month)`, so it has no limit; its spending still reduces monthly cashflow and Safe-to-Spend. No Should-have story requires that limit.
+- If a limit becomes necessary, insert a reserved category per household and move the `null` rows to it.
 
 == ADR-2: A new month takes over the nearest earlier limits, automatically only for the current and next month
 
@@ -41,30 +46,26 @@ Three questions are left open by that sentence:
 
 === Decision
 
-- *Copies, not a fallback.* Taking over inserts independent `budget` rows for the target month. Reading a month never looks at other months, so editing a copy cannot change its source, and "no row" keeps meaning "no limit" (S3).
-- *Source is the nearest earlier month that has limits*, not strictly the calendar month before. One unused month does not lose the plan.
-- *Automatic only for the current and the next calendar month*, on first view (`POST …/:month/copy-previous?auto=true`). Every other empty month offers an explicit "Take over previous limits" action. The target month must be empty (409 otherwise).
-- *Touched months never fill themselves again.* Table `budget_month(household_id, month)` records every month whose limits were set, removed or taken over. The automatic take-over skips such a month, so removing the last limit leaves it empty. The explicit action still fills it.
+- Copy independent `budget` rows from the nearest earlier month with limits; reads never inherit limits, so copies can change without changing their source and "no row" still means "no limit" (S3).
+- On first view, `POST …/:month/copy-previous?auto=true` applies only to the current and next month. Sequence: ch. 6 Monthly limits take-over. Other months need an explicit action; a month that already has limits returns 409.
+- `budget_month(household_id, month)` marks months whose limits were set, removed, or taken over. Automatic take-over skips touched months; the explicit action may refill them.
 
 #diagram("09_adr2_take_over", [Take-over decision as implemented in `BudgetService.copyFromPrevious` (backend) and `loadMonth` (frontend).], width: 60%)
 
 === Consequences
 
-- S4 holds for the common case: opening a new month shows last month's limits, and changing them leaves that month as it was.
-- S1 and S3 hold together with S4: a month emptied on purpose stays empty until the user asks otherwise.
-- A month nobody opened is not filled and costs nothing; past months are filled only on request.
-- Skipping is decided per month only. If August was emptied on purpose, September still takes over the limits of July, the nearest month that has any. Treating an emptied month as "inherit nothing" would help this edge case and lose the plan after every unused month, so it was rejected.
+- S1, S3, and S4 hold together: a new month shows earlier limits, editing them leaves the source month unchanged, and a month the user emptied stays empty.
+- Unopened months cost nothing; past months fill only on request.
+- Skipping is decided per month: an emptied August does not stop September from taking over July's limits. Treating an emptied month as "inherit nothing" was rejected because it would lose the plan after every unused month.
 - The trigger is the client clock (current/next month), since the server knows no household timezone. A client with a wrong clock can at most fill a month early; the user can remove the copies.
-- `budget_month` rows are never deleted on their own; they go with the household.
 
-#pagebreak()
 == ADR-3: Use libsql `batch()` for atomic multi-statement writes
 
 *Status:* accepted.
 
 === Context
 
-Onboarding inserts a household, owner membership, categories, and accounts together. Category transfer updates transactions before deleting the category; a household currency change updates accounts with the household. Sequential statements could leave partial state. In the libsql in-memory e2e database, `db.transaction` swaps the client's connection after an explicit transaction and loses that database.
+Onboarding inserts a household, owner membership, categories, and accounts together. Category transfer updates transactions before deleting the category; a household currency change updates accounts with the household. In the libsql in-memory e2e database, `db.transaction` swaps the client's connection after an explicit transaction and loses that database.
 
 === Options
 
@@ -79,7 +80,7 @@ Onboarding inserts a household, owner membership, categories, and accounts toget
 
 === Decision
 
-Use `db.batch()` in `OnboardingRepository`, `CategoryRepository.deleteCategory` when transferring, and `HouseholdRepository.update` when changing currency. The seed also batches related rows. `AccountRepository.createAccount` is a single insert, not a batch; its `nextAccountNumber` SQL expression also works for ordered account inserts inside the onboarding batch.
+Use `db.batch()` in `OnboardingRepository`, `CategoryRepository.deleteCategory` when transferring, and `HouseholdRepository.update` when changing currency.
 
 === Consequences
 

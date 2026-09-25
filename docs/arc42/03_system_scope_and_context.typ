@@ -11,7 +11,6 @@
   inset: 6pt,
   table.header([*Partner*], [*Input*], [*Output*]),
   [Household member], [Household setup, accounts, transactions, monthly limits], [Balances, transaction history, category statistics, budget status],
-  [Bank], [None: Switzerland has no bank-agnostic API (ch. 2)], [None],
 )
 
 == Technical Context
@@ -22,7 +21,7 @@
   columns: (auto, auto, 1fr),
   inset: 6pt,
   table.header([*Partner*], [*Channel*], [*Details*]),
-  [Browser], [HTTP], [One origin (`APP_PORT`, default 8080): nginx serves the Angular bundle and proxies `/api/*` (JSON, session cookie) to the API. No TLS in the stack (ch. 11); containers and ports in ch. 7.],
-  [Developer], [CLI], [`bun run db:seed`, `SEED_DEMO` at startup, `bun run openapi:generate`.],
-  [Developer], [HTTP], [Swagger UI `/docs`, non-production only.],
+  [Browser], [HTTP], [One origin on port 8080: the app bundle and the REST API under `/api/*` (ch. 7).],
+  [Developer], [CLI], [`bun run db:seed`, `bun run openapi:generate`.],
+  [Developer], [HTTP], [Swagger UI at `/docs` (ch. 8 Security).],
 )

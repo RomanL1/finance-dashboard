@@ -4,7 +4,7 @@ flowchart LR
   dev(["Developer"])
   browser -->|"HTTP · bundle + /api/*"| sys
   dev -->|"CLI · db:seed"| sys
-  dev -->|"HTTP · /docs (dev only)"| sys
+  dev -->|"HTTP · /docs (non-production)"| sys
   classDef person fill:#dbe8f7,stroke:#4a6fa5;
   classDef system fill:#4a6fa5,stroke:#2f4a73,color:#ffffff;
   class browser,dev person;

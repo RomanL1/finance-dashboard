@@ -1,6 +1,6 @@
 sequenceDiagram
   autonumber
-  actor U as New member
+  actor U as Household member
   participant W as OnboardingPage<br/>(wizard)
   participant LS as localStorage
   participant C as OnboardingController
@@ -19,7 +19,7 @@ sequenceDiagram
   SV->>SV: 409 if user already has a household,<br/>build* validates domain values
   SV->>R: create(household, owner, categories, accounts)
   R->>DB: db.batch([household, household_member,<br/>category…, finance_account…])
-  Note over R,DB: one SQLite transaction (ADR-3):<br/>all rows or none. Account numbers 1…N<br/>via nextAccountNumber() in SQL
+  Note over R,DB: one SQLite transaction (ADR-3):<br/>all rows or none
   DB-->>R: committed
   R-->>SV: household
   SV-->>C: household
