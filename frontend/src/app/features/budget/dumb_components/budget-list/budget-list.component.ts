@@ -18,8 +18,7 @@ import {
 /**
  * Every category of the household with its limit, what was spent and what is left for the month.
  * Budgeted rows carry a bar that turns amber when less than 20% is left, black when the limit is met
- * exactly and to the expense color once the
- * limit is exceeded. Tapping a row edits it.
+ * exactly and to the expense color once the limit is exceeded. Tapping a row edits it.
  */
 @Component({
     selector: 'app-budget-list',

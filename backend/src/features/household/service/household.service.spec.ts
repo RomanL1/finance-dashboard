@@ -118,7 +118,7 @@ describe('HouseholdService', () => {
     });
 
     describe('update', () => {
-        it('lets the owner change name and base currency', async () => {
+        it('lets the owner change name and currency', async () => {
             const repo = makeRepo({
                 findMembership: vi.fn().mockResolvedValue(membership('owner')),
             });

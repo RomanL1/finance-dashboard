@@ -4,7 +4,7 @@ import type { CurrencyStatsDto, DateRange } from '../stats.types';
 
 @Injectable({ providedIn: 'root' })
 export class StatsService {
-    /** Income / expenses / net in the household base currency. Rejects with a 503 response when no rate is available. */
+    /** Income / expenses / net in the household currency. */
     async get(
         householdId: string,
         range: DateRange,

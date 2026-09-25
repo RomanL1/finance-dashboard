@@ -8,7 +8,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { AmountComponent } from '../../../../components/amount/amount.component';
 import type { CurrencyStatsDto } from '../../stats.types';
 
-/** Income / expenses / net for one currency, plus a thin bar showing how much of the income was spent. */
+/** Income / expenses / net for the period, plus a thin bar showing how much of the income was spent. */
 @Component({
     selector: 'app-stats-card',
     imports: [AmountComponent, TranslatePipe],

@@ -7,7 +7,7 @@ export interface CategoryBar {
     /** Null for uncategorized; drives the bar color. */
     categoryId: string | null;
     label: string;
-    /** Minor units of the stats currency, positive. */
+    /** Minor units of the household currency, positive. */
     expenses: number;
 }
 

@@ -5,7 +5,7 @@ import type { CategoryStatsDto } from '../analytics.types';
 
 @Injectable({ providedIn: 'root' })
 export class AnalyticsService {
-    /** Expenses per category in the household base currency. Rejects with a 503 response when no rate is available. */
+    /** Expenses per category in the household currency, largest first. */
     async getCategoryStats(
         householdId: string,
         range: DateRange,
