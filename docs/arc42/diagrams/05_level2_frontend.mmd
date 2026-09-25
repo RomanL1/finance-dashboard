@@ -1,0 +1,24 @@
+flowchart TB
+  route(["lazy route · config/routes.config.ts"])
+  subgraph feature ["every module in features/"]
+    page["pages/<br/>route screen"]
+    smart["smart_components/<br/>load data, open dialogs"]
+    dumb["dumb_components/<br/>input() in, output() out"]
+    svc["services/<br/>feature state, API calls"]
+  end
+  shared["components/<br/>feature-independent UI"]
+  api["core/api/<br/>generated client"]
+  http(["HTTP /api/*"])
+  route -->|"loads"| page
+  page -->|"composes"| smart
+  page -->|"renders"| dumb
+  smart -->|"renders"| dumb
+  page -->|"calls"| svc
+  smart -->|"calls"| svc
+  svc -->|"calls"| api
+  api -->|"JSON"| http
+  dumb -->|"uses"| shared
+  classDef layer fill:#4a6fa5,stroke:#2f4a73,color:#ffffff;
+  classDef infra fill:#e8eef6,stroke:#4a6fa5;
+  class page,smart,dumb,svc layer;
+  class shared,api infra;

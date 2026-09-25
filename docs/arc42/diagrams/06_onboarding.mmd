@@ -1,0 +1,28 @@
+sequenceDiagram
+  autonumber
+  actor U as New member
+  participant W as OnboardingPage<br/>(wizard)
+  participant LS as localStorage
+  participant C as OnboardingController
+  participant SV as OnboardingService
+  participant R as OnboardingRepository
+  participant DB as SQLite
+  loop each step: household · categories · accounts
+    U->>W: fills step
+    W->>C: POST /api/households/onboarding/validate-*
+    C-->>W: 204 (no write) or 400
+    W->>LS: save draft (reload resumes)
+  end
+  U->>W: submits
+  W->>C: POST /api/households/onboarding
+  C->>SV: onboard(userId, input)
+  SV->>SV: 409 if user already has a household,<br/>build* validates domain values
+  SV->>R: create(household, owner, categories, accounts)
+  R->>DB: db.batch([household, household_member,<br/>category…, finance_account…])
+  Note over R,DB: one SQLite transaction (ADR-3):<br/>all rows or none. Account numbers 1…N<br/>via nextAccountNumber() in SQL
+  DB-->>R: committed
+  R-->>SV: household
+  SV-->>C: household
+  C-->>W: 201 household DTO
+  W->>LS: clear draft
+  W-->>U: navigate to Home

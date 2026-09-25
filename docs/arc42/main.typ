@@ -3,8 +3,11 @@
 #set text(font: "Helvetica Neue", size: 11pt, lang: "en")
 #set par(justify: true, leading: 0.65em)
 #set heading(numbering: "1.")
+#show figure.caption: set text(size: 9pt, style: "italic")
+#show table: set par(justify: false)
+#show figure: set block(breakable: false, above: 1.2em, below: 1.2em)
 
-#show heading.where(level: 1): it => block(above: 1.6em, below: 0.9em)[
+#show heading.where(level: 1, outlined: true): it => pagebreak(weak: true) + block(above: 1.6em, below: 0.9em)[
   #set text(size: 15pt, weight: "bold")
   #it
 ]
@@ -27,6 +30,9 @@
 
 #v(1.5em)
 #line(length: 100%, stroke: 0.5pt + gray)
+
+#outline(depth: 2)
+#pagebreak()
 
 #include "01_introduction_and_goals.typ"
 #include "02_architecture_constraints.typ"

@@ -1,0 +1,26 @@
+{
+  "theme": "neutral",
+  "themeVariables": {
+    "fontFamily": "Helvetica Neue, Helvetica, Arial, sans-serif",
+    "fontSize": "14px"
+  },
+  "htmlLabels": false,
+  "flowchart": {
+    "htmlLabels": false,
+    "curve": "basis",
+    "wrappingWidth": 400
+  },
+  "sequence": {
+    "mirrorActors": false,
+    "showSequenceNumbers": true,
+    "actorMargin": 25,
+    "width": 120,
+    "boxMargin": 6,
+    "messageMargin": 30,
+    "messageFontSize": 15,
+    "actorFontSize": 15,
+    "noteFontSize": 14,
+    "wrap": false
+  },
+  "markdownAutoWrap": false
+}

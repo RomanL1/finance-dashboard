@@ -1,0 +1,21 @@
+flowchart LR
+  req(["HTTP"])
+  subgraph feature ["every module in features/"]
+    direction LR
+    api["api/<br/>controller"]
+    service["service/<br/>business rules"]
+    repo["repository/<br/>queries"]
+    model["model/<br/>domain types,<br/>DTOs, tables"]
+  end
+  db[("SQLite")]
+  kernel["shared/kernel/<br/>DomainError, Id"]
+  req --> api
+  api -->|"calls"| service
+  service -->|"saves via"| repo
+  repo -->|"SQL · DbModule"| db
+  service -->|"builds"| model
+  service -->|"throws"| kernel
+  classDef layer fill:#4a6fa5,stroke:#2f4a73,color:#ffffff;
+  classDef infra fill:#e8eef6,stroke:#4a6fa5;
+  class api,service,repo,model layer;
+  class kernel infra;

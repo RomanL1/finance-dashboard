@@ -1,0 +1,34 @@
+sequenceDiagram
+  autonumber
+  actor U as Household member
+  participant L as LoginPage + AuthService<br/>(Angular)
+  participant RG as Router guards<br/>(Angular)
+  participant BA as better-auth handler<br/>/api/auth/*
+  participant G as AuthGuard (Nest, global)
+  participant H as HouseholdController
+  participant DB as SQLite
+  U->>L: enters email + password
+  L->>BA: POST /api/auth/sign-in/email
+  BA->>BA: rate limit keyed on X-Real-IP
+  BA->>DB: verify password
+  alt wrong credentials
+    BA-->>L: 401
+    L-->>U: shows error, stays on /login
+  else valid
+    BA->>DB: insert session
+    BA-->>L: 200 + Set-Cookie (session)
+    L->>BA: GET /api/auth/get-session (refresh())
+    BA-->>L: session user → AuthService.user
+    L->>RG: navigate to /<br/>AuthGuard: cached user, no request
+    RG->>G: OnboardingGuard: GET /api/households/me
+    G->>DB: auth.api.getSession(headers)
+    G->>H: request.session = session
+    H->>DB: load membership + household
+    alt household exists
+      H-->>RG: 200 household (onboardingComplete)
+      RG-->>U: shell at /
+    else no household
+      H-->>RG: 404 → getHouseholdOrNull() = null
+      RG-->>U: redirect /onboarding
+    end
+  end

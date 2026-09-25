@@ -1,0 +1,52 @@
+erDiagram
+  user ||--o{ session : "has (better-auth)"
+  user ||--o{ household_member : "joins as"
+  household ||--|{ household_member : "has owner/member"
+  household ||--o{ category : "owns"
+  household ||--o{ finance_account : "owns"
+  household ||--o{ budget_month : "marks touched"
+  finance_account ||--o{ transaction : "books (restrict)"
+  category |o--o{ transaction : "classifies (set null)"
+  category ||--o{ budget : "limited by (cascade)"
+  household {
+    text id PK
+    text name
+    bool onboarding_complete
+    text base_currency "CHF, EUR, ..."
+  }
+  household_member {
+    text household_id PK,FK
+    text user_id PK,FK
+    text role "owner | member"
+  }
+  category {
+    text id PK
+    text household_id FK
+    text name "unique with household_id"
+  }
+  finance_account {
+    text id PK
+    text household_id FK
+    int number "unique with household_id, max+1 at insert, gaps possible"
+    text type "informational (M7)"
+    int initial_value "minor units, signed"
+    ts archived_at "null = active"
+  }
+  transaction {
+    text id PK
+    text account_id FK
+    text category_id FK "null = Uncategorized"
+    text type "expense | income"
+    int amount "minor units, > 0"
+    ts date
+  }
+  budget {
+    text id PK
+    text category_id FK
+    text month "YYYY-MM, unique with category_id"
+    int amount "minor units, >= 0"
+  }
+  budget_month {
+    text household_id PK,FK
+    text month PK "YYYY-MM"
+  }

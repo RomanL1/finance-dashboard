@@ -1,3 +1,5 @@
+#import "diagram.typ": diagram
+
 = Architecture Decisions (ADRs)
 
 == ADR-1: "Uncategorized" is the absence of a category, not a reserved category row
@@ -44,6 +46,8 @@ Three questions are left open by that sentence:
 - *Automatic only for the current and the next calendar month*, on first view (`POST …/:month/copy-previous?auto=true`). Every other empty month offers an explicit "Take over previous limits" action. The target month must be empty (409 otherwise).
 - *Touched months never fill themselves again.* Table `budget_month(household_id, month)` records every month whose limits were set, removed or taken over. The automatic take-over skips such a month, so removing the last limit leaves it empty. The explicit action still fills it.
 
+#diagram("09_adr2_take_over", [Take-over decision as implemented in `BudgetService.copyFromPrevious` (backend) and `loadMonth` (frontend).], width: 60%)
+
 === Consequences
 
 - S4 holds for the common case: opening a new month shows last month's limits, and changing them leaves that month as it was.
@@ -52,3 +56,62 @@ Three questions are left open by that sentence:
 - Skipping is decided per month only. If August was emptied on purpose, September still takes over the limits of July, the nearest month that has any. Treating an emptied month as "inherit nothing" would help this edge case and lose the plan after every unused month, so it was rejected.
 - The trigger is the client clock (current/next month), since the server knows no household timezone. A client with a wrong clock can at most fill a month early; the user can remove the copies.
 - `budget_month` rows are never deleted on their own; they go with the household.
+
+#pagebreak()
+== ADR-3: Use libsql `batch()` for atomic multi-statement writes
+
+*Status:* accepted.
+
+=== Context
+
+Onboarding inserts a household, owner membership, categories, and accounts together. Category transfer updates transactions before deleting the category; a household currency change updates accounts with the household. Sequential statements could leave partial state. In the libsql in-memory e2e database, `db.transaction` swaps the client's connection after an explicit transaction and loses that database.
+
+=== Options
+
+#table(
+  columns: (auto, 1fr),
+  inset: 6pt,
+  table.header([*Option*], [*Trade-off*]),
+  [`db.transaction`], [Natural Drizzle API, but the libsql connection swap breaks `:memory:` e2e state.],
+  [Sequential writes], [Simple, but a later failure can leave a partial household or transfer.],
+  [`db.batch`], [libsql executes the statements in one transaction and rolls back together; statements must be assembled before execution.],
+)
+
+=== Decision
+
+Use `db.batch()` in `OnboardingRepository`, `CategoryRepository.deleteCategory` when transferring, and `HouseholdRepository.update` when changing currency. The seed also batches related rows. `AccountRepository.createAccount` is a single insert, not a batch; its `nextAccountNumber` SQL expression also works for ordered account inserts inside the onboarding batch.
+
+=== Consequences
+
+- These writes remain atomic in production and against the in-memory e2e database.
+- Operations that need a result to choose the next statement cannot use this prepared batch shape; they need a separate design.
+- Revisit if libsql fixes explicit-transaction connection handling or the persistence driver changes.
+
+== ADR-4: Mount better-auth's HTTP handler before Nest initializes
+
+*Status:* accepted.
+
+=== Context
+
+better-auth's Node handler needs the raw request body for `/api/auth/*`. Nest's default body parser consumes that stream during initialization. Auth endpoints also need CORS headers even when the handler responds without entering Nest's controller pipeline.
+
+=== Options
+
+#table(
+  columns: (auto, 1fr),
+  inset: 6pt,
+  table.header([*Option*], [*Trade-off*]),
+  [Nest controller wrapper], [Would run after body parsing and hand the handler a consumed stream.],
+  [Disable Nest body parsing], [Preserves the auth stream but requires manual parser wiring for ordinary controllers.],
+  [Early Express middleware], [Keeps Nest defaults for controllers while giving better-auth the raw stream.],
+)
+
+=== Decision
+
+`setupApp` registers CORS, then `mountAuthHandler`, before `app.init()` or `listen()`. The middleware handles `/api/auth/*` directly and calls `next()` for other paths. `AuthModule` remains inside Nest to expose the auth instance and install the global controller guard.
+
+=== Consequences
+
+- Requests take two paths: better-auth answers `/api/auth/*` and owns validation and responses there; all other requests pass Nest's body parser, guards, validation pipe, and error filter.
+- The order in `app.setup.ts` and `auth.handler.ts` is part of the contract and must stay beside the code.
+- Revisit if Nest or better-auth gains an integration that preserves the raw stream and response behavior.

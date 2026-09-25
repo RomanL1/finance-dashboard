@@ -1,0 +1,24 @@
+flowchart LR
+  q(["Quality"])
+  a1["Consistency"]
+  a2["Performance"]
+  a3["Usability"]
+  a4["Deployability"]
+  a5["Maintainability"]
+  s1["QS-1 atomic onboarding"]
+  s2["QS-2 loading order"]
+  s3["QS-3 Lighthouse ≥ 90"]
+  s4["QS-4 phone layout"]
+  s5["QS-5 quick entry"]
+  s6["QS-6 one-command start"]
+  s7["QS-7 test suites"]
+  q --> a1 & a2 & a3 & a4 & a5
+  a1 --> s1
+  a2 --> s2 & s3
+  a3 --> s4 & s5
+  a4 --> s6
+  a5 --> s7
+  classDef aspect fill:#4a6fa5,stroke:#2f4a73,color:#ffffff;
+  classDef scen fill:#fff6d6,stroke:#c9a227;
+  class a1,a2,a3,a4,a5 aspect;
+  class s1,s2,s3,s4,s5,s6,s7 scen;

@@ -1,0 +1,29 @@
+flowchart TD
+  start(["Month M opened or<br/>'Take over' clicked"])
+  empty{"M has limits?"}
+  explicit{"explicit action?"}
+  window{"M is current or<br/>next month?"}
+  touched{"M in budget_month?"}
+  source{"any earlier month<br/>with limits?"}
+  conflict["409 Conflict"]
+  show["show M as is"]
+  button["offer 'Take over previous limits'"]
+  stay["stay empty<br/>(deliberately emptied, S1/S3)"]
+  none["nothing to copy"]
+  copy["copy limits of nearest earlier month<br/>as independent rows · mark M touched"]
+  start --> empty
+  empty -->|"yes, explicit"| conflict
+  empty -->|"yes, on view"| show
+  empty -->|"no"| explicit
+  explicit -->|"yes"| source
+  explicit -->|"no (auto)"| window
+  window -->|"no"| button
+  window -->|"yes"| touched
+  touched -->|"yes"| stay
+  touched -->|"no"| source
+  source -->|"no"| none
+  source -->|"yes"| copy
+  classDef out fill:#4a6fa5,stroke:#2f4a73,color:#ffffff;
+  classDef warn fill:#f3d9d9,stroke:#a54a4a;
+  class copy,show,button,stay,none out;
+  class conflict warn;

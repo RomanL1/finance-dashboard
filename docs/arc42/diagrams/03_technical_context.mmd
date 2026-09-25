@@ -1,0 +1,11 @@
+flowchart LR
+  browser(["Browser"])
+  sys["Personal Finance Dashboard<br/>one origin · port 8080"]
+  dev(["Developer"])
+  browser -->|"HTTP · bundle + /api/*"| sys
+  dev -->|"CLI · db:seed"| sys
+  dev -->|"HTTP · /docs (dev only)"| sys
+  classDef person fill:#dbe8f7,stroke:#4a6fa5;
+  classDef system fill:#4a6fa5,stroke:#2f4a73,color:#ffffff;
+  class browser,dev person;
+  class sys system;

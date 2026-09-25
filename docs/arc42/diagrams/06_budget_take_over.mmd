@@ -1,0 +1,25 @@
+sequenceDiagram
+  autonumber
+  actor U as Member
+  participant P as BudgetsPage / HomePage
+  participant S as BudgetService (Angular)
+  participant API as BudgetController + BudgetService (Nest)
+  participant DB as SQLite
+  U->>P: opens month M
+  P->>S: loadMonth(householdId, M)
+  S->>API: GET /api/households/:householdId/budgets?month=M
+  API-->>S: 200, empty list (no limits yet)
+  alt M is current or next month
+    S->>API: POST /api/households/:householdId/budgets/M/copy-previous?auto=true
+    API->>DB: is M in budget_month?
+    alt touched before
+      API-->>S: { skipped: true } → month stays empty
+    else untouched
+      API->>DB: latestMonthBefore(M) → source
+      API->>DB: insert copies for M, mark budget_month
+      API-->>S: { sourceMonth, budgets }
+    end
+  else any other month
+    S-->>P: empty + "Take over previous limits" button
+  end
+  P-->>U: limits for M (with "taken over from" hint)

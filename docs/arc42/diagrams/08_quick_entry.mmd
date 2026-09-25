@@ -1,0 +1,13 @@
+flowchart LR
+  fab(["1 · tap +"])
+  dlg["dialog opens<br/>amount focused,<br/>keyboard open"]
+  amt["2 · type amount"]
+  save(["3 · tap Save"])
+  pre["prefilled: expense, now,<br/>last-used account + category"]
+  fab --> dlg --> amt --> save
+  save -.->|"stores account + category"| pre
+  pre -.->|"fills next dialog"| dlg
+  classDef step fill:#4a6fa5,stroke:#2f4a73,color:#ffffff;
+  classDef aux fill:#e8eef6,stroke:#4a6fa5;
+  class fab,amt,save step;
+  class dlg,pre aux;

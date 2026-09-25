@@ -1,0 +1,13 @@
+flowchart TB
+  member(["Household member"])
+  sys["Personal Finance Dashboard"]
+  bank["Bank"]
+  member -->|"enters transactions, limits"| sys
+  sys -->|"shows balances, spending"| member
+  sys -.-x|"not connected"| bank
+  classDef person fill:#dbe8f7,stroke:#4a6fa5;
+  classDef system fill:#4a6fa5,stroke:#2f4a73,color:#ffffff;
+  classDef off fill:#f4f4f4,stroke:#999999,stroke-dasharray:4 3,color:#777777;
+  class member person;
+  class sys system;
+  class bank off;
