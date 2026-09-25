@@ -31,7 +31,7 @@ const AXIS_HEIGHT = 16;
 const MAX_LABEL = 18;
 const VALUE_GAP = 6;
 
-/** Value at the end of each bar, in text ink. The x axis is hidden: the labels carry the numbers. */
+/** Amount and share at the end of each bar, in text ink. The x axis is hidden: the labels carry the numbers. */
 function valueLabels(
     labels: string[],
     ink: string,
@@ -56,7 +56,7 @@ function valueLabels(
 }
 
 /**
- * Horizontal bars, one per category, largest first, the amount written at each bar's end.
+ * Horizontal bars, one per category, largest first, amount and share of total written at each bar's end.
  * Bar hue matches the category avatar, so the list and the chart share one identity system.
  * A visually hidden table carries the same numbers for screen readers; the canvas itself is decorative.
  */
@@ -86,6 +86,7 @@ function valueLabels(
                             <td>
                                 {{ format(bar.expenses, 2) }} {{ currency() }}
                             </td>
+                            <td>{{ share(bar.expenses) }}%</td>
                         </tr>
                     }
                 </tbody>
@@ -108,6 +109,10 @@ export class CategoryBarChartComponent implements OnDestroy {
         viewChild.required<ElementRef<HTMLElement>>('frame');
     private readonly locale = inject(LOCALE_ID);
     private chart: Chart<'bar'> | null = null;
+
+    private readonly total = computed(() =>
+        this.bars().reduce((sum, bar) => sum + bar.expenses, 0),
+    );
 
     protected readonly height = computed(
         () => this.bars().length * ROW_HEIGHT + AXIS_HEIGHT,
@@ -142,6 +147,12 @@ export class CategoryBarChartComponent implements OnDestroy {
         );
     }
 
+    /** Whole-percent share of all expenses shown in the chart. */
+    protected share(minor: number): number {
+        const total = this.total();
+        return total > 0 ? Math.round((minor / total) * 100) : 0;
+    }
+
     private config(
         bars: CategoryBar[],
         scheme: 'light' | 'dark',
@@ -154,7 +165,10 @@ export class CategoryBarChartComponent implements OnDestroy {
         );
         const currency = this.currency();
         const font = `${styles.fontSize} ${styles.fontFamily}`;
-        const values = bars.map((bar) => this.format(bar.expenses, 2));
+        const values = bars.map(
+            (bar) =>
+                `${this.format(bar.expenses, 2)} · ${this.share(bar.expenses)}%`,
+        );
         const ctx = this.canvas().nativeElement.getContext('2d');
         let labelWidth = 0;
         if (ctx) {
@@ -211,8 +225,11 @@ export class CategoryBarChartComponent implements OnDestroy {
                         callbacks: {
                             title: (items) =>
                                 bars[items[0]?.dataIndex ?? 0]?.label ?? '',
-                            label: (item) =>
-                                `${this.format(bars[item.dataIndex]?.expenses ?? 0, 2)} ${currency}`,
+                            label: (item) => {
+                                const expenses =
+                                    bars[item.dataIndex]?.expenses ?? 0;
+                                return `${this.format(expenses, 2)} ${currency} (${this.share(expenses)}%)`;
+                            },
                         },
                     },
                 },
