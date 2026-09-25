@@ -339,9 +339,9 @@
         "safe": {
             "title": "Left after budgets",
             "formula": "Income − expenses − open budgets",
-            "reserved": "Still in budgets",
+            "reserved": "Reserved for budgets",
             "noLimits": "No budgets this month, so this equals the net.",
-            "barLabel": "{{expenses}}% spent, {{reserved}}% still in budgets, {{free}}% free",
+            "barLabel": "{{expenses}}% spent, {{reserved}}% reserved for budgets, {{free}}% free",
             "overCount": "{{count}} budgets over limit",
             "allBudgets": "All budgets"
         }

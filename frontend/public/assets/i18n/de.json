@@ -339,9 +339,9 @@
         "safe": {
             "title": "Übrig nach Budgets",
             "formula": "Einnahmen − Ausgaben − offene Budgets",
-            "reserved": "Noch in Budgets",
+            "reserved": "Für Budgets reserviert",
             "noLimits": "Keine Budgets in diesem Monat, entspricht dem Saldo.",
-            "barLabel": "{{expenses}}% ausgegeben, {{reserved}}% noch in Budgets, {{free}}% frei",
+            "barLabel": "{{expenses}}% ausgegeben, {{reserved}}% für Budgets reserviert, {{free}}% frei",
             "overCount": "{{count}} Budgets überschritten",
             "allBudgets": "Alle Budgets"
         }
