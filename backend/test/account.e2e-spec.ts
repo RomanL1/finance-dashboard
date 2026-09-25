@@ -6,6 +6,7 @@ import { setupApp } from '../src/shared/infra/app.setup.js';
 import { DEMO_USER } from '../src/shared/infra/db/seed.js';
 import { MAX_AMOUNT } from '../src/shared/kernel/index.js';
 import { prepareTestDb } from './setup-db.js';
+import { listenOnLoopback } from './setup-app.js';
 
 /** Account numbers are per household, start at 1, and follow the current max (deleting the highest frees its number). */
 describe('account (e2e)', () => {
@@ -33,7 +34,7 @@ describe('account (e2e)', () => {
             imports: [AppModule],
         }).compile();
         app = setupApp(moduleRef.createNestApplication());
-        await app.init();
+        await listenOnLoopback(app);
 
         const signIn = await request(app.getHttpServer())
             .post('/api/auth/sign-in/email')

@@ -5,6 +5,7 @@ import { AppModule } from '../src/app.module.js';
 import { setupApp } from '../src/shared/infra/app.setup.js';
 import { DEMO_USER } from '../src/shared/infra/db/seed.js';
 import { prepareTestDb } from './setup-db.js';
+import { listenOnLoopback } from './setup-app.js';
 
 /** The wizard checks each step before the single final submit; nothing is written until then. */
 describe('onboarding steps (e2e)', () => {
@@ -31,7 +32,7 @@ describe('onboarding steps (e2e)', () => {
             imports: [AppModule],
         }).compile();
         app = setupApp(moduleRef.createNestApplication());
-        await app.init();
+        await listenOnLoopback(app);
 
         const signIn = await server()
             .post('/api/auth/sign-in/email')

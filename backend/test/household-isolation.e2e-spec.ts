@@ -5,6 +5,7 @@ import { AppModule } from '../src/app.module.js';
 import { setupApp } from '../src/shared/infra/app.setup.js';
 import { DEMO_USER } from '../src/shared/infra/db/seed.js';
 import { prepareTestDb } from './setup-db.js';
+import { listenOnLoopback } from './setup-app.js';
 
 /**
  * A member of one household must not reach another household's accounts and transactions:
@@ -48,7 +49,7 @@ describe('household isolation (e2e)', () => {
             imports: [AppModule],
         }).compile();
         app = setupApp(moduleRef.createNestApplication());
-        await app.init();
+        await listenOnLoopback(app);
 
         const signIn = await server()
             .post('/api/auth/sign-in/email')

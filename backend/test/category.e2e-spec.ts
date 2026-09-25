@@ -5,6 +5,7 @@ import { AppModule } from '../src/app.module.js';
 import { setupApp } from '../src/shared/infra/app.setup.js';
 import { DEMO_USER } from '../src/shared/infra/db/seed.js';
 import { prepareTestDb } from './setup-db.js';
+import { listenOnLoopback } from './setup-app.js';
 
 describe('category (e2e)', () => {
     let app: INestApplication;
@@ -18,7 +19,7 @@ describe('category (e2e)', () => {
             imports: [AppModule],
         }).compile();
         app = setupApp(moduleRef.createNestApplication());
-        await app.init();
+        await listenOnLoopback(app);
     });
 
     afterAll(() => app?.close());
