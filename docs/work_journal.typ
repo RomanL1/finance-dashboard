@@ -27,7 +27,11 @@
   ("2026-09-15", 3.0, [filter and page the transaction list in backend, transactions tab with account/category filter and pager]),
   ("2026-09-16", 6.5, [simplify to one currency per household and drop exchange rates (I was concerned about how this might affect the complexity of upcoming features, but forgot this was out of scope anyway), create, update and delete budgets per month, month summary with visuals per category]),
   ("2026-09-19", 2.5, [copy budgets from previous month]),
-  ("2026-09-20", 2.5, [budget tab on home with left-after-budgets figure]),
+  ("2026-09-20", 4.5, [budget tab on home with left-after-budgets figure, refuse deleting accounts with transactions, account type on accounts, keep a month empty after its last limit is removed, ADR for uncategorized as a null category, language selector in settings, validate source category before transferring transactions, write arc42 architecture documentation]),
+  ("2026-09-22", 1.5, [ADR for month-to-month budget inheritance, stop locking miscellaneous category in onboarding, harden production security defaults (required auth secret, swagger only outside production, security headers and CSP, self-hosted fonts, rate limiting on real IP, amount caps), write arc42 architecture documentation]),
+  ("2026-09-23", 1.5, [expand unit and API integration test coverage, write arc42 architecture documentation]),
+  ("2026-09-24", 4.5, [add playwright e2e tests, raise mobile lighthouse score, seed sample user with ready household, write arc42 architecture documentation]),
+  ("2026-09-25", 5.5, [show percentage shares per category, unify formatter config, improve usability on mobile and fix dialog focus, clean up stale comments, write arc42 architecture documentation]),
 )
 
 // Automatically calculate total hours
