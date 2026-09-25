@@ -23,7 +23,6 @@ type RepoFake = Pick<
     | 'delete'
     | 'latestMonthBefore'
     | 'isMonthTouched'
-    | 'markMonthTouched'
     | 'insertMany'
 >;
 
@@ -32,7 +31,9 @@ function makeRepo(overrides: Partial<RepoFake> = {}): RepoFake {
         listByMonth: vi
             .fn<RepoFake['listByMonth']>()
             .mockResolvedValue([dummyBudget]),
-        upsert: vi.fn<RepoFake['upsert']>((entity) => Promise.resolve(entity)),
+        upsert: vi.fn<RepoFake['upsert']>((_householdId, entity) =>
+            Promise.resolve(entity),
+        ),
         delete: vi.fn<RepoFake['delete']>().mockResolvedValue(true),
         latestMonthBefore: vi
             .fn<RepoFake['latestMonthBefore']>()
@@ -40,11 +41,8 @@ function makeRepo(overrides: Partial<RepoFake> = {}): RepoFake {
         isMonthTouched: vi
             .fn<RepoFake['isMonthTouched']>()
             .mockResolvedValue(false),
-        markMonthTouched: vi
-            .fn<RepoFake['markMonthTouched']>()
-            .mockResolvedValue(undefined),
-        insertMany: vi.fn<RepoFake['insertMany']>((rows) =>
-            Promise.resolve(rows),
+        insertMany: vi.fn<RepoFake['insertMany']>(
+            (_householdId, _month, rows) => Promise.resolve(rows),
         ),
         ...overrides,
     };
@@ -116,10 +114,12 @@ describe('BudgetService', () => {
                 amount: 0,
             });
             expect(result.id).toBeDefined();
-            expect(repo.upsert).toHaveBeenCalledOnce();
-            expect(repo.markMonthTouched).toHaveBeenCalledWith(
+            expect(repo.upsert).toHaveBeenCalledExactlyOnceWith(
                 'hh-1',
-                '2026-09',
+                expect.objectContaining({
+                    categoryId: 'cat-1',
+                    month: '2026-09',
+                }),
             );
         });
 
@@ -137,7 +137,6 @@ describe('BudgetService', () => {
             ).rejects.toThrow(ValidationError);
             expect(categories.getAll).not.toHaveBeenCalled();
             expect(repo.upsert).not.toHaveBeenCalled();
-            expect(repo.markMonthTouched).not.toHaveBeenCalled();
         });
 
         it('rejects a category of another household', async () => {
@@ -181,10 +180,6 @@ describe('BudgetService', () => {
                 'cat-1',
                 '2026-09',
             );
-            expect(repo.markMonthTouched).toHaveBeenCalledWith(
-                'hh-1',
-                '2026-09',
-            );
         });
 
         it('throws when there is no limit to remove', async () => {
@@ -194,7 +189,6 @@ describe('BudgetService', () => {
             await expect(
                 service.remove('hh-1', 'cat-1', '2026-09'),
             ).rejects.toThrow(NotFoundError);
-            expect(repo.markMonthTouched).not.toHaveBeenCalled();
         });
 
         it('rejects a malformed month', async () => {
@@ -249,12 +243,12 @@ describe('BudgetService', () => {
                 'hh-1',
                 '2026-10',
             );
-            expect(repo.insertMany).toHaveBeenCalledOnce();
-            expect(repo.listByMonth).toHaveBeenCalledWith('hh-1', '2026-08');
-            expect(repo.markMonthTouched).toHaveBeenCalledWith(
+            expect(repo.insertMany).toHaveBeenCalledExactlyOnceWith(
                 'hh-1',
                 '2026-10',
+                expect.any(Array),
             );
+            expect(repo.listByMonth).toHaveBeenCalledWith('hh-1', '2026-08');
             expect(result.skipped).toBe(false);
         });
 
@@ -297,7 +291,6 @@ describe('BudgetService', () => {
                 skipped: false,
             });
             expect(repo.insertMany).not.toHaveBeenCalled();
-            expect(repo.markMonthTouched).not.toHaveBeenCalled();
         });
 
         it('auto leaves a touched month alone, explicit still fills it', async () => {
@@ -317,9 +310,10 @@ describe('BudgetService', () => {
 
             const explicit = await service.copyFromPrevious('hh-1', '2026-10');
             expect(explicit.sourceMonth).toBe('2026-08');
-            expect(repo.markMonthTouched).toHaveBeenCalledWith(
+            expect(repo.insertMany).toHaveBeenCalledExactlyOnceWith(
                 'hh-1',
                 '2026-10',
+                expect.any(Array),
             );
         });
 

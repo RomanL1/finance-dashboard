@@ -32,9 +32,7 @@ export class BudgetService {
     async set(householdId: Id, input: SetBudgetInput): Promise<Budget> {
         const entity = buildBudget(input);
         await this.assertCategory(householdId, input.categoryId);
-        const saved = await this.budgets.upsert(entity);
-        await this.budgets.markMonthTouched(householdId, entity.month);
-        return saved;
+        return this.budgets.upsert(householdId, entity);
     }
 
     async remove(householdId: Id, categoryId: Id, month: Month): Promise<void> {
@@ -47,8 +45,6 @@ export class BudgetService {
         if (!deleted) {
             throw new NotFoundError('Budget', `${categoryId}/${month}`);
         }
-        // Also covers months whose limits predate the marker.
-        await this.budgets.markMonthTouched(householdId, month);
     }
 
     /** Copies the nearest earlier limits into an empty month; `auto` skips touched months. See ADR-2. */
@@ -74,9 +70,10 @@ export class BudgetService {
         }
         const source = await this.budgets.listByMonth(householdId, sourceMonth);
         const budgets = await this.budgets.insertMany(
+            householdId,
+            month,
             copyBudgets(source, month),
         );
-        await this.budgets.markMonthTouched(householdId, month);
         return { sourceMonth, budgets, skipped: false };
     }
 

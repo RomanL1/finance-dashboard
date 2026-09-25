@@ -64,18 +64,24 @@ export class BudgetRepository {
         return row !== undefined;
     }
 
-    /** Idempotent. */
-    async markMonthTouched(householdId: Id, month: Month): Promise<void> {
-        await this.db
-            .insert(budgetMonth)
-            .values({ householdId, month })
-            .onConflictDoNothing();
-    }
-
-    /** One statement, so either every row lands or none. Rows must not collide with existing (category, month) pairs. */
-    async insertMany(entities: Budget[]): Promise<Budget[]> {
-        if (entities.length === 0) return [];
-        return this.db.insert(budget).values(entities).returning(budgetColumns);
+    /**
+     * Inserts copies into `month` and marks it touched in one batch (ADR-3), so copies never
+     * exist without the marker. Rows must not collide with existing (category, month) pairs.
+     */
+    async insertMany(
+        householdId: Id,
+        month: Month,
+        entities: Budget[],
+    ): Promise<Budget[]> {
+        if (entities.length === 0) {
+            await this.touch(householdId, month);
+            return [];
+        }
+        const [rows] = await this.db.batch([
+            this.db.insert(budget).values(entities).returning(budgetColumns),
+            this.touch(householdId, month),
+        ]);
+        return rows;
     }
 
     async find(
@@ -98,16 +104,22 @@ export class BudgetRepository {
         return row ?? null;
     }
 
-    /** Insert, or replace the amount of the existing (category, month) row. The category must already be verified. */
-    async upsert(entity: Budget): Promise<Budget> {
-        const [row] = await this.db
-            .insert(budget)
-            .values(entity)
-            .onConflictDoUpdate({
-                target: [budget.categoryId, budget.month],
-                set: { amount: entity.amount },
-            })
-            .returning(budgetColumns);
+    /**
+     * Insert, or replace the amount of the existing (category, month) row, and mark the month
+     * touched in the same batch (ADR-3). The category must already be verified.
+     */
+    async upsert(householdId: Id, entity: Budget): Promise<Budget> {
+        const [[row]] = await this.db.batch([
+            this.db
+                .insert(budget)
+                .values(entity)
+                .onConflictDoUpdate({
+                    target: [budget.categoryId, budget.month],
+                    set: { amount: entity.amount },
+                })
+                .returning(budgetColumns),
+            this.touch(householdId, entity.month),
+        ]);
         return row;
     }
 
@@ -118,10 +130,23 @@ export class BudgetRepository {
     ): Promise<boolean> {
         const existing = await this.find(householdId, categoryId, month);
         if (!existing) return false;
-        const deleted = await this.db
-            .delete(budget)
-            .where(eq(budget.id, existing.id))
-            .returning({ id: budget.id });
+        // One batch (ADR-3): removing the last limit must also mark the month, or the automatic
+        // take-over would refill it (ADR-2). The marker also covers months that predate it.
+        const [deleted] = await this.db.batch([
+            this.db
+                .delete(budget)
+                .where(eq(budget.id, existing.id))
+                .returning({ id: budget.id }),
+            this.touch(householdId, month),
+        ]);
         return deleted.length > 0;
+    }
+
+    /** Marks `month` as touched (ADR-2). Idempotent; returned unexecuted so callers can batch it. */
+    private touch(householdId: Id, month: Month) {
+        return this.db
+            .insert(budgetMonth)
+            .values({ householdId, month })
+            .onConflictDoNothing();
     }
 }

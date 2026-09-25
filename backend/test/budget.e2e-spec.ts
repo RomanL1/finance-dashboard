@@ -1,8 +1,10 @@
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+import { sql } from 'drizzle-orm';
 import request from 'supertest';
 import { AppModule } from '../src/app.module.js';
 import { setupApp } from '../src/shared/infra/app.setup.js';
+import { db } from '../src/shared/infra/db/db.js';
 import { DEMO_USER } from '../src/shared/infra/db/seed.js';
 import { MAX_AMOUNT } from '../src/shared/kernel/index.js';
 import { prepareTestDb } from './setup-db.js';
@@ -318,6 +320,65 @@ describe('budget (e2e)', () => {
             .post(`${base()}/2026-13/copy-previous`)
             .set('Cookie', cookie)
             .expect(400);
+    });
+
+    describe('a limit change and its month marker commit together (ADR-2, ADR-3)', () => {
+        /** Makes every write to `budget_month` fail, as a crash between the two statements would. */
+        const failMarker = () =>
+            db.run(
+                sql`create trigger fail_budget_month before insert on budget_month begin select raise(abort, 'injected'); end`,
+            );
+        const restoreMarker = () =>
+            db.run(sql`drop trigger if exists fail_budget_month`);
+        const limitsOf = async (m: string) =>
+            (
+                await server()
+                    .get(`${base()}?month=${m}`)
+                    .set('Cookie', cookie)
+                    .expect(200)
+            ).body;
+
+        afterEach(restoreMarker);
+
+        it('PUT stores no limit when marking the month fails', async () => {
+            await failMarker();
+            await server()
+                .put(`${base()}/${categoryId}/2027-03`)
+                .set('Cookie', cookie)
+                .send({ amount: 100 })
+                .expect(500);
+            await restoreMarker();
+
+            expect(await limitsOf('2027-03')).toEqual([]);
+        });
+
+        it('DELETE keeps the limit when marking the month fails', async () => {
+            await server()
+                .put(`${base()}/${categoryId}/2027-04`)
+                .set('Cookie', cookie)
+                .send({ amount: 100 })
+                .expect(200);
+
+            await failMarker();
+            await server()
+                .delete(`${base()}/${categoryId}/2027-04`)
+                .set('Cookie', cookie)
+                .expect(500);
+            await restoreMarker();
+
+            expect(await limitsOf('2027-04')).toHaveLength(1);
+        });
+
+        it('POST copy-previous inserts no copies when marking the month fails', async () => {
+            await failMarker();
+            await server()
+                .post(`${base()}/2027-06/copy-previous`)
+                .set('Cookie', cookie)
+                .expect(500);
+            await restoreMarker();
+
+            expect(await limitsOf('2027-06')).toEqual([]);
+        });
     });
 
     it('deleting the category removes its limits', async () => {
