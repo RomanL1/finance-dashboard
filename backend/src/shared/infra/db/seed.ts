@@ -82,7 +82,25 @@ async function ensureUser(
         db.select().from(user).where(eq(user.email, credentials.email));
     let [existing] = await byEmail();
     if (!existing) {
-        await auth.api.signUpEmail({ body: { ...credentials } });
+        // Created verified and without the sign-up endpoint: that would send a verification mail
+        // to an address nobody reads (through Resend, when SEED_DEMO runs in production).
+        const ctx = await auth.$context;
+        const created = await ctx.internalAdapter.createUser(
+            {
+                email: credentials.email,
+                name: credentials.name,
+                emailVerified: true,
+            },
+            { method: 'email-password' },
+        );
+        await ctx.internalAdapter.linkAccount({
+            userId: created.id,
+            providerId: 'credential',
+            // What better-auth's sign-up stores (createLocalAccountIssuer('credential')).
+            issuer: 'local:credential',
+            accountId: created.id,
+            password: await ctx.password.hash(credentials.password),
+        });
         [existing] = await byEmail();
         console.log(`created user ${credentials.email}`);
     }

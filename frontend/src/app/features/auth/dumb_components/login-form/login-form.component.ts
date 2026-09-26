@@ -127,7 +127,7 @@ export class LoginFormComponent {
     readonly hide = signal(true);
 
     readonly form = new FormGroup({
-        email: new FormControl('demo@finance.local', {
+        email: new FormControl('', {
             nonNullable: true,
             validators: [Validators.required, Validators.email],
         }),

@@ -6,6 +6,7 @@ import { setupApp } from '../src/shared/infra/app.setup.js';
 import { DEMO_USER } from '../src/shared/infra/db/seed.js';
 import { prepareTestDb } from './setup-db.js';
 import { listenOnLoopback } from './setup-app.js';
+import { signUpVerified } from './support/auth.js';
 
 describe('category (e2e)', () => {
     let app: INestApplication;
@@ -245,15 +246,11 @@ describe('category (e2e)', () => {
         });
 
         it('DELETE with transferTo cannot touch a category of another household', async () => {
-            const signUp = await request(app.getHttpServer())
-                .post('/api/auth/sign-up/email')
-                .send({
-                    email: 'intruder@finance.local',
-                    password: 'intruder-password',
-                    name: 'Intruder',
-                })
-                .expect(200);
-            const intruder = signUp.headers['set-cookie'][0].split(';')[0];
+            const intruder = await signUpVerified(app, {
+                email: 'intruder@finance.local',
+                password: 'intruder-password',
+                name: 'Intruder',
+            });
             const onboarding = await request(app.getHttpServer())
                 .post('/api/households/onboarding')
                 .set('Cookie', intruder)

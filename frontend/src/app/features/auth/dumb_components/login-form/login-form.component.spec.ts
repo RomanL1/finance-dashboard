@@ -32,16 +32,18 @@ describe('LoginFormComponent', () => {
         });
     });
 
-    it('needs a password before it submits', () => {
+    it('starts empty and needs email and password before it submits', () => {
         const { form, emitted } = create();
 
+        form.submit();
+        form.form.controls.email.setValue('ann@finance.local');
         form.submit();
         expect(emitted).toEqual([]);
 
         form.form.controls.password.setValue('secret');
         form.submit();
         expect(emitted).toEqual([
-            { email: 'demo@finance.local', password: 'secret' },
+            { email: 'ann@finance.local', password: 'secret' },
         ]);
     });
 
@@ -59,7 +61,7 @@ describe('LoginFormComponent', () => {
         busy.set(true);
         const { form, emitted } = create();
 
-        form.form.controls.password.setValue('secret');
+        form.form.setValue({ email: 'ann@finance.local', password: 'secret' });
         form.submit();
 
         expect(emitted).toEqual([]);

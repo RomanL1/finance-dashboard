@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { HouseholdModule } from './features/household/household.module.js';
 import { AuthModule } from './shared/infra/auth/index.js';
+import { AppConfigModule } from './shared/infra/config/app-config.module.js';
 import { DbModule } from './shared/infra/db/db.module.js';
 import { HealthModule } from './shared/infra/health/health.module.js';
 import { CategoryModule } from './features/category/category.module.js';
@@ -14,6 +15,7 @@ import { BudgetModule } from './features/budget/budget.module.js';
         DbModule,
         AuthModule,
         HealthModule,
+        AppConfigModule,
         HouseholdModule,
         CategoryModule,
         AccountModule,

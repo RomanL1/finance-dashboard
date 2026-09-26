@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
+import { MAIL_OUTBOX_DIR } from './playwright/support/mail';
 
 /** Own ports so e2e never touches the dev servers on :3000/:4200. */
 const API_PORT = 3100;
@@ -34,6 +35,8 @@ export default defineConfig({
                 BETTER_AUTH_SECRET: 'e2e-secret-0123456789-0123456789',
                 BETTER_AUTH_URL: `http://localhost:${API_PORT}`,
                 TRUSTED_ORIGINS: WEB_URL,
+                APP_URL: WEB_URL,
+                MAIL_OUTBOX_DIR,
             },
         },
         {

@@ -1,4 +1,5 @@
 import type { APIRequestContext } from '@playwright/test';
+import { lastMailLink } from './mail';
 
 export interface TestUser {
     email: string;
@@ -16,7 +17,10 @@ export function newUser(): TestUser {
     };
 }
 
-/** Signs up through the proxy; the session cookie lands in the request's context (shared with its page). */
+/**
+ * Signs up and opens the mailed verification link through the proxy, like the user would.
+ * Verifying starts the session; its cookie lands in the request's context (shared with its page).
+ */
 export async function signUp(
     request: APIRequestContext,
     user: TestUser,
@@ -24,6 +28,15 @@ export async function signUp(
     const res = await request.post('/api/auth/sign-up/email', { data: user });
     if (!res.ok()) {
         throw new Error(`sign-up failed: ${res.status()} ${await res.text()}`);
+    }
+    const token = new URL(lastMailLink(user.email)).searchParams.get('token');
+    const verified = await request.get('/api/auth/verify-email', {
+        params: { token: token ?? '' },
+    });
+    if (!verified.ok()) {
+        throw new Error(
+            `verification failed: ${verified.status()} ${await verified.text()}`,
+        );
     }
 }
 

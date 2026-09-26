@@ -18,6 +18,8 @@ import type {
     AccountGetAccountsResponses,
     AccountUpdateAccountData,
     AccountUpdateAccountResponses,
+    AppConfigGetData,
+    AppConfigGetResponses,
     BudgetCopyPreviousBudgetsData,
     BudgetCopyPreviousBudgetsErrors,
     BudgetCopyPreviousBudgetsResponses,
@@ -93,6 +95,15 @@ export const healthHealth = <ThrowOnError extends boolean = false>(
         unknown,
         ThrowOnError
     >({ url: '/api/health', ...options });
+
+export const appConfigGet = <ThrowOnError extends boolean = false>(
+    options?: Options<AppConfigGetData, ThrowOnError>,
+): RequestResult<AppConfigGetResponses, unknown, ThrowOnError> =>
+    (options?.client ?? client).get<
+        AppConfigGetResponses,
+        unknown,
+        ThrowOnError
+    >({ url: '/api/config', ...options });
 
 export const householdMine = <ThrowOnError extends boolean = false>(
     options?: Options<HouseholdMineData, ThrowOnError>,

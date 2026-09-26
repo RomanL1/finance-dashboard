@@ -7,6 +7,7 @@ import { DEMO_USER } from '../src/shared/infra/db/seed.js';
 import { MAX_AMOUNT } from '../src/shared/kernel/index.js';
 import { prepareTestDb } from './setup-db.js';
 import { listenOnLoopback } from './setup-app.js';
+import { signUpVerified } from './support/auth.js';
 
 /** Account numbers are per household, start at 1, and follow the current max (deleting the highest frees its number). */
 describe('account (e2e)', () => {
@@ -181,15 +182,11 @@ describe('account (e2e)', () => {
     });
 
     it('onboarding accepts initialValue at ±cap and rejects beyond', async () => {
-        const signUp = await request(app.getHttpServer())
-            .post('/api/auth/sign-up/email')
-            .send({
-                email: 'cap@finance.local',
-                password: 'cap-password',
-                name: 'Cap',
-            })
-            .expect(200);
-        const capCookie = signUp.headers['set-cookie'][0].split(';')[0];
+        const capCookie = await signUpVerified(app, {
+            email: 'cap@finance.local',
+            password: 'cap-password',
+            name: 'Cap',
+        });
         const onboard = (...initialValues: number[]) =>
             request(app.getHttpServer())
                 .post('/api/households/onboarding')

@@ -5,7 +5,6 @@
     "auth": {
         "login": {
             "title": "Login",
-            "demo": "Demo: demo@finance.local / demo-password · With sample data: sample@finance.local / sample-password",
             "emailLabel": "Email",
             "emailRequired": "Email is required",
             "emailInvalid": "Please enter a valid email address",
@@ -14,7 +13,71 @@
             "showPassword": "Show password",
             "hidePassword": "Hide password",
             "submit": "Login",
-            "failed": "Login failed"
+            "forgotPassword": "Forgot password?",
+            "toSignup": "Create an account",
+            "resendVerification": "Send confirmation link again",
+            "passwordChanged": "Your password has been changed. Log in with the new one.",
+            "demoTitle": "Try it without an account",
+            "demoUser": "Log in as demo (empty household)",
+            "sampleUser": "Log in as sample (with sample data)"
+        },
+        "fields": {
+            "name": "Name",
+            "nameRequired": "Name is required",
+            "email": "Email",
+            "emailRequired": "Email is required",
+            "emailInvalid": "Please enter a valid email address",
+            "password": "Password",
+            "newPassword": "New password",
+            "passwordRequired": "Password is required",
+            "passwordTooShort": "At least {{min}} characters",
+            "passwordTooLong": "At most {{max}} characters",
+            "confirmPassword": "Confirm password",
+            "confirmPasswordRequired": "Please repeat the password",
+            "passwordMismatch": "Passwords do not match"
+        },
+        "signup": {
+            "title": "Create account",
+            "submit": "Create account",
+            "toLogin": "Already have an account? Log in"
+        },
+        "checkEmail": {
+            "title": "Check your email",
+            "sentTo": "We sent a confirmation link to {{email}}.",
+            "sent": "We sent you a confirmation link.",
+            "hint": "Open the link in the email to finish creating your account. It is valid for 24 hours. Check your spam folder if it does not arrive.",
+            "resend": "Send link again",
+            "resent": "A new link is on its way.",
+            "toLogin": "Back to login"
+        },
+        "verifyEmail": {
+            "title": "Confirm email",
+            "verifying": "Confirming your email address…",
+            "newLinkHint": "Log in with your email and password to get a new link.",
+            "toLogin": "Go to login"
+        },
+        "forgotPassword": {
+            "title": "Forgot password",
+            "intro": "Enter your email address and we will send you a link to choose a new password.",
+            "submit": "Send link",
+            "sent": "If an account exists for {{email}}, a link to reset the password is on its way. It is valid for 1 hour.",
+            "toLogin": "Back to login"
+        },
+        "resetPassword": {
+            "title": "Choose a new password",
+            "submit": "Save password",
+            "newLink": "Request a new link"
+        },
+        "errors": {
+            "INVALID_EMAIL_OR_PASSWORD": "Invalid email or password",
+            "EMAIL_NOT_VERIFIED": "Please confirm your email address first. Check your inbox for the link.",
+            "INVALID_EMAIL": "Please enter a valid email address",
+            "PASSWORD_TOO_SHORT": "The password is too short",
+            "PASSWORD_TOO_LONG": "The password is too long",
+            "INVALID_TOKEN": "This link is invalid or has already been used.",
+            "TOKEN_EXPIRED": "This link has expired.",
+            "TOO_MANY_REQUESTS": "Too many attempts. Please wait a moment and try again.",
+            "UNKNOWN": "Something went wrong. Please try again."
         }
     },
     "home": {

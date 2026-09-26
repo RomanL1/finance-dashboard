@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from '../core/auth/auth.guard';
+import { GuestGuard } from '../core/auth/guest.guard';
 import {
     OnboardingCompleteGuard,
     OnboardingGuard,
@@ -46,9 +47,50 @@ export function prefetchShellTab(pathname: string): void {
 export const routes: Routes = [
     {
         path: APP_PATHS.LOGIN,
+        canActivate: [GuestGuard],
         loadComponent: () =>
             import('../features/auth/pages/login.page').then(
                 (m) => m.LoginPage,
+            ),
+    },
+    {
+        path: APP_PATHS.SIGNUP,
+        canActivate: [GuestGuard],
+        loadComponent: () =>
+            import('../features/auth/pages/signup.page').then(
+                (m) => m.SignupPage,
+            ),
+    },
+    {
+        path: APP_PATHS.CHECK_EMAIL,
+        canActivate: [GuestGuard],
+        loadComponent: () =>
+            import('../features/auth/pages/check-email.page').then(
+                (m) => m.CheckEmailPage,
+            ),
+    },
+    {
+        /** No guest guard: a link opened while signed in as someone else still verifies its own account. */
+        path: APP_PATHS.VERIFY_EMAIL,
+        loadComponent: () =>
+            import('../features/auth/pages/verify-email.page').then(
+                (m) => m.VerifyEmailPage,
+            ),
+    },
+    {
+        path: APP_PATHS.FORGOT_PASSWORD,
+        canActivate: [GuestGuard],
+        loadComponent: () =>
+            import('../features/auth/pages/forgot-password.page').then(
+                (m) => m.ForgotPasswordPage,
+            ),
+    },
+    {
+        path: APP_PATHS.RESET_PASSWORD,
+        canActivate: [GuestGuard],
+        loadComponent: () =>
+            import('../features/auth/pages/reset-password.page').then(
+                (m) => m.ResetPasswordPage,
             ),
     },
     {

@@ -8,6 +8,13 @@ export type HealthDto = {
     status: string;
 };
 
+export type AppConfigDto = {
+    /**
+     * Demo and sample users exist, so the login page may offer them: seeded on boot (SEED_DEMO) or, in development, by `bun run db:seed`.
+     */
+    demoLogin: boolean;
+};
+
 export type HouseholdDto = {
     id: string;
     name: string;
@@ -270,6 +277,20 @@ export type HealthHealthResponses = {
 export type HealthHealthResponse =
     HealthHealthResponses[keyof HealthHealthResponses];
 
+export type AppConfigGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/config';
+};
+
+export type AppConfigGetResponses = {
+    200: AppConfigDto;
+};
+
+export type AppConfigGetResponse =
+    AppConfigGetResponses[keyof AppConfigGetResponses];
+
 export type HouseholdMineData = {
     body?: never;
     path?: never;
@@ -345,13 +366,13 @@ export type CategoryDeleteCategoryData = {
     body?: never;
     path: {
         /**
-         * Household id
-         */
-        householdId: string;
-        /**
          * Category id
          */
         categoryId: string;
+        /**
+         * Household id
+         */
+        householdId: string;
     };
     query?: {
         /**
@@ -376,13 +397,13 @@ export type CategoryUpdateCategoryData = {
     body: CreateCategoryDto;
     path: {
         /**
-         * Household id
-         */
-        householdId: string;
-        /**
          * Category id
          */
         categoryId: string;
+        /**
+         * Household id
+         */
+        householdId: string;
     };
     query?: never;
     url: '/api/households/{householdId}/categories/{categoryId}';
@@ -451,13 +472,13 @@ export type AccountDeleteAccountData = {
     body?: never;
     path: {
         /**
-         * Household id
-         */
-        householdId: string;
-        /**
          * Account id
          */
         accountId: string;
+        /**
+         * Household id
+         */
+        householdId: string;
     };
     query?: never;
     url: '/api/households/{householdId}/accounts/{accountId}';
@@ -481,13 +502,13 @@ export type AccountUpdateAccountData = {
     body: UpdateAccountDto;
     path: {
         /**
-         * Household id
-         */
-        householdId: string;
-        /**
          * Account id
          */
         accountId: string;
+        /**
+         * Household id
+         */
+        householdId: string;
     };
     query?: never;
     url: '/api/households/{householdId}/accounts/{accountId}';
@@ -680,13 +701,13 @@ export type TransactionDeleteTransactionData = {
     body?: never;
     path: {
         /**
-         * Household id
-         */
-        householdId: string;
-        /**
          * Transaction id
          */
         transactionId: string;
+        /**
+         * Household id
+         */
+        householdId: string;
     };
     query?: never;
     url: '/api/households/{householdId}/transactions/{transactionId}';
@@ -706,13 +727,13 @@ export type TransactionUpdateTransactionData = {
     body: CreateTransactionDto;
     path: {
         /**
-         * Household id
-         */
-        householdId: string;
-        /**
          * Transaction id
          */
         transactionId: string;
+        /**
+         * Household id
+         */
+        householdId: string;
     };
     query?: never;
     url: '/api/households/{householdId}/transactions/{transactionId}';
@@ -753,17 +774,17 @@ export type BudgetDeleteBudgetData = {
     body?: never;
     path: {
         /**
-         * Household id
+         * Calendar month as YYYY-MM
          */
-        householdId: string;
+        month: string;
         /**
          * Category id
          */
         categoryId: string;
         /**
-         * Calendar month as YYYY-MM
+         * Household id
          */
-        month: string;
+        householdId: string;
     };
     query?: never;
     url: '/api/households/{householdId}/budgets/{categoryId}/{month}';
@@ -783,17 +804,17 @@ export type BudgetSetBudgetData = {
     body: SetBudgetDto;
     path: {
         /**
-         * Household id
+         * Calendar month as YYYY-MM
          */
-        householdId: string;
+        month: string;
         /**
          * Category id
          */
         categoryId: string;
         /**
-         * Calendar month as YYYY-MM
+         * Household id
          */
-        month: string;
+        householdId: string;
     };
     query?: never;
     url: '/api/households/{householdId}/budgets/{categoryId}/{month}';
@@ -810,13 +831,13 @@ export type BudgetCopyPreviousBudgetsData = {
     body?: never;
     path: {
         /**
-         * Household id
-         */
-        householdId: string;
-        /**
          * Calendar month as YYYY-MM
          */
         month: string;
+        /**
+         * Household id
+         */
+        householdId: string;
     };
     query?: {
         /**

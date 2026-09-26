@@ -11,6 +11,11 @@ services:
       # Public origin as seen by the browser (nginx forwards Host).
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:${APP_PORT:-8080}}
       TRUSTED_ORIGINS: ${TRUSTED_ORIGINS:-http://localhost:${APP_PORT:-8080},http://127.0.0.1:${APP_PORT:-8080}}
+      # Public origin of the frontend; links in verification and password-reset mails point here.
+      APP_URL: ${APP_URL:-${BETTER_AUTH_URL:-http://localhost:${APP_PORT:-8080}}}
+      # Required: mails (verification, password reset) go out through Resend from a verified domain.
+      RESEND_API_KEY: ${RESEND_API_KEY:?set RESEND_API_KEY in .env (Resend dashboard → API keys)}
+      MAIL_FROM: ${MAIL_FROM:?set MAIL_FROM in .env, e.g. Finance Dashboard <noreply@your-domain>}
     volumes:
       - db-data:/data
     healthcheck:

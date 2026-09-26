@@ -6,6 +6,7 @@ import { setupApp } from '../src/shared/infra/app.setup.js';
 import { DEMO_USER } from '../src/shared/infra/db/seed.js';
 import { prepareTestDb } from './setup-db.js';
 import { listenOnLoopback } from './setup-app.js';
+import { signUpVerified } from './support/auth.js';
 
 /**
  * A member of one household must not reach another household's accounts and transactions:
@@ -70,15 +71,11 @@ describe('household isolation (e2e)', () => {
             .expect(201);
         victim = { ...victimHousehold, transactionId: tx.body.id };
 
-        const signUp = await server()
-            .post('/api/auth/sign-up/email')
-            .send({
-                email: 'intruder@finance.local',
-                password: 'intruder-password',
-                name: 'Intruder',
-            })
-            .expect(200);
-        intruder = signUp.headers['set-cookie'][0].split(';')[0];
+        intruder = await signUpVerified(app, {
+            email: 'intruder@finance.local',
+            password: 'intruder-password',
+            name: 'Intruder',
+        });
         own = await onboard(intruder, 'Intruder');
     });
 

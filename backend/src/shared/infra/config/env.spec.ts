@@ -49,13 +49,46 @@ describe('env', () => {
         expect(mod.env.auth.secret).toBeUndefined();
     });
 
-    it('uses the configured secret when set', async () => {
-        const mod = await loadEnv({
-            NODE_ENV: 'production',
-            DB_FILE_NAME: 'file::memory:',
-            BETTER_AUTH_SECRET: 'a-real-secret-that-is-long-enough',
+    const PRODUCTION = {
+        NODE_ENV: 'production',
+        DB_FILE_NAME: 'file::memory:',
+        BETTER_AUTH_SECRET: 'a-real-secret-that-is-long-enough',
+        APP_URL: 'https://finance.example.com',
+        RESEND_API_KEY: 're_test',
+        MAIL_FROM: 'Finance <noreply@finance.example.com>',
+    };
+
+    it('uses the configured values in production', async () => {
+        const { env } = await loadEnv(PRODUCTION);
+        expect(env.auth.secret).toBe('a-real-secret-that-is-long-enough');
+        expect(env.appUrl).toBe('https://finance.example.com');
+        expect(env.mail).toEqual({
+            resendApiKey: 're_test',
+            from: 'Finance <noreply@finance.example.com>',
+            outboxDir: undefined,
         });
-        expect(mod.env.auth.secret).toBe('a-real-secret-that-is-long-enough');
+    });
+
+    it.each(['APP_URL', 'RESEND_API_KEY', 'MAIL_FROM'])(
+        'refuses to load in production without %s',
+        async (name) => {
+            await expect(
+                loadEnv({ ...PRODUCTION, [name]: undefined }),
+            ).rejects.toThrow(name);
+        },
+    );
+
+    it('defaults app URL and sender outside production and sends no mail without a key', async () => {
+        const { env } = await loadEnv({
+            NODE_ENV: 'development',
+            DB_FILE_NAME: 'file::memory:',
+            APP_URL: undefined,
+            RESEND_API_KEY: undefined,
+            MAIL_FROM: undefined,
+        });
+        expect(env.appUrl).toBe('http://localhost:4200');
+        expect(env.mail.resendApiKey).toBeUndefined();
+        expect(env.mail.from).toBe('Finance Dashboard <noreply@localhost>');
     });
 
     it('parses SEED_DEMO as a boolean flag', async () => {

@@ -5,7 +5,6 @@
     "auth": {
         "login": {
             "title": "Anmelden",
-            "demo": "Demo: demo@finance.local / demo-password · Mit Beispieldaten: sample@finance.local / sample-password",
             "emailLabel": "E-Mail",
             "emailRequired": "E-Mail ist erforderlich",
             "emailInvalid": "Bitte eine gültige E-Mail-Adresse eingeben",
@@ -14,7 +13,71 @@
             "showPassword": "Passwort anzeigen",
             "hidePassword": "Passwort verbergen",
             "submit": "Anmelden",
-            "failed": "Anmeldung fehlgeschlagen"
+            "forgotPassword": "Passwort vergessen?",
+            "toSignup": "Konto erstellen",
+            "resendVerification": "Bestätigungslink erneut senden",
+            "passwordChanged": "Dein Passwort wurde geändert. Melde dich mit dem neuen an.",
+            "demoTitle": "Ohne Konto ausprobieren",
+            "demoUser": "Als Demo anmelden (leerer Haushalt)",
+            "sampleUser": "Als Beispiel anmelden (mit Beispieldaten)"
+        },
+        "fields": {
+            "name": "Name",
+            "nameRequired": "Name ist erforderlich",
+            "email": "E-Mail",
+            "emailRequired": "E-Mail ist erforderlich",
+            "emailInvalid": "Bitte eine gültige E-Mail-Adresse eingeben",
+            "password": "Passwort",
+            "newPassword": "Neues Passwort",
+            "passwordRequired": "Passwort ist erforderlich",
+            "passwordTooShort": "Mindestens {{min}} Zeichen",
+            "passwordTooLong": "Höchstens {{max}} Zeichen",
+            "confirmPassword": "Passwort bestätigen",
+            "confirmPasswordRequired": "Bitte Passwort wiederholen",
+            "passwordMismatch": "Passwörter stimmen nicht überein"
+        },
+        "signup": {
+            "title": "Konto erstellen",
+            "submit": "Konto erstellen",
+            "toLogin": "Schon ein Konto? Anmelden"
+        },
+        "checkEmail": {
+            "title": "Prüfe deine E-Mails",
+            "sentTo": "Wir haben einen Bestätigungslink an {{email}} gesendet.",
+            "sent": "Wir haben dir einen Bestätigungslink gesendet.",
+            "hint": "Öffne den Link in der E-Mail, um dein Konto fertig einzurichten. Er ist 24 Stunden gültig. Sieh auch im Spam-Ordner nach, falls nichts ankommt.",
+            "resend": "Link erneut senden",
+            "resent": "Ein neuer Link ist unterwegs.",
+            "toLogin": "Zurück zur Anmeldung"
+        },
+        "verifyEmail": {
+            "title": "E-Mail bestätigen",
+            "verifying": "E-Mail-Adresse wird bestätigt…",
+            "newLinkHint": "Melde dich mit E-Mail und Passwort an, um einen neuen Link zu erhalten.",
+            "toLogin": "Zur Anmeldung"
+        },
+        "forgotPassword": {
+            "title": "Passwort vergessen",
+            "intro": "Gib deine E-Mail-Adresse ein. Wir senden dir einen Link, um ein neues Passwort zu wählen.",
+            "submit": "Link senden",
+            "sent": "Falls ein Konto für {{email}} existiert, ist ein Link zum Zurücksetzen unterwegs. Er ist 1 Stunde gültig.",
+            "toLogin": "Zurück zur Anmeldung"
+        },
+        "resetPassword": {
+            "title": "Neues Passwort wählen",
+            "submit": "Passwort speichern",
+            "newLink": "Neuen Link anfordern"
+        },
+        "errors": {
+            "INVALID_EMAIL_OR_PASSWORD": "E-Mail oder Passwort ist falsch",
+            "EMAIL_NOT_VERIFIED": "Bitte bestätige zuerst deine E-Mail-Adresse. Den Link findest du in deinem Posteingang.",
+            "INVALID_EMAIL": "Bitte eine gültige E-Mail-Adresse eingeben",
+            "PASSWORD_TOO_SHORT": "Das Passwort ist zu kurz",
+            "PASSWORD_TOO_LONG": "Das Passwort ist zu lang",
+            "INVALID_TOKEN": "Dieser Link ist ungültig oder wurde bereits verwendet.",
+            "TOKEN_EXPIRED": "Dieser Link ist abgelaufen.",
+            "TOO_MANY_REQUESTS": "Zu viele Versuche. Bitte warte kurz und versuche es erneut.",
+            "UNKNOWN": "Etwas ist schiefgelaufen. Bitte versuche es erneut."
         }
     },
     "home": {
