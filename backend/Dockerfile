@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # oven/bun:1.4-slim (debian, glibc for the libsql native binding)
-FROM oven/bun@sha256:cb3bbbb08e13a4a2ff400f24c7a2a1d5efa83f6ef8544d52d95a519631e2fc61 AS build
+FROM --platform=$BUILDPLATFORM oven/bun@sha256:cb3bbbb08e13a4a2ff400f24c7a2a1d5efa83f6ef8544d52d95a519631e2fc61 AS build
 WORKDIR /app
 COPY package.json bun.lock ./
 # Dev deps only for `nest build`; skip native postinstall scripts (better-sqlite3 via @better-auth/cli).

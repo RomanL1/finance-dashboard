@@ -3,3 +3,6 @@ for frontend look at
 
 for backend look at
 ./backend/AGENTS.md
+
+for domain terms (recurring transactions, upcoming transactions, ...) look at
+./CONTEXT.md
