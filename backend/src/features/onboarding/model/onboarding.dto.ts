@@ -7,7 +7,9 @@ import {
     IsInt,
     IsISO8601,
     IsNotEmpty,
+    IsOptional,
     IsString,
+    IsTimeZone,
     Max,
     MaxLength,
     Min,
@@ -98,4 +100,14 @@ export class CompleteOnboardingDto extends OnboardingHouseholdDto {
     @ValidateNested({ each: true })
     @Type(() => OnboardingAccountDto)
     accounts!: OnboardingAccountDto[];
+
+    @ApiProperty({
+        required: false,
+        example: 'Europe/Zurich',
+        description:
+            "IANA time zone, the browser's by default; Europe/Zurich when omitted",
+    })
+    @IsOptional()
+    @IsTimeZone()
+    timeZone?: string;
 }

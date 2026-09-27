@@ -13,6 +13,12 @@ export const APP_PATHS = {
     SETTINGS: 'settings',
 } as const;
 
+/** Tabs under `transactions`, relative to it. */
+export const TRANSACTION_PATHS = {
+    HISTORY: 'history',
+    RECURRING: 'recurring',
+} as const;
+
 /** Tabs under `analytics`, relative to it. */
 export const ANALYTICS_PATHS = {
     CATEGORIES: 'categories',

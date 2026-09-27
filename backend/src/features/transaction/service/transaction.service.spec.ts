@@ -27,6 +27,7 @@ type RepoFake = Pick<
     | 'categoryExists'
     | 'createTransaction'
     | 'updateTransaction'
+    | 'confirmTransaction'
     | 'deleteTransaction'
     | 'sumByRange'
     | 'sumExpensesByCategory'
@@ -52,6 +53,21 @@ function makeRepo(overrides: Partial<RepoFake> = {}): RepoFake {
         updateTransaction: vi.fn<RepoFake['updateTransaction']>((_h, entity) =>
             Promise.resolve({ ...entity, createdAt: new Date() }),
         ),
+        confirmTransaction: vi.fn<RepoFake['confirmTransaction']>((_h, id) =>
+            Promise.resolve({
+                id,
+                accountId: 'acc-1',
+                categoryId: null,
+                type: 'expense',
+                amount: 1250,
+                title: null,
+                description: null,
+                date: new Date('2026-01-15'),
+                recurringTransactionId: 'rt-1',
+                needsConfirmation: false,
+                createdAt: new Date(),
+            }),
+        ),
         deleteTransaction: vi
             .fn<RepoFake['deleteTransaction']>()
             .mockResolvedValue(true),
@@ -73,10 +89,13 @@ function makeHouseholds(): Pick<HouseholdService, 'getById'> {
     };
 }
 
+const NOW = new Date('2026-09-27T10:00:00.000Z');
+
 function makeService(repo: RepoFake) {
     return new TransactionService(
         repo as TransactionRepository,
         makeHouseholds() as HouseholdService,
+        { now: () => NOW },
     );
 }
 
@@ -95,8 +114,13 @@ describe('TransactionService.getPage', () => {
             filter,
             50,
             100,
+            NOW,
         );
-        expect(repo.countByHouseholdId).toHaveBeenCalledWith('h-1', filter);
+        expect(repo.countByHouseholdId).toHaveBeenCalledWith(
+            'h-1',
+            filter,
+            NOW,
+        );
         expect(page).toEqual({
             items: [{ id: 't-1' }],
             total: 120,
@@ -108,13 +132,25 @@ describe('TransactionService.getPage', () => {
     it('starts the first page at offset zero', async () => {
         const repo = makeRepo();
         await makeService(repo).getPage('h-1', {}, 1);
-        expect(repo.listByHouseholdId).toHaveBeenCalledWith('h-1', {}, 50, 0);
+        expect(repo.listByHouseholdId).toHaveBeenCalledWith(
+            'h-1',
+            {},
+            50,
+            0,
+            NOW,
+        );
     });
 
     it('honours an explicit page size', async () => {
         const repo = makeRepo();
         await makeService(repo).getPage('h-1', {}, 2, 10);
-        expect(repo.listByHouseholdId).toHaveBeenCalledWith('h-1', {}, 10, 10);
+        expect(repo.listByHouseholdId).toHaveBeenCalledWith(
+            'h-1',
+            {},
+            10,
+            10,
+            NOW,
+        );
     });
 });
 
@@ -185,6 +221,17 @@ describe('TransactionService.update', () => {
         expect(repo.updateTransaction).toHaveBeenCalledWith(
             'h-1',
             expect.objectContaining({ id: 'tx-1', amount: 1250 }),
+            NOW,
+        );
+    });
+
+    it('counts saving as confirming', async () => {
+        const repo = makeRepo();
+        await makeService(repo).update('h-1', 'tx-1', input);
+        expect(repo.updateTransaction).toHaveBeenCalledWith(
+            'h-1',
+            expect.objectContaining({ needsConfirmation: false }),
+            NOW,
         );
     });
 
@@ -221,6 +268,24 @@ describe('TransactionService.update', () => {
             makeService(repo).update('h-1', 'tx-1', { ...input, amount: -1 }),
         ).rejects.toBeInstanceOf(ValidationError);
         expect(repo.updateTransaction).not.toHaveBeenCalled();
+    });
+});
+
+describe('TransactionService.confirm', () => {
+    it('clears the flag of the household row', async () => {
+        const repo = makeRepo();
+        const confirmed = await makeService(repo).confirm('h-1', 'tx-1');
+        expect(confirmed.needsConfirmation).toBe(false);
+        expect(repo.confirmTransaction).toHaveBeenCalledWith('h-1', 'tx-1');
+    });
+
+    it('throws NotFound when the row is outside the household', async () => {
+        const repo = makeRepo({
+            confirmTransaction: vi.fn().mockResolvedValue(null),
+        });
+        await expect(
+            makeService(repo).confirm('h-1', 'tx-1'),
+        ).rejects.toBeInstanceOf(NotFoundError);
     });
 });
 

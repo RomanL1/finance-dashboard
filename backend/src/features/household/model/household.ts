@@ -9,12 +9,15 @@ export interface Household {
     onboardingComplete: boolean;
     /** Every account and transaction uses this currency. Changing it relabels, never converts. */
     baseCurrency: SupportedCurrency;
+    /** IANA zone. Recurring transactions book at local midnight here; a change only affects later occurrences. */
+    timeZone: string;
     createdAt: Date;
 }
 
 export interface UpdateHouseholdInput {
     name?: string;
     baseCurrency?: SupportedCurrency;
+    timeZone?: string;
 }
 
 export interface HouseholdMembership {

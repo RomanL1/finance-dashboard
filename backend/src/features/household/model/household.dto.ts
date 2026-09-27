@@ -5,6 +5,7 @@ import {
     IsNotEmpty,
     IsOptional,
     IsString,
+    IsTimeZone,
     MaxLength,
 } from 'class-validator';
 import {
@@ -24,6 +25,12 @@ export class HouseholdDto {
             'Currency of every account and transaction; changing it relabels them without converting amounts',
     })
     baseCurrency!: SupportedCurrency;
+    @ApiProperty({
+        example: 'Europe/Zurich',
+        description:
+            'IANA time zone; recurring transactions book at local midnight here',
+    })
+    timeZone!: string;
     @ApiProperty() createdAt!: string;
 }
 
@@ -47,4 +54,13 @@ export class UpdateHouseholdDto {
     @IsOptional()
     @IsIn(SUPPORTED_CURRENCIES)
     baseCurrency?: SupportedCurrency;
+
+    @ApiProperty({
+        required: false,
+        example: 'Europe/Zurich',
+        description: 'IANA time zone; affects only later occurrences',
+    })
+    @IsOptional()
+    @IsTimeZone()
+    timeZone?: string;
 }

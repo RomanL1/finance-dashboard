@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, resource } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    computed,
+    resource,
+} from '@angular/core';
 import {
     MatButtonToggle,
     MatButtonToggleGroup,
@@ -25,6 +30,8 @@ import { APP_PATHS } from '../../../config/paths.config';
 import { ButtonComponent } from '../../../components/button/button.component';
 import { DialogService } from '../../../components/dialog/dialog.service';
 import { CURRENCIES, type Currency } from '../../../core/constants/currencies';
+import { timeZones } from '../../../core/constants/time-zones';
+import { RecurringService } from '../../recurring/services/recurring.service';
 import { HouseholdService } from '../../household/services/household.service';
 import { AccountService } from '../../account/services/account.service';
 import { AccountManageListComponent } from '../../account/dumb_components/account-manage-list/account-manage-list.component';
@@ -189,6 +196,46 @@ import type { AppIcon } from '../../../core/icons/icons';
                                     | translate
                             }}
                         </dd>
+                        <dt
+                            class="type-label-large mt-2 text-on-surface-variant"
+                        >
+                            {{ 'settings.household.timeZone' | translate }}
+                        </dt>
+                        <dd class="type-body-large mt-2 text-on-surface">
+                            @if (h.role === 'owner') {
+                                <mat-form-field
+                                    class="w-full"
+                                    subscriptSizing="dynamic"
+                                >
+                                    <mat-select
+                                        [attr.aria-label]="
+                                            'settings.household.timeZone'
+                                                | translate
+                                        "
+                                        [value]="h.timeZone"
+                                        (selectionChange)="
+                                            setTimeZone(h.id, $event.value)
+                                        "
+                                    >
+                                        @for (
+                                            zone of timeZoneOptions();
+                                            track zone
+                                        ) {
+                                            <mat-option [value]="zone">{{
+                                                zone
+                                            }}</mat-option>
+                                        }
+                                    </mat-select>
+                                </mat-form-field>
+                            } @else {
+                                {{ h.timeZone }}
+                            }
+                        </dd>
+                        <dd
+                            class="type-body-small col-span-2 text-on-surface-variant"
+                        >
+                            {{ 'settings.household.timeZoneHint' | translate }}
+                        </dd>
                     </dl>
                 </section>
                 <section>
@@ -265,11 +312,17 @@ export class SettingsPage {
         loader: ({ params }) => this.categoryService.list(params),
     });
 
+    /** The household's own zone stays selectable even if this browser does not know it. */
+    protected readonly timeZoneOptions = computed(() =>
+        timeZones(this.household.value()?.timeZone),
+    );
+
     constructor(
         private readonly auth: AuthService,
         private readonly householdService: HouseholdService,
         private readonly accountService: AccountService,
         private readonly categoryService: CategoryService,
+        private readonly recurringService: RecurringService,
         private readonly dialogs: DialogService,
         private readonly router: Router,
         protected readonly theme: ThemeService,
@@ -284,6 +337,12 @@ export class SettingsPage {
         await this.householdService.update(householdId, { baseCurrency });
         this.household.reload();
         this.accounts.reload();
+    }
+
+    /** Only later recurring bookings move to the new zone's midnight; booked ones stay. */
+    async setTimeZone(householdId: string, timeZone: string): Promise<void> {
+        await this.householdService.update(householdId, { timeZone });
+        this.household.reload();
     }
 
     async openAccountDialog(
@@ -357,6 +416,16 @@ export class SettingsPage {
             cancel: 'account.dialog.cancel',
         });
         if (!confirmed) return;
+        // Recurring transactions keep an account alive; say so instead of the transactions message.
+        const rules = await this.recurringService.list(householdId);
+        if (rules.some((rule) => rule.accountId === accountId)) {
+            await this.dialogs.confirm({
+                title: 'account.delete.blockedRecurringTitle',
+                message: 'account.delete.blockedRecurringMessage',
+                confirm: 'account.delete.blockedOk',
+            });
+            return;
+        }
         if (await this.accountService.delete(householdId, accountId)) {
             this.accounts.reload();
             return;

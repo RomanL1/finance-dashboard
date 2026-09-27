@@ -14,7 +14,12 @@ import {
     TransactionFilter,
     TransactionPage,
 } from '../model/transaction.js';
-import { Id, NotFoundError } from '../../../shared/kernel/index.js';
+import {
+    CLOCK,
+    type Clock,
+    Id,
+    NotFoundError,
+} from '../../../shared/kernel/index.js';
 import { HouseholdService } from '../../household/service/household.service.js';
 
 @Injectable()
@@ -22,6 +27,7 @@ export class TransactionService {
     constructor(
         @Inject() private readonly transactions: TransactionRepository,
         private readonly households: HouseholdService,
+        @Inject(CLOCK) private readonly clock: Clock,
     ) {}
 
     /** A page past the end is empty, not an error. */
@@ -31,14 +37,16 @@ export class TransactionService {
         page: number,
         pageSize = PAGE_SIZE,
     ): Promise<TransactionPage> {
+        const now = this.clock.now();
         const [items, total] = await Promise.all([
             this.transactions.listByHouseholdId(
                 householdId,
                 filter,
                 pageSize,
                 (page - 1) * pageSize,
+                now,
             ),
-            this.transactions.countByHouseholdId(householdId, filter),
+            this.transactions.countByHouseholdId(householdId, filter, now),
         ]);
         return { items, total, page, pageSize };
     }
@@ -84,7 +92,7 @@ export class TransactionService {
         return this.transactions.createTransaction(entity);
     }
 
-    /** Full replace: every field comes from the input, only the id survives. */
+    /** Full replace: every field comes from the input, only the id and (unless upcoming) the recurring link survive. Saving counts as confirming. */
     async update(
         householdId: Id,
         id: Id,
@@ -95,9 +103,20 @@ export class TransactionService {
         const updated = await this.transactions.updateTransaction(
             householdId,
             entity,
+            this.clock.now(),
         );
         if (!updated) throw new NotFoundError('Transaction', id);
         return updated;
+    }
+
+    /** Accepts the amount of a transaction from a varying-amount rule as is. */
+    async confirm(householdId: Id, id: Id): Promise<Transaction> {
+        const confirmed = await this.transactions.confirmTransaction(
+            householdId,
+            id,
+        );
+        if (!confirmed) throw new NotFoundError('Transaction', id);
+        return confirmed;
     }
 
     async delete(householdId: Id, id: Id): Promise<void> {

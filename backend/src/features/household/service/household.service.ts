@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import {
     ForbiddenError,
+    isValidTimeZone,
     NotFoundError,
     ValidationError,
     type Id,
@@ -56,6 +57,12 @@ export class HouseholdService {
         }
         if (input.baseCurrency !== undefined) {
             changes.baseCurrency = input.baseCurrency;
+        }
+        if (input.timeZone !== undefined) {
+            if (!isValidTimeZone(input.timeZone)) {
+                throw new ValidationError('Unknown time zone');
+            }
+            changes.timeZone = input.timeZone;
         }
         const household =
             Object.keys(changes).length === 0

@@ -1,6 +1,7 @@
 import { inputBinding, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { MatSelect } from '@angular/material/select';
+import { MatSlideToggle } from '@angular/material/slide-toggle';
 import { By } from '@angular/platform-browser';
 import { provideTranslateService } from '@ngx-translate/core';
 import type { AccountDto, CategoryDto } from '../../../../core/api';
@@ -30,7 +31,9 @@ describe('TransactionFilterComponent', () => {
         const [accountSelect, categorySelect] = fixture.debugElement
             .queryAll(By.directive(MatSelect))
             .map((d) => d.componentInstance as MatSelect);
-        return { emitted, accountSelect, categorySelect };
+        const toggle = fixture.debugElement.query(By.directive(MatSlideToggle))
+            .componentInstance as MatSlideToggle;
+        return { emitted, accountSelect, categorySelect, toggle };
     }
 
     beforeEach(() => {
@@ -73,5 +76,19 @@ describe('TransactionFilterComponent', () => {
         accountSelect.valueChange.emit('');
 
         expect(emitted).toEqual([{ accountId: undefined, categoryId: 'c1' }]);
+    });
+
+    it('toggles the needs-confirmation restriction', () => {
+        filter.set({ accountId: 'a1', needsConfirmation: true });
+        const { emitted, toggle } = create();
+
+        expect(toggle.checked).toBe(true);
+        toggle.change.emit({ checked: false, source: toggle });
+        toggle.change.emit({ checked: true, source: toggle });
+
+        expect(emitted).toEqual([
+            { accountId: 'a1', needsConfirmation: undefined },
+            { accountId: 'a1', needsConfirmation: true },
+        ]);
     });
 });

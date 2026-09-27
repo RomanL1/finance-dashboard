@@ -10,7 +10,7 @@ const input = {
 };
 
 describe('buildTransaction', () => {
-    it('nulls omitted optional fields', () => {
+    it('nulls omitted optional fields, a manual entry needs no confirmation', () => {
         expect(buildTransaction(input)).toEqual({
             id: expect.any(String),
             accountId: 'acc-1',
@@ -20,6 +20,8 @@ describe('buildTransaction', () => {
             title: null,
             description: null,
             date: input.date,
+            recurringTransactionId: null,
+            needsConfirmation: false,
         });
     });
 

@@ -7,6 +7,7 @@ import {
     LOCALE_ID,
     output,
     resource,
+    signal,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MatFabButton } from '@angular/material/button';
@@ -27,20 +28,24 @@ import {
     pageCount,
     parseTransactionParams,
     sameQuery,
+    startOfTomorrow,
     toTransactionGroups,
     toTransactionParams,
     type TransactionDialogData,
+    type TransactionPageDto,
     type TransactionFilter,
     type TransactionQuery,
 } from '../../transaction.types';
 import type { TransactionDialogComponent } from '../transaction-dialog/transaction-dialog.component';
 
 const RECENT_COUNT = 10;
+/** The API's largest page; a month of upcoming rows fits unless a daily rule runs on many accounts. */
+const MAX_UPCOMING = 100;
 
 /**
  * Household history plus the add/edit/delete flows around it.
- * `full`: filter + pager, state in the URL (`?account=&category=&page=`) so reload and back/forward keep it.
- * `recent`: the latest few rows with a link to the full list; ignores the URL.
+ * `full`: filter + pager, state in the URL (`?account=&category=&confirm=&page=`) so reload and back/forward keep it.
+ * `recent`: all upcoming rows plus the latest ten others, with a link to the full list; ignores the URL.
  */
 @Component({
     selector: 'app-transaction-history',
@@ -86,9 +91,15 @@ const RECENT_COUNT = 10;
                 }
             }
             @if (page.value(); as page) {
+                @if (confirmFailed()) {
+                    <p role="alert" class="type-body-medium text-error">
+                        {{ 'transaction.confirm.failed' | translate }}
+                    </p>
+                }
                 <app-transaction-list
                     [groups]="groups()"
                     (edit)="openDialog($event)"
+                    (confirm)="confirm($event)"
                 />
                 @if (mode() === 'full' && pages() > 1) {
                     <nav
@@ -168,6 +179,7 @@ export class TransactionHistoryComponent {
             map((params): Record<string, string | undefined> => ({
                 account: params.get('account') ?? undefined,
                 category: params.get('category') ?? undefined,
+                confirm: params.get('confirm') ?? undefined,
                 page: params.get('page') ?? undefined,
             })),
         ),
@@ -187,14 +199,15 @@ export class TransactionHistoryComponent {
         params: () => ({
             householdId: this.householdId(),
             query: this.query(),
-            pageSize: this.mode() === 'recent' ? RECENT_COUNT : undefined,
+            recent: this.mode() === 'recent',
         }),
         loader: ({ params }) =>
-            this.transactionService.list(
-                params.householdId,
-                params.query,
-                params.pageSize,
-            ),
+            params.recent
+                ? this.loadRecent(params.householdId)
+                : this.transactionService.list(
+                      params.householdId,
+                      params.query,
+                  ),
     });
 
     readonly pages = computed(() => {
@@ -212,6 +225,8 @@ export class TransactionHistoryComponent {
             this.locale,
         ),
     );
+
+    readonly confirmFailed = signal(false);
 
     protected readonly PATHS = APP_PATHS;
     protected readonly RECENT_COUNT = RECENT_COUNT;
@@ -259,6 +274,47 @@ export class TransactionHistoryComponent {
         ref.afterClosed().subscribe((changed) => {
             if (changed) this.reload();
         });
+    }
+
+    /**
+     * Recent mode: every upcoming row (the rest of the month, booked ahead by recurring
+     * transactions) plus the latest ten that are not upcoming, so upcoming rows never push
+     * real ones out. Upcoming comes first, as the API orders newest first.
+     */
+    private async loadRecent(householdId: string): Promise<TransactionPageDto> {
+        const tomorrow = startOfTomorrow(new Date());
+        const [upcoming, latest] = await Promise.all([
+            this.transactionService.list(
+                householdId,
+                { page: 1 },
+                MAX_UPCOMING,
+                { from: tomorrow },
+            ),
+            this.transactionService.list(
+                householdId,
+                { page: 1 },
+                RECENT_COUNT,
+                { before: tomorrow },
+            ),
+        ]);
+        return {
+            ...latest,
+            items: [...upcoming.items, ...latest.items],
+        };
+    }
+
+    /** Accepts a varying amount as booked; balances do not change, so only the list reloads. */
+    async confirm(transactionId: string): Promise<void> {
+        this.confirmFailed.set(false);
+        try {
+            await this.transactionService.confirm(
+                this.householdId(),
+                transactionId,
+            );
+            this.page.reload();
+        } catch {
+            this.confirmFailed.set(true);
+        }
     }
 
     /** Merge keeps the period params the stats card owns on the same URL. */

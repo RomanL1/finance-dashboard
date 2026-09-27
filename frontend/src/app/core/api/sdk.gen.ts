@@ -53,6 +53,20 @@ import type {
     OnboardingValidateCategoriesResponses,
     OnboardingValidateHouseholdData,
     OnboardingValidateHouseholdResponses,
+    RecurringCreateRecurringTransactionData,
+    RecurringCreateRecurringTransactionResponses,
+    RecurringDeleteRecurringTransactionData,
+    RecurringDeleteRecurringTransactionResponses,
+    RecurringGetRecurringTransactionsData,
+    RecurringGetRecurringTransactionsResponses,
+    RecurringPauseRecurringTransactionData,
+    RecurringPauseRecurringTransactionResponses,
+    RecurringResumeRecurringTransactionData,
+    RecurringResumeRecurringTransactionResponses,
+    RecurringUpdateRecurringTransactionData,
+    RecurringUpdateRecurringTransactionResponses,
+    TransactionConfirmTransactionData,
+    TransactionConfirmTransactionResponses,
     TransactionCreateTransactionData,
     TransactionCreateTransactionResponses,
     TransactionDeleteTransactionData,
@@ -590,6 +604,31 @@ export const transactionUpdateTransaction = <
         },
     });
 
+export const transactionConfirmTransaction = <
+    ThrowOnError extends boolean = false,
+>(
+    options: Options<TransactionConfirmTransactionData, ThrowOnError>,
+): RequestResult<
+    TransactionConfirmTransactionResponses,
+    unknown,
+    ThrowOnError
+> =>
+    (options.client ?? client).post<
+        TransactionConfirmTransactionResponses,
+        unknown,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/{householdId}/transactions/{transactionId}/confirm',
+        ...options,
+    });
+
 export const budgetGetBudgets = <ThrowOnError extends boolean = false>(
     options: Options<BudgetGetBudgetsData, ThrowOnError>,
 ): RequestResult<BudgetGetBudgetsResponses, unknown, ThrowOnError> =>
@@ -671,5 +710,163 @@ export const budgetCopyPreviousBudgets = <ThrowOnError extends boolean = false>(
             },
         ],
         url: '/api/households/{householdId}/budgets/{month}/copy-previous',
+        ...options,
+    });
+
+export const recurringGetRecurringTransactions = <
+    ThrowOnError extends boolean = false,
+>(
+    options: Options<RecurringGetRecurringTransactionsData, ThrowOnError>,
+): RequestResult<
+    RecurringGetRecurringTransactionsResponses,
+    unknown,
+    ThrowOnError
+> =>
+    (options.client ?? client).get<
+        RecurringGetRecurringTransactionsResponses,
+        unknown,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/{householdId}/recurring-transactions',
+        ...options,
+    });
+
+export const recurringCreateRecurringTransaction = <
+    ThrowOnError extends boolean = false,
+>(
+    options: Options<RecurringCreateRecurringTransactionData, ThrowOnError>,
+): RequestResult<
+    RecurringCreateRecurringTransactionResponses,
+    unknown,
+    ThrowOnError
+> =>
+    (options.client ?? client).post<
+        RecurringCreateRecurringTransactionResponses,
+        unknown,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/{householdId}/recurring-transactions',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers,
+        },
+    });
+
+export const recurringDeleteRecurringTransaction = <
+    ThrowOnError extends boolean = false,
+>(
+    options: Options<RecurringDeleteRecurringTransactionData, ThrowOnError>,
+): RequestResult<
+    RecurringDeleteRecurringTransactionResponses,
+    unknown,
+    ThrowOnError
+> =>
+    (options.client ?? client).delete<
+        RecurringDeleteRecurringTransactionResponses,
+        unknown,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/{householdId}/recurring-transactions/{recurringTransactionId}',
+        ...options,
+    });
+
+export const recurringUpdateRecurringTransaction = <
+    ThrowOnError extends boolean = false,
+>(
+    options: Options<RecurringUpdateRecurringTransactionData, ThrowOnError>,
+): RequestResult<
+    RecurringUpdateRecurringTransactionResponses,
+    unknown,
+    ThrowOnError
+> =>
+    (options.client ?? client).patch<
+        RecurringUpdateRecurringTransactionResponses,
+        unknown,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/{householdId}/recurring-transactions/{recurringTransactionId}',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers,
+        },
+    });
+
+export const recurringPauseRecurringTransaction = <
+    ThrowOnError extends boolean = false,
+>(
+    options: Options<RecurringPauseRecurringTransactionData, ThrowOnError>,
+): RequestResult<
+    RecurringPauseRecurringTransactionResponses,
+    unknown,
+    ThrowOnError
+> =>
+    (options.client ?? client).post<
+        RecurringPauseRecurringTransactionResponses,
+        unknown,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/{householdId}/recurring-transactions/{recurringTransactionId}/pause',
+        ...options,
+    });
+
+export const recurringResumeRecurringTransaction = <
+    ThrowOnError extends boolean = false,
+>(
+    options: Options<RecurringResumeRecurringTransactionData, ThrowOnError>,
+): RequestResult<
+    RecurringResumeRecurringTransactionResponses,
+    unknown,
+    ThrowOnError
+> =>
+    (options.client ?? client).post<
+        RecurringResumeRecurringTransactionResponses,
+        unknown,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/{householdId}/recurring-transactions/{recurringTransactionId}/resume',
         ...options,
     });

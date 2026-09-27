@@ -14,6 +14,8 @@ export function toTransactionDto(transaction: Transaction): TransactionDto {
     dto.title = transaction.title;
     dto.description = transaction.description;
     dto.date = transaction.date.toISOString();
+    dto.recurringTransactionId = transaction.recurringTransactionId;
+    dto.needsConfirmation = transaction.needsConfirmation;
     dto.createdAt = transaction.createdAt.toISOString();
     return dto;
 }

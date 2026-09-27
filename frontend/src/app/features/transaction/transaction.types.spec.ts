@@ -6,6 +6,7 @@ import {
     parseTransactionParams,
     toTransactionGroups,
     sameQuery,
+    startOfTomorrow,
     toTransactionParams,
 } from './transaction.types';
 
@@ -47,6 +48,8 @@ function tx(
         title: id,
         description: null,
         date: date.toISOString(),
+        recurringTransactionId: null,
+        needsConfirmation: false,
         createdAt: date.toISOString(),
         ...overrides,
     };
@@ -84,11 +87,50 @@ describe('toTransactionGroups', () => {
             accountName: 'Main',
             currency: 'CHF',
             amount: -1250,
+            recurring: false,
+            needsConfirmation: false,
         });
         expect(group.rows[1].amount).toBe(500000);
         expect(group.rows[1].category).toBeNull();
         // A deleted category id must not drive a color either.
         expect(group.rows[1].categoryId).toBeNull();
+    });
+
+    it('holds back the confirmation flag of an upcoming row until its day', () => {
+        const groups = toTransactionGroups(
+            [
+                tx('later', new Date(2026, 8, 20), { needsConfirmation: true }),
+                tx('due', NOW, { needsConfirmation: true }),
+            ],
+            ACCOUNTS,
+            CATEGORIES,
+            NOW,
+            'en',
+        );
+        const rows = groups.flatMap((g) => g.rows);
+        expect(rows.find((r) => r.id === 'later')?.needsConfirmation).toBe(
+            false,
+        );
+        expect(rows.find((r) => r.id === 'due')?.needsConfirmation).toBe(true);
+    });
+
+    it('marks rows booked by a recurring transaction and those to confirm', () => {
+        const [group] = toTransactionGroups(
+            [
+                tx('t1', NOW, {
+                    recurringTransactionId: 'r1',
+                    needsConfirmation: true,
+                }),
+            ],
+            ACCOUNTS,
+            CATEGORIES,
+            NOW,
+            'en',
+        );
+        expect(group.rows[0]).toMatchObject({
+            recurring: true,
+            needsConfirmation: true,
+        });
     });
 
     it('falls back to the category name when the title is missing', () => {
@@ -185,17 +227,29 @@ describe('parseTransactionParams', () => {
             page: 1,
         });
         expect(parseTransactionParams({ page: 'x' }).page).toBe(1);
+        expect(parseTransactionParams({ confirm: '1' }).needsConfirmation).toBe(
+            true,
+        );
+        expect(
+            parseTransactionParams({ confirm: 'yes' }).needsConfirmation,
+        ).toBeUndefined();
     });
 
     it('round-trips through toTransactionParams, dropping defaults', () => {
         expect(toTransactionParams({ page: 1 })).toEqual({
             account: null,
             category: null,
+            confirm: null,
             page: null,
         });
         expect(
-            toTransactionParams({ accountId: 'a1', categoryId: 'c1', page: 2 }),
-        ).toEqual({ account: 'a1', category: 'c1', page: '2' });
+            toTransactionParams({
+                accountId: 'a1',
+                categoryId: 'c1',
+                needsConfirmation: true,
+                page: 2,
+            }),
+        ).toEqual({ account: 'a1', category: 'c1', confirm: '1', page: '2' });
     });
 });
 
@@ -208,6 +262,17 @@ describe('sameQuery', () => {
             false,
         );
         expect(sameQuery(query, { ...query, categoryId: 'c1' })).toBe(false);
+        expect(sameQuery(query, { ...query, needsConfirmation: true })).toBe(
+            false,
+        );
+    });
+});
+
+describe('startOfTomorrow', () => {
+    it('is local midnight after the given day', () => {
+        expect(startOfTomorrow(new Date(2026, 8, 30, 23, 59))).toEqual(
+            new Date(2026, 9, 1),
+        );
     });
 });
 

@@ -24,12 +24,20 @@ export type HouseholdDto = {
      * Currency of every account and transaction; changing it relabels them without converting amounts
      */
     baseCurrency: 'CHF' | 'EUR' | 'USD' | 'GBP';
+    /**
+     * IANA time zone; recurring transactions book at local midnight here
+     */
+    timeZone: string;
     createdAt: string;
 };
 
 export type UpdateHouseholdDto = {
     name?: string;
     baseCurrency?: 'CHF' | 'EUR' | 'USD' | 'GBP';
+    /**
+     * IANA time zone; affects only later occurrences
+     */
+    timeZone?: string;
 };
 
 export type CategoryDto = {
@@ -125,6 +133,10 @@ export type CompleteOnboardingDto = {
     name: string;
     categoryNames: Array<string>;
     accounts: Array<OnboardingAccountDto>;
+    /**
+     * IANA time zone, the browser's by default; Europe/Zurich when omitted
+     */
+    timeZone?: string;
 };
 
 export type OnboardingHouseholdDto = {
@@ -154,6 +166,14 @@ export type TransactionDto = {
     title: string | null;
     description: string | null;
     date: string;
+    /**
+     * Recurring transaction that created it
+     */
+    recurringTransactionId: string | null;
+    /**
+     * Created from a varying-amount recurring transaction and not yet confirmed or edited
+     */
+    needsConfirmation: boolean;
     createdAt: string;
 };
 
@@ -261,6 +281,81 @@ export type CopiedBudgetsDto = {
      * True when an automatic take-over left the month alone because its limits were touched before
      */
     skipped: boolean;
+};
+
+export type RecurringTransactionDto = {
+    id: string;
+    accountId: string;
+    categoryId: string | null;
+    type: 'expense' | 'income';
+    /**
+     * Minor units (cents), positive; for a varying amount the expected value
+     */
+    amount: number;
+    title: string | null;
+    description: string | null;
+    interval:
+        'daily' | 'weekly' | 'monthly' | 'quarterly' | 'half_yearly' | 'yearly';
+    /**
+     * Weekly only: ISO weekday, 1 = Monday … 7 = Sunday
+     */
+    weekday: number | null;
+    /**
+     * Monthly and longer only: 1–31, falls on the last day in shorter months
+     */
+    dayOfMonth: number | null;
+    startDate: string;
+    /**
+     * Booked transactions wait for confirmation
+     */
+    varyingAmount: boolean;
+    /**
+     * Monthly and longer only: Saturday/Sunday occurrences book on the Friday before
+     */
+    weekendShift: boolean;
+    paused: boolean;
+    /**
+     * Booking day (after the weekend shift, household time zone) of the next occurrence after today, whether already booked with its month or not
+     */
+    nextDate: string;
+    createdAt: string;
+};
+
+export type SaveRecurringTransactionDto = {
+    /**
+     * Account id within the household
+     */
+    accountId: string;
+    /**
+     * Category id within the household
+     */
+    categoryId?: string | null;
+    type: 'expense' | 'income';
+    /**
+     * Minor units (cents)
+     */
+    amount: number;
+    title?: string | null;
+    description?: string | null;
+    interval:
+        'daily' | 'weekly' | 'monthly' | 'quarterly' | 'half_yearly' | 'yearly';
+    /**
+     * Weekly only: ISO weekday; defaults to the start date's. Ignored otherwise
+     */
+    weekday?: number | null;
+    /**
+     * Monthly and longer only; defaults to the start date's day. Ignored otherwise
+     */
+    dayOfMonth?: number | null;
+    /**
+     * First possible occurrence, at most one year back; past occurrences are booked right away
+     */
+    startDate: string;
+    varyingAmount?: boolean;
+    /**
+     * Monthly and longer only; ignored otherwise
+     */
+    weekendShift?: boolean;
 };
 
 export type HealthHealthData = {
@@ -604,6 +699,18 @@ export type TransactionGetTransactionsData = {
          */
         categoryId?: string;
         /**
+         * true: only rows waiting for confirmation whose day has come
+         */
+        needsConfirmation?: boolean;
+        /**
+         * Only rows dated at or after this instant
+         */
+        from?: string;
+        /**
+         * Only rows dated before this instant
+         */
+        before?: string;
+        /**
          * 1-based
          */
         page?: number;
@@ -746,6 +853,29 @@ export type TransactionUpdateTransactionResponses = {
 export type TransactionUpdateTransactionResponse =
     TransactionUpdateTransactionResponses[keyof TransactionUpdateTransactionResponses];
 
+export type TransactionConfirmTransactionData = {
+    body?: never;
+    path: {
+        /**
+         * Transaction id
+         */
+        transactionId: string;
+        /**
+         * Household id
+         */
+        householdId: string;
+    };
+    query?: never;
+    url: '/api/households/{householdId}/transactions/{transactionId}/confirm';
+};
+
+export type TransactionConfirmTransactionResponses = {
+    200: TransactionDto;
+};
+
+export type TransactionConfirmTransactionResponse =
+    TransactionConfirmTransactionResponses[keyof TransactionConfirmTransactionResponses];
+
 export type BudgetGetBudgetsData = {
     body?: never;
     path: {
@@ -864,3 +994,136 @@ export type BudgetCopyPreviousBudgetsResponses = {
 
 export type BudgetCopyPreviousBudgetsResponse =
     BudgetCopyPreviousBudgetsResponses[keyof BudgetCopyPreviousBudgetsResponses];
+
+export type RecurringGetRecurringTransactionsData = {
+    body?: never;
+    path: {
+        /**
+         * Household id
+         */
+        householdId: string;
+    };
+    query?: never;
+    url: '/api/households/{householdId}/recurring-transactions';
+};
+
+export type RecurringGetRecurringTransactionsResponses = {
+    200: Array<RecurringTransactionDto>;
+};
+
+export type RecurringGetRecurringTransactionsResponse =
+    RecurringGetRecurringTransactionsResponses[keyof RecurringGetRecurringTransactionsResponses];
+
+export type RecurringCreateRecurringTransactionData = {
+    body: SaveRecurringTransactionDto;
+    path: {
+        /**
+         * Household id
+         */
+        householdId: string;
+    };
+    query?: never;
+    url: '/api/households/{householdId}/recurring-transactions';
+};
+
+export type RecurringCreateRecurringTransactionResponses = {
+    200: RecurringTransactionDto;
+};
+
+export type RecurringCreateRecurringTransactionResponse =
+    RecurringCreateRecurringTransactionResponses[keyof RecurringCreateRecurringTransactionResponses];
+
+export type RecurringDeleteRecurringTransactionData = {
+    body?: never;
+    path: {
+        /**
+         * Recurring transaction id
+         */
+        recurringTransactionId: string;
+        /**
+         * Household id
+         */
+        householdId: string;
+    };
+    query?: never;
+    url: '/api/households/{householdId}/recurring-transactions/{recurringTransactionId}';
+};
+
+export type RecurringDeleteRecurringTransactionResponses = {
+    /**
+     * Deleted; transactions it created stay
+     */
+    204: void;
+};
+
+export type RecurringDeleteRecurringTransactionResponse =
+    RecurringDeleteRecurringTransactionResponses[keyof RecurringDeleteRecurringTransactionResponses];
+
+export type RecurringUpdateRecurringTransactionData = {
+    body: SaveRecurringTransactionDto;
+    path: {
+        /**
+         * Recurring transaction id
+         */
+        recurringTransactionId: string;
+        /**
+         * Household id
+         */
+        householdId: string;
+    };
+    query?: never;
+    url: '/api/households/{householdId}/recurring-transactions/{recurringTransactionId}';
+};
+
+export type RecurringUpdateRecurringTransactionResponses = {
+    200: RecurringTransactionDto;
+};
+
+export type RecurringUpdateRecurringTransactionResponse =
+    RecurringUpdateRecurringTransactionResponses[keyof RecurringUpdateRecurringTransactionResponses];
+
+export type RecurringPauseRecurringTransactionData = {
+    body?: never;
+    path: {
+        /**
+         * Recurring transaction id
+         */
+        recurringTransactionId: string;
+        /**
+         * Household id
+         */
+        householdId: string;
+    };
+    query?: never;
+    url: '/api/households/{householdId}/recurring-transactions/{recurringTransactionId}/pause';
+};
+
+export type RecurringPauseRecurringTransactionResponses = {
+    200: RecurringTransactionDto;
+};
+
+export type RecurringPauseRecurringTransactionResponse =
+    RecurringPauseRecurringTransactionResponses[keyof RecurringPauseRecurringTransactionResponses];
+
+export type RecurringResumeRecurringTransactionData = {
+    body?: never;
+    path: {
+        /**
+         * Recurring transaction id
+         */
+        recurringTransactionId: string;
+        /**
+         * Household id
+         */
+        householdId: string;
+    };
+    query?: never;
+    url: '/api/households/{householdId}/recurring-transactions/{recurringTransactionId}/resume';
+};
+
+export type RecurringResumeRecurringTransactionResponses = {
+    200: RecurringTransactionDto;
+};
+
+export type RecurringResumeRecurringTransactionResponse =
+    RecurringResumeRecurringTransactionResponses[keyof RecurringResumeRecurringTransactionResponses];

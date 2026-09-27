@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import {
+    transactionConfirmTransaction,
     transactionCreateTransaction,
     transactionDeleteTransaction,
     transactionGetTransactions,
@@ -16,17 +17,21 @@ const LAST_USED_KEY = 'transaction-last-used';
 
 @Injectable({ providedIn: 'root' })
 export class TransactionService {
-    /** `pageSize` omitted = server default. */
+    /** `pageSize` omitted = server default. `range` narrows by date: `from` inclusive, `before` exclusive. */
     async list(
         householdId: string,
         query: TransactionQuery,
         pageSize?: number,
+        range: { from?: Date; before?: Date } = {},
     ): Promise<TransactionPageDto> {
         const response = await transactionGetTransactions({
             path: { householdId },
             query: {
                 accountId: query.accountId,
                 categoryId: query.categoryId,
+                needsConfirmation: query.needsConfirmation,
+                from: range.from?.toISOString(),
+                before: range.before?.toISOString(),
                 page: query.page,
                 pageSize,
             },
@@ -56,6 +61,18 @@ export class TransactionService {
         const response = await transactionUpdateTransaction({
             path: { householdId, transactionId },
             body,
+            throwOnError: true,
+        });
+        return response.data;
+    }
+
+    /** Accepts the amount a varying-amount recurring transaction booked. */
+    async confirm(
+        householdId: string,
+        transactionId: string,
+    ): Promise<TransactionDto> {
+        const response = await transactionConfirmTransaction({
+            path: { householdId, transactionId },
             throwOnError: true,
         });
         return response.data;

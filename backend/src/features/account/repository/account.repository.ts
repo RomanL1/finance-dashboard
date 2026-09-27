@@ -1,11 +1,12 @@
 import { DRIZZLE } from '../../../shared/infra/db/db.module.js';
 import type { Db } from '../../../shared/infra/db/db.js';
 import { Inject, Injectable } from '@nestjs/common';
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq, gt, gte, inArray, isNotNull, sql } from 'drizzle-orm';
 import { Account, CreateAccount, UpdateAccount } from '../model/account.js';
 import { Id } from '../../../shared/kernel/index.js';
 import { financeAccount, nextAccountNumber } from '../model/account.schema.js';
 import { transaction } from '../../transaction/model/transaction.schema.js';
+import { recurringTransaction } from '../../recurring/model/recurring.schema.js';
 
 @Injectable()
 export class AccountRepository {
@@ -54,12 +55,17 @@ export class AccountRepository {
         return { ...row, amount: row.initialValue };
     }
 
-    /** Null when the row does not exist or belongs to another household. */
+    /**
+     * Null when the row does not exist or belongs to another household. Archiving also
+     * removes upcoming transactions recurring transactions booked from the archive date on:
+     * an archived account takes no new entries. One batch: both or neither.
+     */
     async updateAccount(
         householdId: Id,
         entity: UpdateAccount,
+        now: Date,
     ): Promise<Account | null> {
-        const [row] = await this.db
+        const update = this.db
             .update(financeAccount)
             .set(entity)
             .where(
@@ -69,6 +75,39 @@ export class AccountRepository {
                 ),
             )
             .returning({ id: financeAccount.id });
+        const archivedAt = entity.archivedAt;
+        let row: { id: string } | undefined;
+        if (archivedAt) {
+            // Keep batch: explicit transactions lose libsql's :memory: e2e DB (ADR-3).
+            const [rows] = await this.db.batch([
+                update,
+                this.db
+                    .delete(transaction)
+                    .where(
+                        and(
+                            eq(transaction.accountId, entity.id),
+                            isNotNull(transaction.recurringTransactionId),
+                            gte(transaction.date, archivedAt),
+                            gt(transaction.date, now),
+                            inArray(
+                                transaction.accountId,
+                                this.db
+                                    .select({ id: financeAccount.id })
+                                    .from(financeAccount)
+                                    .where(
+                                        eq(
+                                            financeAccount.householdId,
+                                            householdId,
+                                        ),
+                                    ),
+                            ),
+                        ),
+                    ),
+            ]);
+            [row] = rows;
+        } else {
+            [row] = await update;
+        }
         if (!row) return null;
         const [account] = await this.db
             .select(this.columns)
@@ -88,6 +127,24 @@ export class AccountRepository {
             .where(
                 and(
                     eq(transaction.accountId, id),
+                    eq(financeAccount.householdId, householdId),
+                ),
+            )
+            .limit(1);
+        return row !== undefined;
+    }
+
+    async hasRecurringTransactions(householdId: Id, id: Id): Promise<boolean> {
+        const [row] = await this.db
+            .select({ id: recurringTransaction.id })
+            .from(recurringTransaction)
+            .innerJoin(
+                financeAccount,
+                eq(financeAccount.id, recurringTransaction.accountId),
+            )
+            .where(
+                and(
+                    eq(recurringTransaction.accountId, id),
                     eq(financeAccount.householdId, householdId),
                 ),
             )

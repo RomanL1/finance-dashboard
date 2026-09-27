@@ -12,6 +12,8 @@ const saved: Transaction = {
     title: 'Groceries',
     description: null,
     date: new Date('2026-09-15T08:30:00.000Z'),
+    recurringTransactionId: null,
+    needsConfirmation: false,
     createdAt: new Date('2026-09-15T09:00:00.000Z'),
 };
 

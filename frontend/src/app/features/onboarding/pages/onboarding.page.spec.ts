@@ -111,6 +111,7 @@ describe('OnboardingPage', () => {
         expect(service['validateAccounts']).toHaveBeenCalledWith([account]);
         expect(service['submit']).toHaveBeenCalledWith({
             name: 'Home',
+            timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
             categoryNames: ['Miscellaneous'],
             accounts: [account],
         });

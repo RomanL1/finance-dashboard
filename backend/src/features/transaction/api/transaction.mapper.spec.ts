@@ -18,6 +18,8 @@ const transaction: Transaction = {
     title: null,
     description: 'Weekly shop',
     date: new Date('2026-09-15T08:30:00.000Z'),
+    recurringTransactionId: null,
+    needsConfirmation: false,
     createdAt: new Date('2026-09-15T09:00:00.000Z'),
 };
 
@@ -34,6 +36,8 @@ describe('transaction mappers', () => {
             title: null,
             description: 'Weekly shop',
             date: '2026-09-15T08:30:00.000Z',
+            recurringTransactionId: null,
+            needsConfirmation: false,
             createdAt: '2026-09-15T09:00:00.000Z',
         });
     });

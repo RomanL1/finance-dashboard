@@ -25,6 +25,8 @@ export const env = {
     nodeEnv,
     port: Number(process.env.PORT ?? 3000),
     dbFileName: required('DB_FILE_NAME'),
+    /** Books due recurring transactions every minute. `off` in tests, which trigger runs themselves. */
+    recurringScheduler: process.env.RECURRING_SCHEDULER !== 'off',
     /** Create the demo user on boot (see db/seed.ts). */
     seedDemo: process.env.SEED_DEMO === 'true',
     auth: {

@@ -5,7 +5,7 @@ import {
     OnboardingCompleteGuard,
     OnboardingGuard,
 } from '../features/household/services/onboarding.guard';
-import { ANALYTICS_PATHS, APP_PATHS } from './paths.config';
+import { ANALYTICS_PATHS, APP_PATHS, TRANSACTION_PATHS } from './paths.config';
 
 const loadShellPage = () =>
     import('../features/shell/pages/shell.page').then((m) => m.ShellPage);
@@ -112,8 +112,30 @@ export const routes: Routes = [
                 loadComponent: loadHomePage,
             },
             {
+                /** Layout route: history and recurring tabs + outlet. */
                 path: APP_PATHS.TRANSACTIONS,
                 loadComponent: loadTransactionsPage,
+                children: [
+                    {
+                        path: '',
+                        pathMatch: 'full',
+                        redirectTo: TRANSACTION_PATHS.HISTORY,
+                    },
+                    {
+                        path: TRANSACTION_PATHS.HISTORY,
+                        loadComponent: () =>
+                            import('../features/transaction/pages/transaction-history.page').then(
+                                (m) => m.TransactionHistoryPage,
+                            ),
+                    },
+                    {
+                        path: TRANSACTION_PATHS.RECURRING,
+                        loadComponent: () =>
+                            import('../features/recurring/pages/recurring.page').then(
+                                (m) => m.RecurringPage,
+                            ),
+                    },
+                ],
             },
             {
                 /** Layout route: analytics tab row + outlet; both tabs share the `?period&start` params. */

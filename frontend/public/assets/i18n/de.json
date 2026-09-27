@@ -166,7 +166,9 @@
             "blockedTitle": "Konto hat Buchungen",
             "blockedMessage": "Ein Konto mit Buchungen kann nicht gelöscht werden, damit die Historie erhalten bleibt. Stattdessen archivieren? Es verschwindet aus Erfassung und Summen, bleibt aber in der Historie.",
             "blockedArchivedMessage": "Ein Konto mit Buchungen kann nicht gelöscht werden, damit die Historie erhalten bleibt. Es ist bereits archiviert.",
-            "blockedOk": "OK"
+            "blockedOk": "OK",
+            "blockedRecurringTitle": "Konto hat wiederkehrende Buchungen",
+            "blockedRecurringMessage": "Lösche zuerst seine wiederkehrenden Buchungen oder archiviere das Konto."
         },
         "badge": "Konto {{number}}",
         "chips": {
@@ -239,7 +241,8 @@
             "failed": "Transaktion konnte nicht gespeichert werden.",
             "editTitle": "Transaktion bearbeiten",
             "delete": "Löschen",
-            "deleteFailed": "Transaktion konnte nicht gelöscht werden."
+            "deleteFailed": "Transaktion konnte nicht gelöscht werden.",
+            "detachHint": "Von einer wiederkehrenden Buchung erstellt. Speichern löst sie davon, spätere Änderungen daran lassen sie unberührt."
         },
         "form": {
             "typeLabel": "Art",
@@ -264,7 +267,10 @@
                 "week": "Diese Woche",
                 "year": "Früher dieses Jahr"
             },
-            "emptyHint": "Tippe auf +, um die erste zu erfassen."
+            "emptyHint": "Tippe auf +, um die erste zu erfassen.",
+            "recurring": "Wiederkehrend",
+            "needsConfirmation": "Betrag prüfen",
+            "confirm": "Betrag bestätigen"
         },
         "delete": {
             "title": "Transaktion löschen?",
@@ -274,7 +280,8 @@
         "filter": {
             "account": "Konto",
             "category": "Kategorie",
-            "all": "Alle"
+            "all": "Alle",
+            "needsConfirmation": "Nur zu bestätigende Beträge"
         },
         "pager": {
             "label": "Seiten",
@@ -288,6 +295,13 @@
         },
         "page": {
             "title": "Transaktionen"
+        },
+        "confirm": {
+            "failed": "Der Betrag konnte nicht bestätigt werden."
+        },
+        "tabs": {
+            "history": "Verlauf",
+            "recurring": "Wiederkehrend"
         }
     },
     "nav": {
@@ -316,7 +330,9 @@
                 "member": "Mitglied"
             },
             "baseCurrency": "Währung",
-            "baseCurrencyHint": "Nur Anzeige. Alle Konten und Transaktionen verwenden diese Währung; eine Änderung benennt sie um, Beträge werden nicht umgerechnet."
+            "baseCurrencyHint": "Nur Anzeige. Alle Konten und Transaktionen verwenden diese Währung; eine Änderung benennt sie um, Beträge werden nicht umgerechnet.",
+            "timeZone": "Zeitzone",
+            "timeZoneHint": "Wiederkehrende Buchungen entstehen um Mitternacht dieser Zone. Eine Änderung wirkt nur auf spätere Buchungen."
         },
         "appearance": {
             "title": "Darstellung",
@@ -406,6 +422,68 @@
             "barLabel": "{{expenses}}% ausgegeben, {{reserved}}% für Budgets reserviert, {{free}}% frei",
             "overCount": "{{count}} Budgets überschritten",
             "allBudgets": "Alle Budgets"
+        }
+    },
+    "recurring": {
+        "page": {
+            "subtitle": "Die Buchungen eines Monats entstehen zu Monatsbeginn."
+        },
+        "loadFailed": "Wiederkehrende Buchungen konnten nicht geladen werden.",
+        "interval": {
+            "daily": "Täglich",
+            "weekly": "Wöchentlich",
+            "monthly": "Monatlich",
+            "quarterly": "Quartalsweise",
+            "half_yearly": "Halbjährlich",
+            "yearly": "Jährlich"
+        },
+        "schedule": {
+            "daily": "Jeden Tag",
+            "weekly": "Jeden {{anchor}}",
+            "monthly": "Monatlich am {{anchor}}.",
+            "quarterly": "Quartalsweise am {{anchor}}.",
+            "half_yearly": "Halbjährlich am {{anchor}}.",
+            "yearly": "Jährlich am {{anchor}}."
+        },
+        "form": {
+            "varyingAmount": "Betrag schwankt (Buchungen warten auf Bestätigung)",
+            "amountVaryingHint": "Erwarteter Betrag; jede Buchung bestätigst oder korrigierst du.",
+            "accountRequired": "Konto wählen",
+            "intervalLabel": "Wiederholung",
+            "startDateLabel": "Startdatum",
+            "startDateInvalid": "Datum höchstens ein Jahr zurück wählen",
+            "backfillHint": "Vergangene Termine und der Rest dieses Monats werden sofort gebucht.",
+            "weekdayLabel": "Wochentag",
+            "dayOfMonthLabel": "Tag im Monat",
+            "dayOfMonthInvalid": "Tag zwischen 1 und 31 eingeben",
+            "dayOfMonthHint": "In kürzeren Monaten fällt er auf den letzten Tag.",
+            "weekendShift": "Fällt der Termin aufs Wochenende, am Freitag davor buchen"
+        },
+        "dialog": {
+            "title": "Wiederkehrende Buchung hinzufügen",
+            "editTitle": "Wiederkehrende Buchung bearbeiten",
+            "editHint": "Buchungen, deren Tag gekommen ist, bleiben unverändert; die kommenden dieses Monats werden angepasst.",
+            "delete": "Löschen",
+            "cancel": "Abbrechen",
+            "save": "Speichern",
+            "failed": "Die wiederkehrende Buchung konnte nicht gespeichert werden.",
+            "deleteFailed": "Die wiederkehrende Buchung konnte nicht gelöscht werden."
+        },
+        "delete": {
+            "title": "Wiederkehrende Buchung löschen?",
+            "message": "Die kommenden Buchungen dieses Monats werden entfernt; die, deren Tag gekommen ist, bleiben.",
+            "confirm": "Löschen"
+        },
+        "list": {
+            "empty": "Noch keine wiederkehrenden Buchungen.",
+            "emptyHint": "Tippe auf +, um Miete, Lohn oder ein Abo zu erfassen.",
+            "weekendShift": "Wochenende: Freitag davor",
+            "approx": "ca.",
+            "paused": "Pausiert",
+            "next": "Nächste: {{date}}",
+            "pause": "Pausieren",
+            "resume": "Fortsetzen",
+            "toggleFailed": "Die wiederkehrende Buchung konnte nicht geändert werden."
         }
     }
 }

@@ -12,6 +12,8 @@ export default defineConfig({
     fileParallelism: false,
     env: {
       DB_FILE_NAME: ':memory:',
+      // Specs book recurring transactions explicitly with a fixed clock.
+      RECURRING_SCHEDULER: 'off',
       BETTER_AUTH_SECRET: 'e2e-secret-0123456789-0123456789',
       // Mails land here as JSON (see test/support/mail.ts); cleared by prepareTestDb.
       MAIL_OUTBOX_DIR: join(tmpdir(), 'finance-dashboard-e2e-mail'),

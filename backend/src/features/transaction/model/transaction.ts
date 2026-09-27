@@ -16,6 +16,10 @@ export interface CreateTransaction {
     title: string | null;
     description: string | null;
     date: Date;
+    /** The recurring transaction that created it; null for manual entries or after the rule is deleted. */
+    recurringTransactionId: Id | null;
+    /** Created from a varying-amount rule; cleared by confirming or editing (story C9). */
+    needsConfirmation: boolean;
 }
 
 export interface Transaction extends CreateTransaction {
@@ -32,6 +36,12 @@ export const MAX_PAGE_SIZE = 100;
 export interface TransactionFilter {
     accountId?: Id;
     categoryId?: Id | null;
+    /** true: only rows still waiting for confirmation whose day has come. */
+    needsConfirmation?: boolean;
+    /** Dated at or after this instant. */
+    from?: Date;
+    /** Dated before this instant. */
+    before?: Date;
 }
 
 /** One page of the household history, newest first. */
@@ -117,5 +127,7 @@ export function buildTransaction(
         title: input.title?.trim() || null,
         description: input.description?.trim() || null,
         date: input.date,
+        recurringTransactionId: null,
+        needsConfirmation: false,
     };
 }

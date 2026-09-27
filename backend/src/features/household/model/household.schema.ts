@@ -20,6 +20,8 @@ export const household = sqliteTable('household', {
     baseCurrency: text('base_currency', { enum: SUPPORTED_CURRENCIES })
         .notNull()
         .default('CHF'),
+    /** IANA zone; decides when a recurring transaction's day starts (local midnight). Rows older than the column are Europe/Zurich. */
+    timeZone: text('time_zone').notNull().default('Europe/Zurich'),
 
     ...timestamps,
 });

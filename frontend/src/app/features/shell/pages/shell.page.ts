@@ -105,7 +105,7 @@ export class ShellPage {
     constructor(protected readonly auth: AuthService) {}
 
     /**
-     * A tab stays active on its child routes (analytics/budgets), and query params (period filter)
+     * A tab stays active on its child routes (analytics/budgets, transactions/recurring), and query params (period filter)
      * must not drop it. Home is `/`, a prefix of everything, so it alone needs an exact match.
      */
     protected readonly subsetOptions: IsActiveMatchOptions = {
@@ -126,6 +126,7 @@ export class ShellPage {
             icon: 'receipt_long',
             label: 'nav.transactions',
         },
+
         {
             path: APP_PATHS.ANALYTICS,
             icon: 'bar_chart',

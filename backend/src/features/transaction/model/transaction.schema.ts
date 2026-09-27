@@ -1,9 +1,11 @@
 import { index, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import { financeAccount } from '../../account/model/account.schema.js';
 import { category } from '../../category/model/category.schema.js';
+import { recurringTransaction } from '../../recurring/model/recurring.schema.js';
 import { timestamps } from '../../../shared/infra/db/timestamp.schema.js';
+import { TRANSACTION_TYPES } from './transaction-type.js';
 
-export const TRANSACTION_TYPES = ['expense', 'income'] as const;
+export { TRANSACTION_TYPES };
 
 export const transaction = sqliteTable(
     'transaction',
@@ -23,6 +25,15 @@ export const transaction = sqliteTable(
         title: text('title'),
         description: text('description'),
         date: integer('date', { mode: 'timestamp' }).notNull(),
+        /** Set when a recurring transaction created the row. Deleting the rule keeps the row and drops the link (story C11). */
+        recurringTransactionId: text('recurring_transaction_id').references(
+            () => recurringTransaction.id,
+            { onDelete: 'set null' },
+        ),
+        /** Created from a varying-amount rule and not yet confirmed or edited (story C9). */
+        needsConfirmation: integer('needs_confirmation', { mode: 'boolean' })
+            .notNull()
+            .default(false),
 
         ...timestamps,
     },
@@ -32,5 +43,8 @@ export const transaction = sqliteTable(
             table.date,
         ),
         index('transaction_category_id_idx').on(table.categoryId),
+        index('transaction_recurring_transaction_id_idx').on(
+            table.recurringTransactionId,
+        ),
     ],
 );

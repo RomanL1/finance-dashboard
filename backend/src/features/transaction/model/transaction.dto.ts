@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import {
+    IsBoolean,
     IsIn,
     IsInt,
     Max,
@@ -28,6 +29,17 @@ export class TransactionDto {
     @ApiProperty({ nullable: true, type: String }) title!: string | null;
     @ApiProperty({ nullable: true, type: String }) description!: string | null;
     @ApiProperty({ example: '2026-01-15T12:30:00.000Z' }) date!: string;
+    @ApiProperty({
+        nullable: true,
+        type: String,
+        description: 'Recurring transaction that created it',
+    })
+    recurringTransactionId!: string | null;
+    @ApiProperty({
+        description:
+            'Created from a varying-amount recurring transaction and not yet confirmed or edited',
+    })
+    needsConfirmation!: boolean;
     @ApiProperty() createdAt!: string;
 }
 
@@ -54,6 +66,36 @@ export class TransactionListQueryDto {
     @IsString()
     @IsNotEmpty()
     categoryId?: string;
+
+    @ApiProperty({
+        required: false,
+        description:
+            'true: only rows waiting for confirmation whose day has come',
+    })
+    @IsOptional()
+    @Transform(({ value }: { value: unknown }) =>
+        value === 'true' ? true : value === 'false' ? false : value,
+    )
+    @IsBoolean()
+    needsConfirmation?: boolean;
+
+    @ApiProperty({
+        required: false,
+        description: 'Only rows dated at or after this instant',
+        example: '2026-09-28T00:00:00.000+02:00',
+    })
+    @IsOptional()
+    @IsISO8601()
+    from?: string;
+
+    @ApiProperty({
+        required: false,
+        description: 'Only rows dated before this instant',
+        example: '2026-09-28T00:00:00.000+02:00',
+    })
+    @IsOptional()
+    @IsISO8601()
+    before?: string;
 
     @ApiProperty({ required: false, default: 1, description: '1-based' })
     @IsOptional()

@@ -46,6 +46,11 @@ import type {
             }}
         </h2>
         <mat-dialog-content>
+            @if (detaches) {
+                <p class="type-body-small mb-3 text-on-surface-variant">
+                    {{ 'transaction.dialog.detachHint' | translate }}
+                </p>
+            }
             <!-- Rendered before the accounts arrive: the dialog focuses the amount field once,
                  right after opening, and the field must exist by then. -->
             <app-transaction-form
@@ -97,6 +102,8 @@ export class TransactionDialogComponent {
     readonly busy = signal(false);
     readonly error = signal<string | null>(null);
     readonly defaults: TransactionDefaults;
+    /** An upcoming transaction a recurring transaction booked ahead: saving it by hand detaches it (server side). */
+    readonly detaches: boolean;
     /** All accounts, archived included; the form hides those inactive at the chosen date. */
     readonly accounts = resource({
         loader: () => this.accountService.list(this.data.householdId),
@@ -115,6 +122,9 @@ export class TransactionDialogComponent {
         private readonly translate: TranslateService,
     ) {
         this.defaults = data.transaction ?? transactions.lastUsed();
+        this.detaches =
+            !!data.transaction?.recurringTransactionId &&
+            new Date(data.transaction.date) > new Date();
     }
 
     async save(dto: CreateTransactionDto): Promise<void> {

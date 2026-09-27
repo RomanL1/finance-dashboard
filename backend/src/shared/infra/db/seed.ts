@@ -2,11 +2,19 @@
  * Dev seed. Two users for signing in (story M1; its simulated login is now a better-auth session):
  * - demo: deliberately has no household, so logging in always lands on onboarding
  *   from a clean, fully-incomplete state.
- * - sample: fully set up household with accounts, categories, monthly budgets and 200 random transactions.
+ * - sample: fully set up household with accounts, categories, monthly budgets, recurring transactions
+ *   (rent, salary, electricity, streaming) and 200 random transactions.
  * Idempotent. Run with `bun run db:seed`.
  */
 import { eq, inArray } from 'drizzle-orm';
-import { newId } from '../../kernel/index.js';
+import { newId, startOfDayIn, todayIn } from '../../kernel/index.js';
+import {
+    advance,
+    bookingHorizon,
+    buildRecurringFields,
+    buildRecurringTransaction,
+    type RecurringTransactionInput,
+} from '../../../features/recurring/model/recurring.js';
 import { auth } from '../auth/auth.js';
 import { db } from './db.js';
 import {
@@ -16,6 +24,7 @@ import {
     financeAccount,
     household,
     householdMember,
+    recurringTransaction,
     transaction,
     user,
 } from './schema.js';
@@ -45,6 +54,7 @@ const SAMPLE_CATEGORIES = {
     Health: [20, 300],
     Shopping: [15, 250],
     Miscellaneous: [5, 80],
+    Utilities: [180, 320],
     Salary: [6500, 6500],
 } as const satisfies Record<string, readonly [number, number]>;
 
@@ -63,7 +73,11 @@ const SAMPLE_BUDGETS: Partial<Record<SampleCategory, number>> = {
 
 const EXPENSE_CATEGORIES = (
     Object.keys(SAMPLE_CATEGORIES) as SampleCategory[]
-).filter((name) => name !== 'Housing' && name !== 'Salary');
+).filter(
+    (name) => name !== 'Housing' && name !== 'Salary' && name !== 'Utilities',
+);
+
+const SAMPLE_TIME_ZONE = 'Europe/Zurich';
 
 const TITLES: Partial<Record<SampleCategory, string[]>> = {
     Groceries: ['Migros', 'Coop', 'Aldi', 'Lidl', 'Bakery'],
@@ -103,6 +117,14 @@ async function ensureUser(
         });
         [existing] = await byEmail();
         console.log(`created user ${credentials.email}`);
+    } else if (!existing.emailVerified) {
+        // Seeded before sign-up required verification: nobody can follow a mailed link for it.
+        [existing] = await db
+            .update(user)
+            .set({ emailVerified: true })
+            .where(eq(user.id, existing.id))
+            .returning();
+        console.log(`verified user ${credentials.email}`);
     }
     return existing!;
 }
@@ -128,7 +150,7 @@ async function householdIdOf(userId: string): Promise<string | undefined> {
     return membership?.householdId;
 }
 
-/** Deletes a household. Transactions restrict account deletion, so they go first. */
+/** Deletes a household. Transactions and recurring transactions restrict account deletion, so they go first. */
 async function deleteHousehold(householdId: string): Promise<void> {
     const accountIds = db
         .select({ id: financeAccount.id })
@@ -137,6 +159,9 @@ async function deleteHousehold(householdId: string): Promise<void> {
     await db
         .delete(transaction)
         .where(inArray(transaction.accountId, accountIds));
+    await db
+        .delete(recurringTransaction)
+        .where(inArray(recurringTransaction.accountId, accountIds));
     await db.delete(household).where(eq(household.id, householdId));
 }
 
@@ -208,13 +233,70 @@ async function insertSampleHousehold(userId: string): Promise<void> {
         });
     };
 
-    // Recurring: rent on the 1st, salary on the 25th of every month up to now.
-    for (let m = 0; m <= SAMPLE_MONTHS; m++) {
-        const month = new Date(start.getFullYear(), start.getMonth() + m, 1);
-        entry('Housing', month, checking.id);
-        const payday = new Date(month.getFullYear(), month.getMonth(), 25);
-        if (payday <= now) entry('Salary', payday, checking.id, 'income');
-    }
+    // Recurring transactions, with their past occurrences and the rest of this month booked the way
+    // the scheduler would. Only the latest electricity bill still waits for confirmation.
+    const startDate = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-01`;
+    const today = todayIn(SAMPLE_TIME_ZONE, now);
+    const rule = (
+        name: SampleCategory,
+        accountId: string,
+        overrides: Partial<RecurringTransactionInput>,
+    ) => {
+        const [min, max] = SAMPLE_CATEGORIES[name];
+        const fields = buildRecurringFields({
+            accountId,
+            categoryId: categoryIds[name],
+            type: 'expense',
+            amount: max * 100,
+            title: name,
+            interval: 'monthly',
+            startDate,
+            ...overrides,
+        });
+        const created = buildRecurringTransaction(fields);
+        const step = advance(fields, created, bookingHorizon(today));
+        step?.due.forEach(({ dueDate }, i) =>
+            transactions.push({
+                id: newId(),
+                accountId,
+                categoryId: fields.categoryId,
+                type: fields.type,
+                amount: fields.varyingAmount
+                    ? randomInt(min * 100, max * 100)
+                    : fields.amount,
+                title: fields.title,
+                date: startOfDayIn(dueDate, SAMPLE_TIME_ZONE),
+                recurringTransactionId: created.id,
+                needsConfirmation:
+                    fields.varyingAmount && i === step.due.length - 1,
+            }),
+        );
+        return { ...created, ...step?.cursor };
+    };
+    const recurring = [
+        rule('Housing', checking.id, {
+            title: 'Rent',
+            dayOfMonth: 1,
+            weekendShift: true,
+        }),
+        rule('Salary', checking.id, {
+            type: 'income',
+            dayOfMonth: 25,
+            weekendShift: true,
+        }),
+        rule('Utilities', checking.id, {
+            title: 'Electricity',
+            interval: 'quarterly',
+            amount: 25000,
+            dayOfMonth: 15,
+            varyingAmount: true,
+        }),
+        rule('Leisure', creditCard.id, {
+            title: 'Streaming',
+            amount: 1790,
+            dayOfMonth: 12,
+        }),
+    ];
     // Everything else: random day between the start and now.
     while (transactions.length < SAMPLE_TRANSACTION_COUNT) {
         const date = new Date(randomInt(start.getTime(), now.getTime()));
@@ -243,6 +325,7 @@ async function insertSampleHousehold(userId: string): Promise<void> {
             name: 'Sample household',
             onboardingComplete: true,
             baseCurrency: 'CHF',
+            timeZone: SAMPLE_TIME_ZONE,
         }),
         db
             .insert(householdMember)
@@ -263,6 +346,7 @@ async function insertSampleHousehold(userId: string): Promise<void> {
                 startDate: start,
             })),
         ),
+        db.insert(recurringTransaction).values(recurring),
         db.insert(transaction).values(transactions),
         db.insert(budget).values(budgets),
         db
@@ -288,7 +372,7 @@ export async function seed(): Promise<void> {
         `seeded: ${DEMO_USER.email} / ${DEMO_USER.password} → no household (onboarding incomplete)`,
     );
     console.log(
-        `seeded: ${SAMPLE_USER.email} / ${SAMPLE_USER.password} → household with ${SAMPLE_TRANSACTION_COUNT} transactions and budgets`,
+        `seeded: ${SAMPLE_USER.email} / ${SAMPLE_USER.password} → household with ${SAMPLE_TRANSACTION_COUNT} transactions, recurring transactions and budgets`,
     );
 }
 

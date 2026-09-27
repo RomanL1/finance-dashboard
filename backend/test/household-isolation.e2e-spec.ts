@@ -19,6 +19,7 @@ describe('household isolation (e2e)', () => {
         householdId: string;
         accountId: string;
         transactionId: string;
+        recurringTransactionId: string;
     };
     let own: { householdId: string; accountId: string };
 
@@ -30,6 +31,14 @@ describe('household isolation (e2e)', () => {
         initialValue: 100000,
         startDate: '2026-01-01',
     };
+
+    const recurring = (accountId: string) => ({
+        accountId,
+        type: 'expense',
+        amount: 100,
+        interval: 'monthly',
+        startDate: '2099-01-01',
+    });
 
     async function onboard(cookie: string, name: string) {
         const res = await server()
@@ -69,7 +78,19 @@ describe('household isolation (e2e)', () => {
                 date: '2026-02-01T12:00:00.000Z',
             })
             .expect(201);
-        victim = { ...victimHousehold, transactionId: tx.body.id };
+        // Future start: books nothing, so the victim's transactions stay as they are.
+        const rule = await server()
+            .post(
+                `/api/households/${victimHousehold.householdId}/recurring-transactions`,
+            )
+            .set('Cookie', demo)
+            .send(recurring(victimHousehold.accountId))
+            .expect(201);
+        victim = {
+            ...victimHousehold,
+            transactionId: tx.body.id,
+            recurringTransactionId: rule.body.id,
+        };
 
         intruder = await signUpVerified(app, {
             email: 'intruder@finance.local',
@@ -89,6 +110,7 @@ describe('household isolation (e2e)', () => {
             ['GET', '/accounts'],
             ['GET', '/transactions'],
             ['GET', '/transactions/stats?from=2026-01-01&to=2027-01-01'],
+            ['GET', '/recurring-transactions'],
         ])('%s %s is 403', async (_method, path) => {
             await server().get(url(path)).set('Cookie', intruder).expect(403);
         });
@@ -117,6 +139,23 @@ describe('household isolation (e2e)', () => {
                 .patch(`/api/households/${victim.householdId}`)
                 .set('Cookie', intruder)
                 .send({ name: 'Taken over' })
+                .expect(403);
+            await server()
+                .post(url(`/transactions/${victim.transactionId}/confirm`))
+                .set('Cookie', intruder)
+                .expect(403);
+            await server()
+                .post(url('/recurring-transactions'))
+                .set('Cookie', intruder)
+                .send(recurring(victim.accountId))
+                .expect(403);
+            await server()
+                .delete(
+                    url(
+                        `/recurring-transactions/${victim.recurringTransactionId}`,
+                    ),
+                )
+                .set('Cookie', intruder)
                 .expect(403);
         });
     });
@@ -153,6 +192,46 @@ describe('household isolation (e2e)', () => {
                 .delete(url(`/transactions/${victim.transactionId}`))
                 .set('Cookie', intruder)
                 .expect(404);
+        });
+
+        it('cannot confirm a foreign transaction', async () => {
+            await server()
+                .post(url(`/transactions/${victim.transactionId}/confirm`))
+                .set('Cookie', intruder)
+                .expect(404);
+        });
+
+        it('cannot set up a recurring transaction on a foreign account', async () => {
+            await server()
+                .post(url('/recurring-transactions'))
+                .set('Cookie', intruder)
+                .send(recurring(victim.accountId))
+                .expect(404);
+        });
+
+        it('cannot edit, pause, resume or delete a foreign recurring transaction', async () => {
+            const rule = url(
+                `/recurring-transactions/${victim.recurringTransactionId}`,
+            );
+            await server()
+                .patch(rule)
+                .set('Cookie', intruder)
+                .send(recurring(own.accountId))
+                .expect(404);
+            await server()
+                .post(`${rule}/pause`)
+                .set('Cookie', intruder)
+                .expect(404);
+            await server()
+                .post(`${rule}/resume`)
+                .set('Cookie', intruder)
+                .expect(404);
+            await server().delete(rule).set('Cookie', intruder).expect(404);
+            const list = await server()
+                .get(url('/recurring-transactions'))
+                .set('Cookie', intruder)
+                .expect(200);
+            expect(list.body).toEqual([]);
         });
 
         it('cannot edit or delete a foreign account', async () => {
@@ -213,5 +292,16 @@ describe('household isolation (e2e)', () => {
             description: 'Checking',
             amount: 100000 - 500,
         });
+        const rules = await server()
+            .get(`/api/households/${victim.householdId}/recurring-transactions`)
+            .set('Cookie', demo)
+            .expect(200);
+        expect(rules.body).toEqual([
+            expect.objectContaining({
+                id: victim.recurringTransactionId,
+                amount: 100,
+                paused: false,
+            }),
+        ]);
     });
 });

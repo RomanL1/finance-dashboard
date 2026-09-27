@@ -10,6 +10,7 @@ import { MatIcon } from '@angular/material/icon';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AccountBadgeComponent } from '../../../../components/account-badge/account-badge.component';
 import { AmountComponent } from '../../../../components/amount/amount.component';
+import { IconButtonComponent } from '../../../../components/button/button.component';
 import { CategoryAvatarComponent } from '../../../../components/category-avatar/category-avatar.component';
 import type { TransactionGroup } from '../../transaction.types';
 
@@ -22,6 +23,7 @@ import type { TransactionGroup } from '../../transaction.types';
         AccountBadgeComponent,
         AmountComponent,
         CategoryAvatarComponent,
+        IconButtonComponent,
     ],
     template: `
         @if (groups().length === 0) {
@@ -85,12 +87,14 @@ import type { TransactionGroup } from '../../transaction.types';
                                     track row.id;
                                     let last = $last
                                 ) {
-                                    <li class="relative">
+                                    <li
+                                        class="relative flex items-center gap-1"
+                                    >
                                         <!-- Whole row edits; delete lives in the edit dialog. No trailing menu keeps the text column wide on phones. -->
                                         <button
                                             type="button"
                                             matRipple
-                                            class="grid w-full grid-cols-[auto_1fr_auto] items-center gap-x-3 py-2.5 text-left"
+                                            class="grid min-w-0 flex-1 grid-cols-[auto_1fr_auto] items-center gap-x-3 py-2.5 text-left"
                                             (click)="edit.emit(row.id)"
                                         >
                                             <app-category-avatar
@@ -99,14 +103,35 @@ import type { TransactionGroup } from '../../transaction.types';
                                             />
                                             <div class="min-w-0">
                                                 <p
-                                                    class="type-body-large truncate text-on-surface"
+                                                    class="type-body-large flex min-w-0 items-center gap-1 text-on-surface"
                                                 >
-                                                    {{
+                                                    <span class="truncate">{{
                                                         row.title ??
                                                             ('transaction.list.uncategorized'
                                                                 | translate)
-                                                    }}
+                                                    }}</span>
+                                                    @if (row.recurring) {
+                                                        <mat-icon
+                                                            class="!h-4 !w-4 shrink-0 text-on-surface-variant"
+                                                            svgIcon="repeat"
+                                                            [attr.aria-label]="
+                                                                'transaction.list.recurring'
+                                                                    | translate
+                                                            "
+                                                            role="img"
+                                                        />
+                                                    }
                                                 </p>
+                                                @if (row.needsConfirmation) {
+                                                    <p
+                                                        class="type-label-small text-primary"
+                                                    >
+                                                        {{
+                                                            'transaction.list.needsConfirmation'
+                                                                | translate
+                                                        }}
+                                                    </p>
+                                                }
                                                 <p
                                                     class="type-body-medium flex min-w-0 items-center gap-1.5 text-on-surface-variant"
                                                 >
@@ -153,6 +178,17 @@ import type { TransactionGroup } from '../../transaction.types';
                                                 </time>
                                             </div>
                                         </button>
+                                        @if (row.needsConfirmation) {
+                                            <app-icon-button
+                                                [ariaLabel]="
+                                                    'transaction.list.confirm'
+                                                        | translate
+                                                "
+                                                (clicked)="confirm.emit(row.id)"
+                                            >
+                                                <mat-icon svgIcon="check" />
+                                            </app-icon-button>
+                                        }
                                         @if (!last) {
                                             <!-- Inset divider: starts at the text edge, not under the avatar. -->
                                             <span
@@ -174,6 +210,8 @@ import type { TransactionGroup } from '../../transaction.types';
 export class TransactionListComponent {
     readonly groups = input.required<TransactionGroup[]>();
     readonly edit = output<string>();
+    /** Accept the booked amount of a varying-amount recurring transaction as is. */
+    readonly confirm = output<string>();
     /** Future entries are collapsed by default; resets when the component is recreated. */
     protected readonly upcomingOpen = signal(false);
 

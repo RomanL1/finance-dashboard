@@ -18,6 +18,8 @@ const row = (
     title: 'Groceries',
     currency: 'CHF',
     amount: -1250,
+    recurring: false,
+    needsConfirmation: false,
     ...patch,
 });
 
@@ -32,6 +34,9 @@ describe('TransactionListComponent', () => {
         const events: string[] = [];
         fixture.componentInstance.edit.subscribe((id) =>
             events.push(`edit:${id}`),
+        );
+        fixture.componentInstance.confirm.subscribe((id) =>
+            events.push(`confirm:${id}`),
         );
         const el = fixture.nativeElement as HTMLElement;
         return { fixture, el, events };
@@ -125,5 +130,43 @@ describe('TransactionListComponent', () => {
 
         expect(el.querySelector('li')!.textContent).toContain('12.50');
         expect(el.querySelector('li')!.textContent).not.toContain('CHF');
+    });
+
+    it('marks recurring rows and offers confirming a varying amount', () => {
+        groups.set([
+            {
+                kind: 'today',
+                rows: [
+                    row('t1', { recurring: true, needsConfirmation: true }),
+                    row('t2', { recurring: true }),
+                    row('t3'),
+                ],
+            },
+        ]);
+        const { el, events } = create();
+        const items = el.querySelectorAll('li');
+
+        expect(
+            items[0].querySelector('[aria-label="transaction.list.recurring"]'),
+        ).not.toBeNull();
+        expect(items[0].textContent).toContain(
+            'transaction.list.needsConfirmation',
+        );
+        expect(
+            items[1].querySelector('[aria-label="transaction.list.recurring"]'),
+        ).not.toBeNull();
+        expect(items[1].textContent).not.toContain(
+            'transaction.list.needsConfirmation',
+        );
+        expect(
+            items[2].querySelector('[aria-label="transaction.list.recurring"]'),
+        ).toBeNull();
+
+        const confirm = el.querySelectorAll<HTMLButtonElement>(
+            'button[aria-label="transaction.list.confirm"]',
+        );
+        expect(confirm).toHaveLength(1);
+        confirm[0].click();
+        expect(events).toEqual(['confirm:t1']);
     });
 });

@@ -16,6 +16,8 @@ export const UNCATEGORIZED = 'none';
 export interface TransactionFilter {
     accountId?: string;
     categoryId?: string;
+    /** Only rows from a varying-amount recurring transaction that still wait for confirmation. */
+    needsConfirmation?: boolean;
 }
 
 export interface TransactionQuery extends TransactionFilter {
@@ -23,7 +25,7 @@ export interface TransactionQuery extends TransactionFilter {
     page: number;
 }
 
-/** Query params `account`, `category`, `page`; garbage falls back to the first unfiltered page. */
+/** Query params `account`, `category`, `confirm`, `page`; garbage falls back to the first unfiltered page. */
 export function parseTransactionParams(
     params: Record<string, string | undefined>,
 ): TransactionQuery {
@@ -31,6 +33,7 @@ export function parseTransactionParams(
     return {
         accountId: params['account'] || undefined,
         categoryId: params['category'] || undefined,
+        needsConfirmation: params['confirm'] === '1' || undefined,
         page: Number.isInteger(page) && page > 0 ? page : 1,
     };
 }
@@ -42,6 +45,7 @@ export function toTransactionParams(
     return {
         account: query.accountId ?? null,
         category: query.categoryId ?? null,
+        confirm: query.needsConfirmation ? '1' : null,
         page: query.page > 1 ? String(query.page) : null,
     };
 }
@@ -51,8 +55,14 @@ export function sameQuery(a: TransactionQuery, b: TransactionQuery): boolean {
     return (
         a.accountId === b.accountId &&
         a.categoryId === b.categoryId &&
+        a.needsConfirmation === b.needsConfirmation &&
         a.page === b.page
     );
+}
+
+/** Local midnight at the start of tomorrow: rows from here on are upcoming. */
+export function startOfTomorrow(now: Date): Date {
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
 }
 
 export function pageCount(total: number, pageSize: number): number {
@@ -89,6 +99,10 @@ export interface TransactionRow {
     currency: string;
     /** Signed minor units: negative for expenses. */
     amount: number;
+    /** Booked by a recurring transaction (still linked). */
+    recurring: boolean;
+    /** Amount came from a varying-amount rule, its day has come and it was not confirmed or edited yet. */
+    needsConfirmation: boolean;
 }
 
 /**
@@ -171,6 +185,9 @@ export function toTransactionGroups(
             accountName: account?.description ?? '',
             currency: account?.currency ?? '',
             amount: t.type === 'income' ? t.amount : -t.amount,
+            recurring: t.recurringTransactionId !== null,
+            // An upcoming bill cannot be checked yet; the flag shows once its day has come.
+            needsConfirmation: t.needsConfirmation && date <= now,
         });
     }
 

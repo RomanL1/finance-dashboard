@@ -39,6 +39,7 @@ type RepoFake = Pick<
     | 'createAccount'
     | 'updateAccount'
     | 'hasTransactions'
+    | 'hasRecurringTransactions'
     | 'deleteAccount'
 >;
 
@@ -62,6 +63,9 @@ function makeRepo(overrides: Partial<RepoFake> = {}): RepoFake {
         hasTransactions: vi
             .fn<RepoFake['hasTransactions']>()
             .mockResolvedValue(false),
+        hasRecurringTransactions: vi
+            .fn<RepoFake['hasRecurringTransactions']>()
+            .mockResolvedValue(false),
         deleteAccount: vi
             .fn<RepoFake['deleteAccount']>()
             .mockResolvedValue(true),
@@ -79,10 +83,13 @@ function makeHouseholds(
     };
 }
 
+const NOW = new Date('2026-09-27T10:00:00.000Z');
+
 function makeService(repo: RepoFake, baseCurrency: SupportedCurrency = 'CHF') {
     return new AccountService(
         repo as AccountRepository,
         makeHouseholds(baseCurrency) as HouseholdService,
+        { now: () => NOW },
     );
 }
 
@@ -204,11 +211,11 @@ describe('AccountService', () => {
                 archivedAt,
             });
 
-            expect(repo.updateAccount).toHaveBeenCalledWith('household-1', {
-                id: 'acc-1',
-                ...editable,
-                archivedAt,
-            });
+            expect(repo.updateAccount).toHaveBeenCalledWith(
+                'household-1',
+                { id: 'acc-1', ...editable, archivedAt },
+                NOW,
+            );
         });
 
         it('unarchives when archivedAt is left out', async () => {
@@ -218,6 +225,7 @@ describe('AccountService', () => {
             expect(repo.updateAccount).toHaveBeenCalledWith(
                 'household-1',
                 expect.objectContaining({ id: 'acc-1', archivedAt: null }),
+                NOW,
             );
         });
 
@@ -247,6 +255,16 @@ describe('AccountService', () => {
         it('refuses an account with transactions', async () => {
             const repo = makeRepo({
                 hasTransactions: vi.fn().mockResolvedValue(true),
+            });
+            await expect(
+                makeService(repo).delete('household-1', 'acc-1'),
+            ).rejects.toBeInstanceOf(ConflictError);
+            expect(repo.deleteAccount).not.toHaveBeenCalled();
+        });
+
+        it('refuses an account with recurring transactions', async () => {
+            const repo = makeRepo({
+                hasRecurringTransactions: vi.fn().mockResolvedValue(true),
             });
             await expect(
                 makeService(repo).delete('household-1', 'acc-1'),

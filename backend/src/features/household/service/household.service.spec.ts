@@ -17,6 +17,7 @@ const membership = (
         name: 'Home',
         onboardingComplete: false,
         baseCurrency: 'CHF',
+        timeZone: 'Europe/Zurich',
         createdAt: new Date('2026-01-01'),
     },
 });
@@ -161,6 +162,28 @@ describe('HouseholdService', () => {
             });
             await expect(
                 makeService(repo).update('h1', 'u1', { name: '   ' }),
+            ).rejects.toBeInstanceOf(ValidationError);
+            expect(repo.update).not.toHaveBeenCalled();
+        });
+
+        it('changes the time zone', async () => {
+            const repo = makeRepo({
+                findMembership: vi.fn().mockResolvedValue(membership('owner')),
+            });
+            await makeService(repo).update('h1', 'u1', {
+                timeZone: 'America/New_York',
+            });
+            expect(repo.update).toHaveBeenCalledWith('h1', {
+                timeZone: 'America/New_York',
+            });
+        });
+
+        it('rejects an unknown time zone', async () => {
+            const repo = makeRepo({
+                findMembership: vi.fn().mockResolvedValue(membership('owner')),
+            });
+            await expect(
+                makeService(repo).update('h1', 'u1', { timeZone: 'Mars/Base' }),
             ).rejects.toBeInstanceOf(ValidationError);
             expect(repo.update).not.toHaveBeenCalled();
         });

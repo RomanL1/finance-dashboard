@@ -43,6 +43,48 @@ describe('TransactionService', () => {
         ).toEqual({ accountId: 'a1', page: '1', pageSize: '5' });
     });
 
+    it('restricts to rows waiting for confirmation', async () => {
+        const fetch = mockFetch({ items: [], total: 0, page: 1, pageSize: 50 });
+
+        await service.list('h1', { needsConfirmation: true, page: 1 });
+
+        expect(
+            new URL(requestOf(fetch, 0).url).searchParams.get(
+                'needsConfirmation',
+            ),
+        ).toBe('true');
+    });
+
+    it('narrows by date range', async () => {
+        const fetch = mockFetch({ items: [], total: 0, page: 1, pageSize: 10 });
+
+        await service.list('h1', { page: 1 }, 10, {
+            from: new Date('2026-09-01T00:00:00.000Z'),
+            before: new Date('2026-10-01T00:00:00.000Z'),
+        });
+
+        expect(
+            Object.fromEntries(new URL(requestOf(fetch, 0).url).searchParams),
+        ).toEqual({
+            from: '2026-09-01T00:00:00.000Z',
+            before: '2026-10-01T00:00:00.000Z',
+            page: '1',
+            pageSize: '10',
+        });
+    });
+
+    it('confirms a transaction', async () => {
+        const fetch = mockFetch({ id: 't1', needsConfirmation: false });
+
+        await service.confirm('h1', 't1');
+
+        const request = requestOf(fetch, 0);
+        expect(request.method).toBe('POST');
+        expect(new URL(request.url).pathname).toBe(
+            '/api/households/h1/transactions/t1/confirm',
+        );
+    });
+
     it('remembers account and category of a created entry', async () => {
         mockFetch({ id: 't1' });
 

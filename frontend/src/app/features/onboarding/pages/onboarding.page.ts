@@ -9,6 +9,7 @@ import {
 import { Router } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { MatStep, MatStepLabel, MatStepper } from '@angular/material/stepper';
+import { browserTimeZone } from '../../../core/constants/time-zones';
 import { APP_PATHS } from '../../../config/paths.config';
 import { ButtonComponent } from '../../../components/button/button.component';
 import { HouseholdFormComponent } from '../dumb_components/household-form/household-form.component';
@@ -200,6 +201,8 @@ export class OnboardingPage {
             await this.onboardingService.validateAccounts([dto]);
             await this.onboardingService.submit({
                 name: draft.name,
+                // Recurring transactions book at midnight in this zone; changeable in settings.
+                timeZone: browserTimeZone(),
                 categoryNames: this.resolveCategoryNames(draft.categories),
                 accounts: [dto],
             });

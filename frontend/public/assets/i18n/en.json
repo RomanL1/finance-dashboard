@@ -166,7 +166,9 @@
             "blockedTitle": "Account has transactions",
             "blockedMessage": "An account with transactions cannot be deleted, so its history is kept. Archive it instead? It disappears from entry and totals but stays in the history.",
             "blockedArchivedMessage": "An account with transactions cannot be deleted, so its history is kept. It is already archived.",
-            "blockedOk": "OK"
+            "blockedOk": "OK",
+            "blockedRecurringTitle": "Account has recurring transactions",
+            "blockedRecurringMessage": "Delete its recurring transactions first, or archive the account."
         },
         "badge": "Account {{number}}",
         "chips": {
@@ -239,7 +241,8 @@
             "failed": "Could not save the transaction.",
             "editTitle": "Edit transaction",
             "delete": "Delete",
-            "deleteFailed": "Could not delete the transaction."
+            "deleteFailed": "Could not delete the transaction.",
+            "detachHint": "Created by a recurring transaction. Saving your changes detaches it, so later changes to the recurring transaction leave it alone."
         },
         "form": {
             "typeLabel": "Type",
@@ -264,7 +267,10 @@
                 "week": "This week",
                 "year": "Earlier this year"
             },
-            "emptyHint": "Tap + to add your first one."
+            "emptyHint": "Tap + to add your first one.",
+            "recurring": "Recurring",
+            "needsConfirmation": "Check amount",
+            "confirm": "Confirm amount"
         },
         "delete": {
             "title": "Delete transaction?",
@@ -274,7 +280,8 @@
         "filter": {
             "account": "Account",
             "category": "Category",
-            "all": "All"
+            "all": "All",
+            "needsConfirmation": "Only amounts to confirm"
         },
         "pager": {
             "label": "Pages",
@@ -288,6 +295,13 @@
         },
         "page": {
             "title": "Transactions"
+        },
+        "confirm": {
+            "failed": "Could not confirm the amount."
+        },
+        "tabs": {
+            "history": "History",
+            "recurring": "Recurring"
         }
     },
     "nav": {
@@ -316,7 +330,9 @@
                 "member": "Member"
             },
             "baseCurrency": "Currency",
-            "baseCurrencyHint": "Display only. Every account and transaction uses this currency; changing it relabels them, amounts are not converted."
+            "baseCurrencyHint": "Display only. Every account and transaction uses this currency; changing it relabels them, amounts are not converted.",
+            "timeZone": "Time zone",
+            "timeZoneHint": "Recurring transactions are booked at midnight in this zone. A change only affects later bookings."
         },
         "appearance": {
             "title": "Appearance",
@@ -406,6 +422,68 @@
             "barLabel": "{{expenses}}% spent, {{reserved}}% reserved for budgets, {{free}}% free",
             "overCount": "{{count}} budgets over limit",
             "allBudgets": "All budgets"
+        }
+    },
+    "recurring": {
+        "page": {
+            "subtitle": "A month's bookings are created when the month starts."
+        },
+        "loadFailed": "Could not load recurring transactions.",
+        "interval": {
+            "daily": "Daily",
+            "weekly": "Weekly",
+            "monthly": "Monthly",
+            "quarterly": "Quarterly",
+            "half_yearly": "Half-yearly",
+            "yearly": "Yearly"
+        },
+        "schedule": {
+            "daily": "Every day",
+            "weekly": "Every {{anchor}}",
+            "monthly": "Monthly on day {{anchor}}",
+            "quarterly": "Quarterly on day {{anchor}}",
+            "half_yearly": "Half-yearly on day {{anchor}}",
+            "yearly": "Yearly on day {{anchor}}"
+        },
+        "form": {
+            "varyingAmount": "Amount varies (bookings wait for confirmation)",
+            "amountVaryingHint": "Expected amount; you confirm or correct each booking.",
+            "accountRequired": "Choose an account",
+            "intervalLabel": "Repeats",
+            "startDateLabel": "Start date",
+            "startDateInvalid": "Pick a date at most one year back",
+            "backfillHint": "Past occurrences and the rest of this month are booked right away.",
+            "weekdayLabel": "Weekday",
+            "dayOfMonthLabel": "Day of month",
+            "dayOfMonthInvalid": "Enter a day between 1 and 31",
+            "dayOfMonthHint": "In shorter months it falls on the last day.",
+            "weekendShift": "Book on the Friday before if it falls on a weekend"
+        },
+        "dialog": {
+            "title": "Add recurring transaction",
+            "editTitle": "Edit recurring transaction",
+            "editHint": "Transactions whose day has come stay as they are; this month's upcoming ones are updated.",
+            "delete": "Delete",
+            "cancel": "Cancel",
+            "save": "Save",
+            "failed": "Could not save the recurring transaction.",
+            "deleteFailed": "Could not delete the recurring transaction."
+        },
+        "delete": {
+            "title": "Delete recurring transaction?",
+            "message": "This month's upcoming transactions are removed; the ones whose day has come stay.",
+            "confirm": "Delete"
+        },
+        "list": {
+            "empty": "No recurring transactions yet.",
+            "emptyHint": "Tap + to add rent, salary or a subscription.",
+            "weekendShift": "weekends: Friday before",
+            "approx": "approx.",
+            "paused": "Paused",
+            "next": "Next: {{date}}",
+            "pause": "Pause",
+            "resume": "Resume",
+            "toggleFailed": "Could not change the recurring transaction."
         }
     }
 }

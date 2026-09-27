@@ -7,14 +7,22 @@ import {
 import { MatOption } from '@angular/material/core';
 import { MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatSelect } from '@angular/material/select';
+import { MatSlideToggle } from '@angular/material/slide-toggle';
 import { TranslatePipe } from '@ngx-translate/core';
 import type { AccountDto, CategoryDto } from '../../../../core/api';
 import { UNCATEGORIZED, type TransactionFilter } from '../../transaction.types';
 
-/** Account and category selects; every change emits the whole filter. Archived accounts stay listed: history is history. */
+/** Account and category selects plus the "needs confirmation" toggle; every change emits the whole filter. Archived accounts stay listed: history is history. */
 @Component({
     selector: 'app-transaction-filter',
-    imports: [MatFormField, MatLabel, MatSelect, MatOption, TranslatePipe],
+    imports: [
+        MatFormField,
+        MatLabel,
+        MatSelect,
+        MatOption,
+        MatSlideToggle,
+        TranslatePipe,
+    ],
     template: `
         <div class="grid grid-cols-2 gap-3">
             <mat-form-field subscriptSizing="dynamic">
@@ -57,6 +65,14 @@ import { UNCATEGORIZED, type TransactionFilter } from '../../transaction.types';
                     }
                 </mat-select>
             </mat-form-field>
+
+            <mat-slide-toggle
+                class="col-span-2"
+                [checked]="!!filter().needsConfirmation"
+                (change)="setNeedsConfirmation($event.checked)"
+            >
+                {{ 'transaction.filter.needsConfirmation' | translate }}
+            </mat-slide-toggle>
         </div>
     `,
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -75,6 +91,13 @@ export class TransactionFilterComponent {
         this.filterChange.emit({
             ...this.filter(),
             accountId: accountId || undefined,
+        });
+    }
+
+    protected setNeedsConfirmation(only: boolean): void {
+        this.filterChange.emit({
+            ...this.filter(),
+            needsConfirmation: only || undefined,
         });
     }
 

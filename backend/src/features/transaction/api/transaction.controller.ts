@@ -121,6 +121,23 @@ export class TransactionController {
         );
     }
 
+    @Post(':transactionId/confirm')
+    @HttpCode(HttpStatus.OK)
+    @ApiParam({
+        name: 'transactionId',
+        description: 'Transaction id',
+        type: String,
+    })
+    @ApiOkResponse({ type: TransactionDto })
+    async confirmTransaction(
+        @Param('householdId') householdId: Id,
+        @Param('transactionId') transactionId: Id,
+    ): Promise<TransactionDto> {
+        return toTransactionDto(
+            await this.transactions.confirm(householdId, transactionId),
+        );
+    }
+
     @Delete(':transactionId')
     @ApiParam({
         name: 'transactionId',
@@ -142,6 +159,9 @@ function toFilter(query: TransactionListQueryDto): TransactionFilter {
         accountId: query.accountId,
         categoryId:
             query.categoryId === UNCATEGORIZED ? null : query.categoryId,
+        needsConfirmation: query.needsConfirmation,
+        from: query.from ? new Date(query.from) : undefined,
+        before: query.before ? new Date(query.before) : undefined,
     };
 }
 

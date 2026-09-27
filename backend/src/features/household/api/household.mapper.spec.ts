@@ -11,6 +11,7 @@ describe('toHouseholdDto', () => {
                 name: 'Home',
                 onboardingComplete: true,
                 baseCurrency: 'EUR',
+                timeZone: 'Europe/Berlin',
                 createdAt: new Date('2026-01-01T00:00:00.000Z'),
             },
         });
@@ -22,6 +23,7 @@ describe('toHouseholdDto', () => {
             role: 'member',
             onboardingComplete: true,
             baseCurrency: 'EUR',
+            timeZone: 'Europe/Berlin',
             createdAt: '2026-01-01T00:00:00.000Z',
         });
     });

@@ -71,6 +71,36 @@ describe('TransactionDialogComponent', () => {
         expect(submit().disabled).toBe(false);
     });
 
+    it('warns that saving detaches an upcoming recurring booking', () => {
+        const future = new Date(Date.now() + 86_400_000).toISOString();
+        const past = new Date(Date.now() - 86_400_000).toISOString();
+        const booked = (date: string, recurringTransactionId: string | null) =>
+            ({
+                ...dto,
+                id: 't1',
+                date,
+                recurringTransactionId,
+                needsConfirmation: false,
+                createdAt: past,
+            }) as TransactionDto;
+        const hint = (transaction: TransactionDto) => {
+            const fixture = create({
+                householdId: 'h1',
+                categories: [],
+                transaction,
+            });
+            const found = (
+                fixture.nativeElement as HTMLElement
+            ).textContent!.includes('transaction.dialog.detachHint');
+            TestBed.resetTestingModule();
+            return found;
+        };
+
+        expect(hint(booked(future, 'r1'))).toBe(true);
+        expect(hint(booked(past, 'r1'))).toBe(false);
+        expect(hint(booked(future, null))).toBe(false);
+    });
+
     it('creates a new entry and closes with it', async () => {
         const dialog = create({
             householdId: 'h1',

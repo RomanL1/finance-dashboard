@@ -10,6 +10,7 @@ import {
     inArray,
     isNull,
     lt,
+    lte,
     sql,
 } from 'drizzle-orm';
 import {
@@ -38,6 +39,8 @@ export class TransactionRepository {
         title: transaction.title,
         description: transaction.description,
         date: transaction.date,
+        recurringTransactionId: transaction.recurringTransactionId,
+        needsConfirmation: transaction.needsConfirmation,
         createdAt: transaction.createdAt,
     };
 
@@ -52,8 +55,8 @@ export class TransactionRepository {
         );
     }
 
-    /** Household rows narrowed by the filter; `and()` drops the undefined parts. */
-    private matching(householdId: Id, filter: TransactionFilter) {
+    /** Household rows narrowed by the filter; `and()` drops the undefined parts. `now` bounds the confirmation filter to rows whose day has come. */
+    private matching(householdId: Id, filter: TransactionFilter, now: Date) {
         return and(
             this.inHousehold(householdId),
             filter.accountId
@@ -64,6 +67,14 @@ export class TransactionRepository {
                 : filter.categoryId
                   ? eq(transaction.categoryId, filter.categoryId)
                   : undefined,
+            filter.needsConfirmation
+                ? and(
+                      eq(transaction.needsConfirmation, true),
+                      lte(transaction.date, now),
+                  )
+                : undefined,
+            filter.from ? gte(transaction.date, filter.from) : undefined,
+            filter.before ? lt(transaction.date, filter.before) : undefined,
         );
     }
 
@@ -73,11 +84,12 @@ export class TransactionRepository {
         filter: TransactionFilter,
         limit: number,
         offset: number,
+        now: Date,
     ): Promise<Transaction[]> {
         return await this.db
             .select(this.columns)
             .from(transaction)
-            .where(this.matching(householdId, filter))
+            .where(this.matching(householdId, filter, now))
             .orderBy(desc(transaction.date), desc(transaction.createdAt))
             .limit(limit)
             .offset(offset);
@@ -86,11 +98,12 @@ export class TransactionRepository {
     async countByHouseholdId(
         householdId: Id,
         filter: TransactionFilter,
+        now: Date,
     ): Promise<number> {
         const [row] = await this.db
             .select({ total: count() })
             .from(transaction)
-            .where(this.matching(householdId, filter));
+            .where(this.matching(householdId, filter, now));
         return row?.total ?? 0;
     }
 
@@ -175,20 +188,42 @@ export class TransactionRepository {
         return row;
     }
 
-    /** Null when the row does not exist or belongs to another household. */
+    /**
+     * Null when the row does not exist or belongs to another household. An upcoming row
+     * (stored date after `now`) edited by hand leaves its recurring transaction, which would
+     * otherwise re-create or remove it; a row whose day has come keeps the link.
+     */
     async updateTransaction(
         householdId: Id,
         entity: CreateTransaction,
+        now: Date,
     ): Promise<Transaction | null> {
+        const { recurringTransactionId: _, ...changes } = entity;
         const [row] = await this.db
             .update(transaction)
-            .set(entity)
+            .set({
+                ...changes,
+                recurringTransactionId: sql`case when ${transaction.date} > ${Math.floor(now.getTime() / 1000)} then null else ${transaction.recurringTransactionId} end`,
+            })
             .where(
                 and(
                     eq(transaction.id, entity.id),
                     this.inHousehold(householdId),
                 ),
             )
+            .returning();
+        return row ?? null;
+    }
+
+    /** Null when the row does not exist or belongs to another household. */
+    async confirmTransaction(
+        householdId: Id,
+        id: Id,
+    ): Promise<Transaction | null> {
+        const [row] = await this.db
+            .update(transaction)
+            .set({ needsConfirmation: false })
+            .where(and(eq(transaction.id, id), this.inHousehold(householdId)))
             .returning();
         return row ?? null;
     }

@@ -21,6 +21,8 @@ import { OnboardingRepository } from '../repository/onboarding.repository.js';
 
 export interface OnboardingInput {
     name: string;
+    /** IANA zone; Europe/Zurich when omitted. */
+    timeZone?: string;
     categoryNames: string[];
     accounts: CreateAccountInput[];
 }
@@ -52,6 +54,7 @@ export class OnboardingService {
             onboardingComplete: true,
             // The first account's currency becomes the household currency; every account must share it.
             baseCurrency: baseCurrencyOf(input.accounts),
+            timeZone: input.timeZone ?? DEFAULT_TIME_ZONE,
             createdAt: new Date(),
         };
 
@@ -65,6 +68,8 @@ export class OnboardingService {
         return household;
     }
 }
+
+const DEFAULT_TIME_ZONE = 'Europe/Zurich';
 
 function baseCurrencyOf(accounts: CreateAccountInput[]): SupportedCurrency {
     const first = accounts[0]?.currency;
