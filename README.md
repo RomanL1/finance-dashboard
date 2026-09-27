@@ -15,6 +15,31 @@ Data lives in the `db-data` volume and survives restarts. Migrations run automat
 
 The app listens on host port **8080** by default (`APP_PORT` changes it). Optional overrides go in the same `.env` (see `.env.example`): `APP_PORT`, `SEED_DEMO=false` to skip the demo and sample users, `BETTER_AUTH_URL` / `TRUSTED_ORIGINS` when served from another origin (`APP_URL`, the origin in mail links, follows `BETTER_AUTH_URL`).
 
+### Ship the images as a file
+
+To run the bundle on a machine without the source (or without registry access), build the images, save them to a tar file, and load it there:
+
+```bash
+docker compose build                                                      # builds finance-dashboard-api and finance-dashboard-web
+docker save finance-dashboard-api finance-dashboard-web | gzip > finance-dashboard.tar.gz
+```
+
+When the target has a different CPU architecture (e.g. building on an Apple Silicon Mac for an x86 server), build the images for its platform instead of `docker compose build`:
+
+```bash
+docker buildx build --platform linux/amd64 -t finance-dashboard-api --load ./backend
+docker buildx build --platform linux/amd64 -t finance-dashboard-web --load ./frontend
+```
+
+Copy `finance-dashboard.tar.gz`, `compose.yaml` and `.env` to the target machine, then:
+
+```bash
+gunzip -c finance-dashboard.tar.gz | docker load
+docker compose -p finance-dashboard up -d                                 # uses the loaded images, no build
+```
+
+Image names come from the compose project name (the folder name by default); `-p finance-dashboard` keeps them matching when the target folder is named differently. Omit `--build` there, or compose rebuilds from source it doesn't have.
+
 Swagger (`/docs`) is only mounted outside production; run the backend locally to browse it.
 
 ## Development

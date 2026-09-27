@@ -54,7 +54,8 @@ import {
                     matInput
                     type="email"
                     formControlName="email"
-                    autocomplete="email"
+                    name="email"
+                    autocomplete="username"
                 />
                 @if (form.controls.email.hasError('required')) {
                     <mat-error>{{

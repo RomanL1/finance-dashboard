@@ -53,7 +53,8 @@ import type { LoginCredentials } from '../../auth.types';
                     matInput
                     type="email"
                     formControlName="email"
-                    autocomplete="email"
+                    name="email"
+                    autocomplete="username"
                 />
                 @if (form.controls.email.hasError('required')) {
                     <mat-error>{{
@@ -74,6 +75,7 @@ import type { LoginCredentials } from '../../auth.types';
                     matInput
                     [type]="hide() ? 'password' : 'text'"
                     formControlName="password"
+                    name="password"
                     autocomplete="current-password"
                 />
                 <app-icon-button
