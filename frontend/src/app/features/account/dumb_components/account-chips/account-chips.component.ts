@@ -31,6 +31,7 @@ import type { AccountDto } from '../../account.types';
                             </span>
                             <app-amount
                                 [amount]="account.amount"
+                                kind="balance"
                                 [currency]="account.currency"
                                 [showPlus]="false"
                             />

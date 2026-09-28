@@ -58,7 +58,7 @@ import { AnalyticsService } from '../services/analytics.service';
                             [currency]="stats.value()!.currency"
                             [label]="'analytics.chartLabel' | translate"
                             [scheme]="theme.resolved()"
-                            [hideAmounts]="privacy.hideAmounts()"
+                            [hideAmounts]="privacy.hideTransactions()"
                         />
                     }
                 </div>

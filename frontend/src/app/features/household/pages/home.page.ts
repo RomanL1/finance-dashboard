@@ -216,6 +216,7 @@ function readView(): HomeView {
                             <div animate.enter="fade-in">
                                 <app-amount
                                     [amount]="total.amount"
+                                    kind="balance"
                                     [currency]="total.currency"
                                     [showPlus]="false"
                                     emphasis="stat"

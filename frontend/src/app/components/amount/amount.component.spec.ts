@@ -1,7 +1,10 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { stubLocalStorage } from '../../testing/local-storage';
-import { PrivacyService } from '../../core/privacy/privacy.service';
+import {
+    PrivacyService,
+    type FigureKind,
+} from '../../core/privacy/privacy.service';
 import { AmountComponent } from './amount.component';
 
 @Component({
@@ -11,12 +14,14 @@ import { AmountComponent } from './amount.component';
         currency="CHF"
         [showPlus]="showPlus()"
         [showCurrency]="showCurrency()"
+        [kind]="kind()"
     />`,
 })
 class HostComponent {
     readonly amount = signal(0);
     readonly showPlus = signal(true);
     readonly showCurrency = signal(true);
+    readonly kind = signal<FigureKind>('transaction');
 }
 
 describe('AmountComponent', () => {
@@ -68,19 +73,33 @@ describe('AmountComponent', () => {
         expect(render(-1250, true, false)).toBe('−12.50');
     });
 
-    it('blurs the figure while amounts are hidden, keeping the text', () => {
-        const fixture = TestBed.createComponent(HostComponent);
-        fixture.componentInstance.amount.set(-1250);
-        fixture.detectChanges();
-        const figure = (fixture.nativeElement as HTMLElement).querySelector(
-            'app-amount > span',
-        )!;
-        expect(figure.classList).not.toContain('blur-sm');
+    it.each<[FigureKind, FigureKind]>([
+        ['balance', 'transaction'],
+        ['transaction', 'balance'],
+    ])(
+        'blurs a %s only while its own toggle is on, keeping the text',
+        (kind, other) => {
+            const fixture = TestBed.createComponent(HostComponent);
+            fixture.componentInstance.amount.set(-1250);
+            fixture.componentInstance.kind.set(kind);
+            fixture.detectChanges();
+            const figure = (fixture.nativeElement as HTMLElement).querySelector(
+                'app-amount > span',
+            )!;
+            const privacy = TestBed.inject(PrivacyService);
+            const hide = (k: FigureKind) =>
+                k === 'balance'
+                    ? privacy.setHideBalances(true)
+                    : privacy.setHideTransactions(true);
 
-        TestBed.inject(PrivacyService).setHideAmounts(true);
-        fixture.detectChanges();
+            hide(other);
+            fixture.detectChanges();
+            expect(figure.classList).not.toContain('blur-sm');
 
-        expect(figure.classList).toContain('blur-sm');
-        expect(figure.textContent).toContain('12.50');
-    });
+            hide(kind);
+            fixture.detectChanges();
+            expect(figure.classList).toContain('blur-sm');
+            expect(figure.textContent).toContain('12.50');
+        },
+    );
 });

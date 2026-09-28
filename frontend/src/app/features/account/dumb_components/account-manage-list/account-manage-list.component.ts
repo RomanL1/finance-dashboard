@@ -78,6 +78,7 @@ import { isActiveAccount, type AccountDto } from '../../account.types';
                         </div>
                         <app-amount
                             [amount]="account.amount"
+                            kind="balance"
                             [currency]="account.currency"
                             [showPlus]="false"
                         />

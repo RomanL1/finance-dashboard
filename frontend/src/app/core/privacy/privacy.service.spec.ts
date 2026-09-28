@@ -13,25 +13,30 @@ describe('PrivacyService', () => {
         vi.unstubAllGlobals();
     });
 
-    it('shows amounts by default', () => {
-        expect(TestBed.inject(PrivacyService).hideAmounts()).toBe(false);
+    it('shows everything by default', () => {
+        const privacy = TestBed.inject(PrivacyService);
+        expect(privacy.isHidden('balance')).toBe(false);
+        expect(privacy.isHidden('transaction')).toBe(false);
     });
 
-    it('restores a stored choice and ignores garbage', () => {
-        storage.setItem('hideAmounts', 'true');
-        expect(TestBed.inject(PrivacyService).hideAmounts()).toBe(true);
-
-        TestBed.resetTestingModule();
-        storage.setItem('hideAmounts', 'yes');
-        expect(TestBed.inject(PrivacyService).hideAmounts()).toBe(false);
-    });
-
-    it('persists a change', () => {
+    it('restores stored choices and ignores garbage', () => {
+        storage.setItem('hideBalances', 'true');
+        storage.setItem('hideTransactions', 'yes');
         const privacy = TestBed.inject(PrivacyService);
 
-        privacy.setHideAmounts(true);
+        expect(privacy.hideBalances()).toBe(true);
+        expect(privacy.hideTransactions()).toBe(false);
+    });
+
+    it('hides balances and transactions independently and persists both', () => {
+        const privacy = TestBed.inject(PrivacyService);
+
+        privacy.setHideTransactions(true);
         TestBed.tick();
 
-        expect(storage.getItem('hideAmounts')).toBe('true');
+        expect(privacy.isHidden('balance')).toBe(false);
+        expect(privacy.isHidden('transaction')).toBe(true);
+        expect(storage.getItem('hideBalances')).toBe('false');
+        expect(storage.getItem('hideTransactions')).toBe('true');
     });
 });

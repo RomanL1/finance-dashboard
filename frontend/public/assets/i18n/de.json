@@ -340,8 +340,9 @@
             "light": "Hell",
             "dark": "Dunkel",
             "language": "Sprache",
-            "hideAmounts": "Beträge verbergen",
-            "hideAmountsHint": "Macht Salden und Beträge auf diesem Gerät unkenntlich, z. B. wenn jemand mitschaut."
+            "hideBalances": "Kontostände verbergen",
+            "hideTransactions": "Transaktionsbeträge verbergen",
+            "hideAmountsHint": "Macht die Beträge auf diesem Gerät unkenntlich, z. B. wenn jemand mitschaut. Transaktionsbeträge umfassen auch Summen, Budgets und Auswertungen."
         }
     },
     "stats": {

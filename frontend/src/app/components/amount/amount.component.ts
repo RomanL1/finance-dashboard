@@ -1,5 +1,8 @@
 import { DecimalPipe } from '@angular/common';
-import { PrivacyService } from '../../core/privacy/privacy.service';
+import {
+    PrivacyService,
+    type FigureKind,
+} from '../../core/privacy/privacy.service';
 import {
     ChangeDetectionStrategy,
     Component,
@@ -10,7 +13,7 @@ import {
 /**
  * The one place money is formatted. Signed minor units in, "−12.50 CHF" out, colored by direction.
  * `row` for list entries, `stat` for the big numbers on stats cards, `inherit` for money inside running text.
- * Blurred while the user hides amounts in settings; screen readers still get the figure.
+ * Blurred while the user hides its `kind` in settings; screen readers still get the figure.
  */
 @Component({
     selector: 'app-amount',
@@ -23,8 +26,8 @@ import {
             [class.type-body-large]="emphasis() === 'row'"
             [class.type-title-large]="emphasis() === 'stat'"
             [class.font-medium]="emphasis() === 'stat'"
-            [class.blur-sm]="privacy.hideAmounts()"
-            [class.select-none]="privacy.hideAmounts()"
+            [class.blur-sm]="hidden()"
+            [class.select-none]="hidden()"
         >
             <span>{{ sign() }}{{ absolute() / 100 | number: '1.2-2' }}</span>
             @if (showCurrency()) {
@@ -47,6 +50,8 @@ export class AmountComponent {
     readonly colored = input<boolean>(true);
     /** Dense lists drop the code: a household has one currency, repeating it per row costs width. */
     readonly showCurrency = input<boolean>(true);
+    /** Which settings toggle hides it. Only account balances are `balance`. */
+    readonly kind = input<FigureKind>('transaction');
 
     protected readonly absolute = computed(() => Math.abs(this.amount()));
     /** Real minus sign (U+2212) so it lines up with the digits. */
@@ -56,5 +61,9 @@ export class AmountComponent {
         return value > 0 && this.showPlus() ? '+' : '';
     });
 
-    constructor(protected readonly privacy: PrivacyService) {}
+    protected readonly hidden = computed(() =>
+        this.privacy.isHidden(this.kind()),
+    );
+
+    constructor(private readonly privacy: PrivacyService) {}
 }

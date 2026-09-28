@@ -128,13 +128,20 @@ import type { AppIcon } from '../../../core/icons/icons';
                         </mat-button-toggle>
                     }
                 </mat-button-toggle-group>
-                <mat-slide-toggle
-                    class="mt-3"
-                    [checked]="privacy.hideAmounts()"
-                    (change)="privacy.setHideAmounts($event.checked)"
-                >
-                    {{ 'settings.appearance.hideAmounts' | translate }}
-                </mat-slide-toggle>
+                <div class="mt-3 flex flex-col gap-1">
+                    <mat-slide-toggle
+                        [checked]="privacy.hideBalances()"
+                        (change)="privacy.setHideBalances($event.checked)"
+                    >
+                        {{ 'settings.appearance.hideBalances' | translate }}
+                    </mat-slide-toggle>
+                    <mat-slide-toggle
+                        [checked]="privacy.hideTransactions()"
+                        (change)="privacy.setHideTransactions($event.checked)"
+                    >
+                        {{ 'settings.appearance.hideTransactions' | translate }}
+                    </mat-slide-toggle>
+                </div>
                 <p class="type-body-small mt-1 text-on-surface-variant">
                     {{ 'settings.appearance.hideAmountsHint' | translate }}
                 </p>
