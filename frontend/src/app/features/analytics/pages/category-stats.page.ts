@@ -9,6 +9,7 @@ import { Router } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { SkeletonComponent } from '../../../components/skeleton/skeleton.component';
 import { ThemeService } from '../../../core/theme/theme.service';
+import { PrivacyService } from '../../../core/privacy/privacy.service';
 import { HouseholdService } from '../../household/services/household.service';
 import { PeriodSwitcherComponent } from '../../stats/dumb_components/period-switcher/period-switcher.component';
 import {
@@ -57,6 +58,7 @@ import { AnalyticsService } from '../services/analytics.service';
                             [currency]="stats.value()!.currency"
                             [label]="'analytics.chartLabel' | translate"
                             [scheme]="theme.resolved()"
+                            [hideAmounts]="privacy.hideAmounts()"
                         />
                     }
                 </div>
@@ -108,6 +110,7 @@ export class CategoryStatsPage {
 
     constructor(
         protected readonly theme: ThemeService,
+        protected readonly privacy: PrivacyService,
         private readonly householdService: HouseholdService,
         private readonly analytics: AnalyticsService,
         private readonly translate: TranslateService,

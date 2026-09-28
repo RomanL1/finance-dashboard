@@ -102,6 +102,8 @@ export class CategoryBarChartComponent implements OnDestroy {
     readonly label = input.required<string>();
     /** Canvas cannot follow `color-scheme`, so the page tells it what is on screen. */
     readonly scheme = input<'light' | 'dark'>('light');
+    /** Canvas text cannot be blurred like `app-amount`, so hidden amounts leave only the shares. */
+    readonly hideAmounts = input<boolean>(false);
 
     private readonly canvas =
         viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
@@ -120,7 +122,11 @@ export class CategoryBarChartComponent implements OnDestroy {
 
     constructor() {
         effect(() => {
-            const config = this.config(this.bars(), this.scheme());
+            const config = this.config(
+                this.bars(),
+                this.scheme(),
+                this.hideAmounts(),
+            );
             if (this.chart) {
                 this.chart.data = config.data;
                 this.chart.options = config.options ?? {};
@@ -156,6 +162,7 @@ export class CategoryBarChartComponent implements OnDestroy {
     private config(
         bars: CategoryBar[],
         scheme: 'light' | 'dark',
+        hideAmounts: boolean,
     ): ChartConfiguration<'bar'> {
         const styles = getComputedStyle(this.frame().nativeElement);
         const ink = styles.color;
@@ -165,9 +172,10 @@ export class CategoryBarChartComponent implements OnDestroy {
         );
         const currency = this.currency();
         const font = `${styles.fontSize} ${styles.fontFamily}`;
-        const values = bars.map(
-            (bar) =>
-                `${this.format(bar.expenses, 2)} · ${this.share(bar.expenses)}%`,
+        const values = bars.map((bar) =>
+            hideAmounts
+                ? `${this.share(bar.expenses)}%`
+                : `${this.format(bar.expenses, 2)} · ${this.share(bar.expenses)}%`,
         );
         const ctx = this.canvas().nativeElement.getContext('2d');
         let labelWidth = 0;
@@ -228,7 +236,9 @@ export class CategoryBarChartComponent implements OnDestroy {
                             label: (item) => {
                                 const expenses =
                                     bars[item.dataIndex]?.expenses ?? 0;
-                                return `${this.format(expenses, 2)} ${currency} (${this.share(expenses)}%)`;
+                                return hideAmounts
+                                    ? `${this.share(expenses)}%`
+                                    : `${this.format(expenses, 2)} ${currency} (${this.share(expenses)}%)`;
                             },
                         },
                     },

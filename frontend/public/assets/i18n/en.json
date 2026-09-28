@@ -339,7 +339,9 @@
             "system": "System",
             "light": "Light",
             "dark": "Dark",
-            "language": "Language"
+            "language": "Language",
+            "hideAmounts": "Hide amounts",
+            "hideAmountsHint": "Blurs balances and figures on this device, e.g. when someone is looking over your shoulder."
         }
     },
     "stats": {

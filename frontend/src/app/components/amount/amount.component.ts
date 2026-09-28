@@ -1,4 +1,5 @@
 import { DecimalPipe } from '@angular/common';
+import { PrivacyService } from '../../core/privacy/privacy.service';
 import {
     ChangeDetectionStrategy,
     Component,
@@ -9,6 +10,7 @@ import {
 /**
  * The one place money is formatted. Signed minor units in, "−12.50 CHF" out, colored by direction.
  * `row` for list entries, `stat` for the big numbers on stats cards, `inherit` for money inside running text.
+ * Blurred while the user hides amounts in settings; screen readers still get the figure.
  */
 @Component({
     selector: 'app-amount',
@@ -21,6 +23,8 @@ import {
             [class.type-body-large]="emphasis() === 'row'"
             [class.type-title-large]="emphasis() === 'stat'"
             [class.font-medium]="emphasis() === 'stat'"
+            [class.blur-sm]="privacy.hideAmounts()"
+            [class.select-none]="privacy.hideAmounts()"
         >
             <span>{{ sign() }}{{ absolute() / 100 | number: '1.2-2' }}</span>
             @if (showCurrency()) {
@@ -51,4 +55,6 @@ export class AmountComponent {
         if (value < 0) return '−';
         return value > 0 && this.showPlus() ? '+' : '';
     });
+
+    constructor(protected readonly privacy: PrivacyService) {}
 }

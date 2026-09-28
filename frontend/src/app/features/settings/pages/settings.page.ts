@@ -12,11 +12,13 @@ import { MatIcon } from '@angular/material/icon';
 import { MatFormField } from '@angular/material/form-field';
 import { MatOption } from '@angular/material/core';
 import { MatSelect } from '@angular/material/select';
+import { MatSlideToggle } from '@angular/material/slide-toggle';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import {
     ThemeService,
     type ThemePreference,
 } from '../../../core/theme/theme.service';
+import { PrivacyService } from '../../../core/privacy/privacy.service';
 import {
     LANGUAGES,
     LanguageService,
@@ -66,6 +68,7 @@ import type { AppIcon } from '../../../core/icons/icons';
         MatFormField,
         MatSelect,
         MatOption,
+        MatSlideToggle,
         SectionHeaderComponent,
         TranslatePipe,
     ],
@@ -125,6 +128,16 @@ import type { AppIcon } from '../../../core/icons/icons';
                         </mat-button-toggle>
                     }
                 </mat-button-toggle-group>
+                <mat-slide-toggle
+                    class="mt-3"
+                    [checked]="privacy.hideAmounts()"
+                    (change)="privacy.setHideAmounts($event.checked)"
+                >
+                    {{ 'settings.appearance.hideAmounts' | translate }}
+                </mat-slide-toggle>
+                <p class="type-body-small mt-1 text-on-surface-variant">
+                    {{ 'settings.appearance.hideAmountsHint' | translate }}
+                </p>
             </section>
             @if (
                 household.isLoading() ||
@@ -326,6 +339,7 @@ export class SettingsPage {
         private readonly dialogs: DialogService,
         private readonly router: Router,
         protected readonly theme: ThemeService,
+        protected readonly privacy: PrivacyService,
         protected readonly language: LanguageService,
     ) {}
 

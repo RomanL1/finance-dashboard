@@ -1,5 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { stubLocalStorage } from '../../testing/local-storage';
+import { PrivacyService } from '../../core/privacy/privacy.service';
 import { AmountComponent } from './amount.component';
 
 @Component({
@@ -36,9 +38,14 @@ describe('AmountComponent', () => {
     }
 
     beforeEach(async () => {
+        stubLocalStorage();
         await TestBed.configureTestingModule({
             imports: [HostComponent],
         }).compileComponents();
+    });
+
+    afterEach(() => {
+        vi.unstubAllGlobals();
     });
 
     it('formats an expense with a real minus sign', () => {
@@ -59,5 +66,21 @@ describe('AmountComponent', () => {
 
     it('drops the currency code for dense lists', () => {
         expect(render(-1250, true, false)).toBe('−12.50');
+    });
+
+    it('blurs the figure while amounts are hidden, keeping the text', () => {
+        const fixture = TestBed.createComponent(HostComponent);
+        fixture.componentInstance.amount.set(-1250);
+        fixture.detectChanges();
+        const figure = (fixture.nativeElement as HTMLElement).querySelector(
+            'app-amount > span',
+        )!;
+        expect(figure.classList).not.toContain('blur-sm');
+
+        TestBed.inject(PrivacyService).setHideAmounts(true);
+        fixture.detectChanges();
+
+        expect(figure.classList).toContain('blur-sm');
+        expect(figure.textContent).toContain('12.50');
     });
 });
