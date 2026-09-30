@@ -24,17 +24,22 @@ import {
     LanguageService,
 } from '../../../core/i18n/language.service';
 import { SectionHeaderComponent } from '../../../components/section-header/section-header.component';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../../core/auth/auth.service';
-import { APP_PATHS } from '../../../config/paths.config';
+import {
+    APP_PATHS,
+    NEW_HOUSEHOLD_PARAM,
+    SETTINGS_PATHS,
+} from '../../../config/paths.config';
 import { ButtonComponent } from '../../../components/button/button.component';
 import { DialogService } from '../../../components/dialog/dialog.service';
 import { CURRENCIES, type Currency } from '../../../core/constants/currencies';
 import { timeZones } from '../../../core/constants/time-zones';
 import { RecurringService } from '../../recurring/services/recurring.service';
 import { HouseholdService } from '../../household/services/household.service';
+import { HouseholdSwitcherComponent } from '../../household/dumb_components/household-switcher/household-switcher.component';
 import { AccountService } from '../../account/services/account.service';
 import { AccountManageListComponent } from '../../account/dumb_components/account-manage-list/account-manage-list.component';
 import type { AccountDialogComponent } from '../../account/smart_components/account-dialog/account-dialog.component';
@@ -61,6 +66,8 @@ import type { AppIcon } from '../../../core/icons/icons';
         ButtonComponent,
         AccountManageListComponent,
         CategoryManageListComponent,
+        HouseholdSwitcherComponent,
+        RouterLink,
         MatProgressSpinner,
         MatButtonToggleGroup,
         MatButtonToggle,
@@ -153,6 +160,17 @@ import type { AppIcon } from '../../../core/icons/icons';
             ) {
                 <mat-spinner class="mx-auto" diameter="40" />
             } @else if (household.value(); as h) {
+                <section>
+                    <app-section-header
+                        [title]="'settings.households.title' | translate"
+                    />
+                    <app-household-switcher
+                        [households]="households.value() ?? []"
+                        [activeId]="h.id"
+                        (picked)="switchHousehold($event)"
+                        (create)="createHousehold()"
+                    />
+                </section>
                 <section>
                     <app-section-header
                         [title]="'settings.household.title' | translate"
@@ -257,6 +275,16 @@ import type { AppIcon } from '../../../core/icons/icons';
                             {{ 'settings.household.timeZoneHint' | translate }}
                         </dd>
                     </dl>
+                    <a
+                        class="mt-3 flex min-h-14 items-center gap-3 rounded-m3-lg bg-surface-low px-4 text-on-surface"
+                        [routerLink]="membersPath"
+                    >
+                        <mat-icon svgIcon="group" />
+                        <span class="type-body-large flex-1">{{
+                            'settings.household.members' | translate
+                        }}</span>
+                        <mat-icon svgIcon="chevron_right" />
+                    </a>
                 </section>
                 <section>
                     <app-section-header
@@ -317,6 +345,11 @@ export class SettingsPage {
 
     protected readonly languages = LANGUAGES;
     protected readonly currencies = CURRENCIES;
+    protected readonly membersPath = SETTINGS_PATHS.MEMBERS;
+
+    readonly households = resource({
+        loader: () => this.householdService.getHouseholds(),
+    });
 
     readonly household = resource({
         loader: () => this.householdService.getHousehold(),
@@ -364,6 +397,18 @@ export class SettingsPage {
     async setTimeZone(householdId: string, timeZone: string): Promise<void> {
         await this.householdService.update(householdId, { timeZone });
         this.household.reload();
+    }
+
+    /** Reloads the app in the picked household. */
+    switchHousehold(householdId: string): void {
+        this.householdService.switchTo(householdId);
+    }
+
+    /** The onboarding steps again, for one more household of this user. */
+    async createHousehold(): Promise<void> {
+        await this.router.navigate(['/' + APP_PATHS.ONBOARDING], {
+            queryParams: { [NEW_HOUSEHOLD_PARAM]: 1 },
+        });
     }
 
     async openAccountDialog(

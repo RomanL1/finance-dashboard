@@ -1,6 +1,17 @@
 import type {
-    HouseholdMineResponse,
+    CreatedInvitationDto,
+    HouseholdDto,
+    HouseholdMemberDto,
+    InvitationDto,
+    InvitationPreviewDto,
     UpdateHouseholdDto,
 } from '../../core/api/types.gen';
 
-export type { HouseholdMineResponse, UpdateHouseholdDto };
+export type {
+    CreatedInvitationDto,
+    HouseholdDto,
+    HouseholdMemberDto,
+    InvitationDto,
+    InvitationPreviewDto,
+    UpdateHouseholdDto,
+};

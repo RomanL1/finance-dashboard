@@ -1,6 +1,8 @@
 import {
+    booleanAttribute,
     ChangeDetectionStrategy,
     Component,
+    input,
     resource,
     signal,
     viewChild,
@@ -11,6 +13,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { MatStep, MatStepLabel, MatStepper } from '@angular/material/stepper';
 import { browserTimeZone } from '../../../core/constants/time-zones';
 import { APP_PATHS } from '../../../config/paths.config';
+import { HouseholdService } from '../../household/services/household.service';
 import { ButtonComponent } from '../../../components/button/button.component';
 import { HouseholdFormComponent } from '../dumb_components/household-form/household-form.component';
 import { CategoryPickerComponent } from '../dumb_components/category-picker/category-picker.component';
@@ -37,9 +40,25 @@ import type { CategorySelection } from '../onboarding.types';
     ],
     template: `
         <main class="mx-auto mt-16 max-w-lg p-4">
-            <h1 class="mb-6 text-2xl font-semibold">
-                {{ 'onboarding.title' | translate }}
-            </h1>
+            <header class="mb-6 flex items-center justify-between gap-4">
+                <h1 class="text-2xl font-semibold">
+                    {{
+                        (additional()
+                            ? 'onboarding.newHouseholdTitle'
+                            : 'onboarding.title'
+                        ) | translate
+                    }}
+                </h1>
+                @if (additional()) {
+                    <app-button
+                        type="button"
+                        variant="outlined"
+                        (clicked)="cancel()"
+                    >
+                        {{ 'onboarding.cancel' | translate }}
+                    </app-button>
+                }
+            </header>
             <mat-stepper linear orientation="vertical">
                 <mat-step [completed]="!!draft().name">
                     <ng-template matStepLabel>{{
@@ -106,6 +125,12 @@ import type { CategorySelection } from '../onboarding.types';
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OnboardingPage {
+    /** `?new=1`: the user already has a household and creates another one, so they may cancel. */
+    readonly additional = input(false, {
+        alias: 'new',
+        transform: booleanAttribute,
+    });
+
     private readonly stepper = viewChild(MatStepper);
 
     readonly busy = signal(false);
@@ -119,6 +144,7 @@ export class OnboardingPage {
     constructor(
         private readonly onboardingService: OnboardingService,
         private readonly onboardingState: OnboardingStateService,
+        private readonly householdService: HouseholdService,
         private readonly router: Router,
         private readonly translate: TranslateService,
     ) {
@@ -144,6 +170,12 @@ export class OnboardingPage {
             const stepper = this.stepper();
             if (stepper) stepper.selectedIndex = index;
         });
+    }
+
+    /** Drops the draft, so a later "new household" starts empty. */
+    async cancel(): Promise<void> {
+        this.onboardingState.clear();
+        await this.router.navigate(['/' + APP_PATHS.SETTINGS]);
     }
 
     goBack(): void {
@@ -199,7 +231,7 @@ export class OnboardingPage {
         this.error.set(null);
         try {
             await this.onboardingService.validateAccounts([dto]);
-            await this.onboardingService.submit({
+            const household = await this.onboardingService.submit({
                 name: draft.name,
                 // Recurring transactions book at midnight in this zone; changeable in settings.
                 timeZone: browserTimeZone(),
@@ -207,7 +239,8 @@ export class OnboardingPage {
                 accounts: [dto],
             });
             this.onboardingState.clear();
-            await this.router.navigate(['/' + APP_PATHS.HOME]);
+            // The new household becomes the active one.
+            this.householdService.switchTo(household.id);
         } catch (e) {
             this.error.set(
                 e instanceof Error

@@ -24,15 +24,22 @@ const membership = (
 
 type RepoFake = Pick<
     HouseholdRepository,
-    'findById' | 'findMembershipByUserId' | 'findMembership' | 'update'
+    | 'findById'
+    | 'findMembershipsByUserId'
+    | 'findMembership'
+    | 'findMembers'
+    | 'removeMember'
+    | 'update'
 >;
 
 function makeRepo(overrides: Partial<RepoFake> = {}): RepoFake {
     return {
         findById: vi.fn<RepoFake['findById']>().mockResolvedValue(null),
-        findMembershipByUserId: vi
-            .fn<RepoFake['findMembershipByUserId']>()
-            .mockResolvedValue(null),
+        findMembershipsByUserId: vi
+            .fn<RepoFake['findMembershipsByUserId']>()
+            .mockResolvedValue([]),
+        findMembers: vi.fn<RepoFake['findMembers']>().mockResolvedValue([]),
+        removeMember: vi.fn<RepoFake['removeMember']>().mockResolvedValue(true),
         findMembership: vi
             .fn<RepoFake['findMembership']>()
             .mockResolvedValue(null),
@@ -67,35 +74,69 @@ describe('HouseholdService', () => {
         );
     });
 
-    it('throws NotFoundError when user has no household', async () => {
-        const service = makeService(makeRepo());
-        await expect(service.getForUser('u1')).rejects.toBeInstanceOf(
-            NotFoundError,
-        );
+    it('lists no household before onboarding', async () => {
+        await expect(
+            makeService(makeRepo()).listForUser('u1'),
+        ).resolves.toEqual([]);
     });
 
-    it('returns the membership for a household member', async () => {
+    it('lists every household of the user in repository order', async () => {
         const repo = makeRepo({
-            findMembershipByUserId: vi
+            findMembershipsByUserId: vi
                 .fn()
-                .mockResolvedValue(membership('member')),
+                .mockResolvedValue([membership('member'), membership('owner')]),
         });
-        await expect(makeService(repo).getForUser('u1')).resolves.toEqual(
+        await expect(makeService(repo).listForUser('u1')).resolves.toEqual([
             membership('member'),
-        );
+            membership('owner'),
+        ]);
     });
 
-    it('hasHousehold reflects whether the user already belongs to one', async () => {
-        await expect(makeService(makeRepo()).hasHousehold('u1')).resolves.toBe(
-            false,
-        );
+    describe('removeMember', () => {
+        const owned = () =>
+            makeRepo({
+                findMembership: vi.fn().mockResolvedValue(membership('owner')),
+            });
 
-        const repo = makeRepo({
-            findMembershipByUserId: vi
-                .fn()
-                .mockResolvedValue(membership('owner')),
+        it('lets the owner remove a member', async () => {
+            const repo = owned();
+            await makeService(repo).removeMember('h1', 'owner', 'u2');
+            expect(repo.removeMember).toHaveBeenCalledWith('h1', 'u2');
         });
-        await expect(makeService(repo).hasHousehold('u1')).resolves.toBe(true);
+
+        it('rejects members', async () => {
+            const repo = makeRepo({
+                findMembership: vi.fn().mockResolvedValue(membership('member')),
+            });
+            await expect(
+                makeService(repo).removeMember('h1', 'u1', 'u2'),
+            ).rejects.toBeInstanceOf(ForbiddenError);
+            expect(repo.removeMember).not.toHaveBeenCalled();
+        });
+
+        it('rejects non-members', async () => {
+            const repo = makeRepo();
+            await expect(
+                makeService(repo).removeMember('h1', 'u1', 'u2'),
+            ).rejects.toBeInstanceOf(ForbiddenError);
+            expect(repo.removeMember).not.toHaveBeenCalled();
+        });
+
+        it('does not let the owner remove themselves', async () => {
+            const repo = owned();
+            await expect(
+                makeService(repo).removeMember('h1', 'owner', 'owner'),
+            ).rejects.toBeInstanceOf(ValidationError);
+            expect(repo.removeMember).not.toHaveBeenCalled();
+        });
+
+        it('throws NotFoundError for a user who is not a member', async () => {
+            const repo = owned();
+            vi.mocked(repo.removeMember).mockResolvedValue(false);
+            await expect(
+                makeService(repo).removeMember('h1', 'owner', 'ghost'),
+            ).rejects.toBeInstanceOf(NotFoundError);
+        });
     });
 
     it('assertMember returns membership when user belongs to household', async () => {

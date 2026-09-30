@@ -24,3 +24,11 @@ export interface HouseholdMembership {
     household: Household;
     role: HouseholdRole;
 }
+
+export interface HouseholdMember {
+    userId: Id;
+    name: string;
+    email: string;
+    role: HouseholdRole;
+    joinedAt: Date;
+}

@@ -10,7 +10,7 @@ import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ButtonComponent } from '../../../components/button/button.component';
 import { AuthService } from '../../../core/auth/auth.service';
-import { APP_PATHS } from '../../../config/paths.config';
+import { APP_PATHS, INVITE_PARAM } from '../../../config/paths.config';
 import { AuthLayoutComponent } from '../dumb_components/auth-layout/auth-layout.component';
 import { DemoLoginComponent } from '../dumb_components/demo-login/demo-login.component';
 import { LoginFormComponent } from '../dumb_components/login-form/login-form.component';
@@ -59,6 +59,7 @@ import type { DemoUser, LoginCredentials } from '../auth.types';
                 <a
                     class="type-label-large text-primary"
                     [routerLink]="'/' + paths.SIGNUP"
+                    [queryParams]="inviteParams()"
                     >{{ 'auth.login.toSignup' | translate }}</a
                 >
             </div>
@@ -77,7 +78,14 @@ export class LoginPage implements OnInit {
     /** `?reset=done` after a successful password reset. */
     readonly reset = input<string>();
 
+    /** `?invite=` when the visitor came from an invitation link: after login they return to it. */
+    readonly invite = input<string>();
+
     readonly passwordReset = computed(() => this.reset() === 'done');
+    readonly inviteParams = computed(() => {
+        const invite = this.invite();
+        return invite ? { [INVITE_PARAM]: invite } : {};
+    });
 
     readonly paths = APP_PATHS;
     readonly busy = signal(false);
@@ -110,7 +118,12 @@ export class LoginPage implements OnInit {
                 }
                 throw e;
             }
-            await this.router.navigate(['/' + APP_PATHS.HOME]);
+            const invite = this.invite();
+            await this.router.navigate(
+                invite
+                    ? ['/' + APP_PATHS.INVITE, invite]
+                    : ['/' + APP_PATHS.HOME],
+            );
         });
     }
 
@@ -122,7 +135,7 @@ export class LoginPage implements OnInit {
         await this.run(async () => {
             await this.auth.resendVerification(email);
             await this.router.navigate(['/' + APP_PATHS.CHECK_EMAIL], {
-                queryParams: { email },
+                queryParams: { email, ...this.inviteParams() },
             });
         });
     }

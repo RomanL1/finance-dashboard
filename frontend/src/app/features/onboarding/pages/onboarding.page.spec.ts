@@ -1,8 +1,9 @@
-import { signal } from '@angular/core';
+import { inputBinding, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { provideTranslateService, TranslateService } from '@ngx-translate/core';
 import type { CreateAccountDto } from '../../account/account.types';
+import { HouseholdService } from '../../household/services/household.service';
 import {
     OnboardingStateService,
     type OnboardingDraft,
@@ -23,9 +24,13 @@ describe('OnboardingPage', () => {
     let service: Record<string, ReturnType<typeof vi.fn>>;
     let state: Record<string, ReturnType<typeof vi.fn>>;
     let navigate: ReturnType<typeof vi.spyOn>;
+    let switchTo: ReturnType<typeof vi.fn>;
+    const additional = signal<string | undefined>(undefined);
 
     beforeEach(() => {
         draft.set({ name: null, categories: null });
+        additional.set(undefined);
+        switchTo = vi.fn();
         service = {
             getDefaultCategories: vi.fn().mockResolvedValue([]),
             validateHousehold: vi.fn().mockResolvedValue(undefined),
@@ -45,6 +50,7 @@ describe('OnboardingPage', () => {
                 provideRouter([]),
                 provideTranslateService({ fallbackLang: 'en', lang: 'en' }),
                 { provide: OnboardingService, useValue: service },
+                { provide: HouseholdService, useValue: { switchTo } },
                 {
                     provide: OnboardingStateService,
                     useValue: { ...state, draft: draft.asReadonly() },
@@ -59,9 +65,14 @@ describe('OnboardingPage', () => {
             .mockResolvedValue(true);
     });
 
+    let el: HTMLElement;
+
     function create(): OnboardingPage {
-        const fixture = TestBed.createComponent(OnboardingPage);
+        const fixture = TestBed.createComponent(OnboardingPage, {
+            bindings: [inputBinding('new', additional)],
+        });
         fixture.detectChanges();
+        el = fixture.nativeElement as HTMLElement;
         return fixture.componentInstance;
     }
 
@@ -99,7 +110,7 @@ describe('OnboardingPage', () => {
         expect(state['setCategories']).toHaveBeenCalledWith(selection);
     });
 
-    it('submits the whole household, clears the draft and goes home', async () => {
+    it('submits the whole household, clears the draft and makes it the active household', async () => {
         draft.set({
             name: 'Home',
             categories: { translateKeys: ['MISC'], customNames: [] },
@@ -116,7 +127,7 @@ describe('OnboardingPage', () => {
             accounts: [account],
         });
         expect(state['clear']).toHaveBeenCalled();
-        expect(navigate).toHaveBeenCalledWith(['/']);
+        expect(switchTo).toHaveBeenCalledWith('h1');
     });
 
     it('does not submit an incomplete draft', async () => {
@@ -139,7 +150,23 @@ describe('OnboardingPage', () => {
         await page.onAccountSubmit(account);
 
         expect(state['clear']).not.toHaveBeenCalled();
-        expect(navigate).not.toHaveBeenCalled();
+        expect(switchTo).not.toHaveBeenCalled();
         expect(page.error()).toBe('Household exists');
+    });
+
+    it('offers no cancel on the first onboarding', () => {
+        create();
+        expect(el.querySelector('header app-button')).toBeNull();
+    });
+
+    it('cancelling a further household drops the draft and returns to settings', async () => {
+        additional.set('1');
+        const page = create();
+        expect(el.querySelector('header app-button')).not.toBeNull();
+
+        await page.cancel();
+
+        expect(state['clear']).toHaveBeenCalled();
+        expect(navigate).toHaveBeenCalledWith(['/settings']);
     });
 });

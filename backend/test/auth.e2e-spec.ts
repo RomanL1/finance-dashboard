@@ -33,7 +33,7 @@ describe('auth + household (e2e)', () => {
     afterAll(() => app?.close());
 
     it('rejects anonymous access', async () => {
-        await server().get('/api/households/me').expect(401);
+        await server().get('/api/households').expect(401);
     });
 
     it('signs in the seeded demo user (created verified, without a mail)', async () => {
@@ -46,11 +46,12 @@ describe('auth + household (e2e)', () => {
         cookie = sessionCookie(res);
     });
 
-    it('GET /api/households/me returns 404 for the seeded demo user (no household yet)', async () => {
-        await server()
-            .get('/api/households/me')
+    it('GET /api/households is empty for the seeded demo user (no household yet)', async () => {
+        const res = await server()
+            .get('/api/households')
             .set('Cookie', cookie)
-            .expect(404);
+            .expect(200);
+        expect(res.body).toEqual([]);
     });
 
     describe('sign-up with email verification', () => {
@@ -103,9 +104,9 @@ describe('auth + household (e2e)', () => {
                 .query({ token })
                 .expect(200);
             await server()
-                .get('/api/households/me')
+                .get('/api/households')
                 .set('Cookie', sessionCookie(res))
-                .expect(404);
+                .expect(200);
             await signIn(email, 'new-password').expect(200);
         });
 
@@ -178,7 +179,7 @@ describe('auth + household (e2e)', () => {
             await signIn(user.email, 'old-password').expect(401);
             await signIn(user.email, 'new-password').expect(200);
             await server()
-                .get('/api/households/me')
+                .get('/api/households')
                 .set('Cookie', oldSession)
                 .expect(401);
         });

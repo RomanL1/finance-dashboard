@@ -1,5 +1,11 @@
 import { TestBed } from '@angular/core/testing';
-import { provideRouter, Router, UrlTree } from '@angular/router';
+import {
+    ActivatedRouteSnapshot,
+    convertToParamMap,
+    provideRouter,
+    Router,
+    UrlTree,
+} from '@angular/router';
 import { HouseholdService } from './household.service';
 import { OnboardingCompleteGuard, OnboardingGuard } from './onboarding.guard';
 
@@ -15,6 +21,11 @@ describe('onboarding guards', () => {
             ],
         });
     });
+
+    const route = (queryParams: Record<string, string> = {}) =>
+        ({
+            queryParamMap: convertToParamMap(queryParams),
+        }) as ActivatedRouteSnapshot;
 
     const url = (result: boolean | UrlTree): string =>
         TestBed.inject(Router).serializeUrl(result as UrlTree);
@@ -43,8 +54,17 @@ describe('onboarding guards', () => {
             getHouseholdOrNull.mockResolvedValue({ onboardingComplete: true });
             const result = await TestBed.inject(
                 OnboardingCompleteGuard,
-            ).canActivate();
+            ).canActivate(route());
             expect(url(result)).toBe('/');
+        });
+
+        it('lets a user with a household start another one with ?new=1', async () => {
+            getHouseholdOrNull.mockResolvedValue({ onboardingComplete: true });
+            await expect(
+                TestBed.inject(OnboardingCompleteGuard).canActivate(
+                    route({ new: '1' }),
+                ),
+            ).resolves.toBe(true);
         });
 
         it.each([null, { onboardingComplete: false }])(
@@ -52,7 +72,9 @@ describe('onboarding guards', () => {
             async (household) => {
                 getHouseholdOrNull.mockResolvedValue(household);
                 await expect(
-                    TestBed.inject(OnboardingCompleteGuard).canActivate(),
+                    TestBed.inject(OnboardingCompleteGuard).canActivate(
+                        route(),
+                    ),
                 ).resolves.toBe(true);
             },
         );

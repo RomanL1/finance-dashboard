@@ -48,7 +48,8 @@
             "hint": "Open the link in the email to finish creating your account. It is valid for 24 hours. Check your spam folder if it does not arrive.",
             "resend": "Send link again",
             "resent": "A new link is on its way.",
-            "toLogin": "Back to login"
+            "toLogin": "Back to login",
+            "inviteHint": "You came here from an invitation. Once your email is confirmed, open the invitation link again to join the household."
         },
         "verifyEmail": {
             "title": "Confirm email",
@@ -118,7 +119,9 @@
         },
         "accounts": {
             "description": "Add at least one account to track."
-        }
+        },
+        "newHouseholdTitle": "New household",
+        "cancel": "Cancel"
     },
     "account": {
         "form": {
@@ -332,7 +335,8 @@
             "baseCurrency": "Currency",
             "baseCurrencyHint": "Display only. Every account and transaction uses this currency; changing it relabels them, amounts are not converted.",
             "timeZone": "Time zone",
-            "timeZoneHint": "Recurring transactions are booked at midnight in this zone. A change only affects later bookings."
+            "timeZoneHint": "Recurring transactions are booked at midnight in this zone. A change only affects later bookings.",
+            "members": "Members"
         },
         "appearance": {
             "title": "Appearance",
@@ -343,6 +347,12 @@
             "hideBalances": "Hide account balances",
             "hideTransactions": "Hide transaction amounts",
             "hideAmountsHint": "Blurs the figures on this device, e.g. when someone is looking over your shoulder. Transaction amounts include totals, budgets and analytics."
+        },
+        "households": {
+            "title": "Your households",
+            "active": "Active",
+            "create": "New household",
+            "switched": "Now in household “{{name}}”"
         }
     },
     "stats": {
@@ -488,5 +498,47 @@
             "resume": "Resume",
             "toggleFailed": "Could not change the recurring transaction."
         }
+    },
+    "members": {
+        "title": "Members",
+        "back": "Back to settings",
+        "cancel": "Cancel",
+        "remove": {
+            "action": "Remove {{name}}",
+            "title": "Remove member?",
+            "message": "They lose access to this household right away. Everything they entered stays. They can join again with a new invitation.",
+            "confirm": "Remove"
+        },
+        "invitations": {
+            "title": "Invite",
+            "description": "Create a link and send it to the person yourself. Each link lets one person join and is valid for 24 hours.",
+            "noteLabel": "Note (optional)",
+            "noteHint": "Only you see the note, e.g. who the link is for.",
+            "noteTooLong": "At most {{max}} characters",
+            "create": "Create invitation link",
+            "createFailed": "The link could not be created. A household can have at most 10 open invitations; revoke one and try again.",
+            "linkReady": "Invitation link",
+            "linkOnce": "Copy it now: the link is shown only this once.",
+            "copy": "Copy link",
+            "copied": "Copied",
+            "open": "Open invitations",
+            "empty": "No open invitations.",
+            "noNote": "No note",
+            "validUntil": "Valid until {{date}}",
+            "revoke": "Revoke",
+            "revokeTitle": "Revoke invitation?",
+            "revokeMessage": "The link stops working right away."
+        }
+    },
+    "invite": {
+        "title": "Invitation",
+        "loading": "Checking the invitation…",
+        "message": "{{ownerName}} invites you to the household “{{householdName}}”. You will see and edit its accounts, transactions and budgets.",
+        "join": "Join household",
+        "signInFirst": "Log in or sign up to join.",
+        "toLogin": "Log in",
+        "toSignup": "Sign up",
+        "invalid": "This invitation is no longer valid. Ask the owner of the household for a new link.",
+        "toApp": "Go to the app"
     }
 }

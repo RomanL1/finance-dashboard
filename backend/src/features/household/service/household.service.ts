@@ -8,6 +8,7 @@ import {
 } from '../../../shared/kernel/index.js';
 import type {
     Household,
+    HouseholdMember,
     HouseholdMembership,
     UpdateHouseholdInput,
 } from '../model/household.js';
@@ -25,17 +26,28 @@ export class HouseholdService {
         return found;
     }
 
-    async getForUser(userId: Id): Promise<HouseholdMembership> {
-        const membership = await this.households.findMembershipByUserId(userId);
-        if (!membership) {
-            throw new NotFoundError('Household');
-        }
-        return membership;
+    /** Every household of the user, oldest membership first. Empty before onboarding. */
+    async listForUser(userId: Id): Promise<HouseholdMembership[]> {
+        return this.households.findMembershipsByUserId(userId);
     }
 
-    /** A user belongs to exactly one household in this iteration. */
-    async hasHousehold(userId: Id): Promise<boolean> {
-        return (await this.households.findMembershipByUserId(userId)) !== null;
+    async listMembers(householdId: Id): Promise<HouseholdMember[]> {
+        return this.households.findMembers(householdId);
+    }
+
+    /** Owners only. The removed user's transactions stay: data belongs to the household. */
+    async removeMember(
+        householdId: Id,
+        actingUserId: Id,
+        memberUserId: Id,
+    ): Promise<void> {
+        await this.assertOwner(householdId, actingUserId);
+        if (memberUserId === actingUserId) {
+            throw new ValidationError('The owner cannot be removed');
+        }
+        if (!(await this.households.removeMember(householdId, memberUserId))) {
+            throw new NotFoundError('Member', memberUserId);
+        }
     }
 
     /** Owners only. Returns the membership so the caller keeps the role. A currency change cascades to the accounts (repository). */
@@ -44,10 +56,7 @@ export class HouseholdService {
         userId: Id,
         input: UpdateHouseholdInput,
     ): Promise<HouseholdMembership> {
-        const membership = await this.assertMember(householdId, userId);
-        if (membership.role !== 'owner') {
-            throw new ForbiddenError('Only the owner can change the household');
-        }
+        const membership = await this.assertOwner(householdId, userId);
         const changes: UpdateHouseholdInput = {};
         if (input.name !== undefined) {
             const name = input.name.trim();
@@ -82,6 +91,17 @@ export class HouseholdService {
         );
         if (!membership) {
             throw new ForbiddenError('User is not a member of this household');
+        }
+        return membership;
+    }
+
+    async assertOwner(
+        householdId: Id,
+        userId: Id,
+    ): Promise<HouseholdMembership> {
+        const membership = await this.assertMember(householdId, userId);
+        if (membership.role !== 'owner') {
+            throw new ForbiddenError('Only the owner can change the household');
         }
         return membership;
     }

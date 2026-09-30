@@ -1,9 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import {
-    ConflictError,
-    ValidationError,
-} from '../../../shared/kernel/index.js';
-import type { HouseholdService } from '../../household/service/household.service.js';
+import { ValidationError } from '../../../shared/kernel/index.js';
 import type { OnboardingRepository } from '../repository/onboarding.repository.js';
 import { OnboardingService } from './onboarding.service.js';
 
@@ -29,24 +25,8 @@ function makeRepo(): Pick<OnboardingRepository, 'insertHousehold'> {
     };
 }
 
-function makeHouseholds(
-    hasHousehold = false,
-): Pick<HouseholdService, 'hasHousehold'> {
-    return {
-        hasHousehold: vi
-            .fn<HouseholdService['hasHousehold']>()
-            .mockResolvedValue(hasHousehold),
-    };
-}
-
-function makeService(
-    repo: Pick<OnboardingRepository, 'insertHousehold'>,
-    households = makeHouseholds(),
-) {
-    return new OnboardingService(
-        repo as OnboardingRepository,
-        households as HouseholdService,
-    );
+function makeService(repo: Pick<OnboardingRepository, 'insertHousehold'>) {
+    return new OnboardingService(repo as OnboardingRepository);
 }
 
 describe('OnboardingService', () => {
@@ -95,14 +75,15 @@ describe('OnboardingService', () => {
         expect(repo.insertHousehold).not.toHaveBeenCalled();
     });
 
-    it('refuses a second household for the same user', async () => {
+    it('creates another household when the same user onboards again', async () => {
         const repo = makeRepo();
-        const service = makeService(repo, makeHouseholds(true));
+        const service = makeService(repo);
 
-        await expect(service.onboard('u1', input)).rejects.toBeInstanceOf(
-            ConflictError,
-        );
-        expect(repo.insertHousehold).not.toHaveBeenCalled();
+        const first = await service.onboard('u1', input);
+        const second = await service.onboard('u1', input);
+
+        expect(second.id).not.toBe(first.id);
+        expect(repo.insertHousehold).toHaveBeenCalledTimes(2);
     });
 
     it('rejects category names that only differ by case', async () => {

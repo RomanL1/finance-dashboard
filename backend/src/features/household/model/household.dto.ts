@@ -34,6 +34,14 @@ export class HouseholdDto {
     @ApiProperty() createdAt!: string;
 }
 
+export class HouseholdMemberDto {
+    @ApiProperty() userId!: string;
+    @ApiProperty() name!: string;
+    @ApiProperty() email!: string;
+    @ApiProperty({ enum: ['owner', 'member'] }) role!: HouseholdRole;
+    @ApiProperty() joinedAt!: string;
+}
+
 /** Partial update; owners only. */
 export class UpdateHouseholdDto {
     @ApiProperty({ required: false, example: 'Home' })

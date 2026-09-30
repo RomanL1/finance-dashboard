@@ -13,9 +13,11 @@ describe('LoginPage', () => {
     let demoAvailable: ReturnType<typeof vi.fn>;
     let navigate: ReturnType<typeof vi.spyOn>;
     const reset = signal<string | undefined>(undefined);
+    const invite = signal<string | undefined>(undefined);
 
     beforeEach(() => {
         reset.set(undefined);
+        invite.set(undefined);
         signIn = vi.fn().mockResolvedValue(undefined);
         resendVerification = vi.fn().mockResolvedValue(undefined);
         demoAvailable = vi.fn().mockResolvedValue(false);
@@ -40,7 +42,10 @@ describe('LoginPage', () => {
 
     async function create() {
         const fixture = TestBed.createComponent(LoginPage, {
-            bindings: [inputBinding('reset', reset)],
+            bindings: [
+                inputBinding('reset', reset),
+                inputBinding('invite', invite),
+            ],
         });
         await fixture.whenStable();
         fixture.detectChanges();
@@ -135,5 +140,28 @@ describe('LoginPage', () => {
             a.getAttribute('href'),
         );
         expect(hrefs).toEqual(['/forgot-password', '/signup']);
+    });
+
+    it('returns to the invitation after login when it came from one', async () => {
+        invite.set('tok');
+        const { page, el } = await create();
+
+        await page.onLogin({ email: 'a@b.c', password: 'secret' });
+
+        expect(navigate).toHaveBeenCalledWith(['/invite', 'tok']);
+        expect(
+            el.querySelector('a[href^="/signup"]')?.getAttribute('href'),
+        ).toBe('/signup?invite=tok');
+    });
+
+    it('carries the invitation to check-email for an unverified email', async () => {
+        invite.set('tok');
+        const { page } = await create();
+
+        await page.resendVerification('a@b.c');
+
+        expect(navigate).toHaveBeenCalledWith(['/check-email'], {
+            queryParams: { email: 'a@b.c', invite: 'tok' },
+        });
     });
 });

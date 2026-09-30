@@ -1,6 +1,7 @@
 import {
     ChangeDetectionStrategy,
     Component,
+    computed,
     input,
     signal,
 } from '@angular/core';
@@ -8,7 +9,7 @@ import { RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ButtonComponent } from '../../../components/button/button.component';
 import { AuthService } from '../../../core/auth/auth.service';
-import { APP_PATHS } from '../../../config/paths.config';
+import { APP_PATHS, INVITE_PARAM } from '../../../config/paths.config';
 import { AuthLayoutComponent } from '../dumb_components/auth-layout/auth-layout.component';
 import { authErrorKey } from '../services/auth-error';
 
@@ -30,6 +31,11 @@ import { authErrorKey } from '../services/auth-error';
             <p class="type-body-medium text-on-surface-variant">
                 {{ 'auth.checkEmail.hint' | translate }}
             </p>
+            @if (invite()) {
+                <p class="type-body-medium">
+                    {{ 'auth.checkEmail.inviteHint' | translate }}
+                </p>
+            }
             @if (resent()) {
                 <p role="status" class="type-body-medium">
                     {{ 'auth.checkEmail.resent' | translate }}
@@ -52,6 +58,7 @@ import { authErrorKey } from '../services/auth-error';
             <a
                 class="type-label-large text-primary"
                 [routerLink]="'/' + paths.LOGIN"
+                [queryParams]="inviteParams()"
                 >{{ 'auth.checkEmail.toLogin' | translate }}</a
             >
         </app-auth-layout>
@@ -61,6 +68,12 @@ import { authErrorKey } from '../services/auth-error';
 export class CheckEmailPage {
     /** `?email=` from the sign-up or login page. */
     readonly email = input<string>();
+    /** `?invite=` when the sign-up started from an invitation link: the link must be opened again after verifying. */
+    readonly invite = input<string>();
+    readonly inviteParams = computed(() => {
+        const invite = this.invite();
+        return invite ? { [INVITE_PARAM]: invite } : {};
+    });
 
     readonly paths = APP_PATHS;
     readonly busy = signal(false);

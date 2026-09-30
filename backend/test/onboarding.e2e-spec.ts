@@ -106,10 +106,11 @@ describe('onboarding steps (e2e)', () => {
     });
 
     it('step checks write nothing: the user still has no household', async () => {
-        await server()
-            .get('/api/households/me')
+        const res = await server()
+            .get('/api/households')
             .set('Cookie', cookie)
-            .expect(404);
+            .expect(200);
+        expect(res.body).toEqual([]);
     });
 
     it('the final submit creates the household with its categories and accounts', async () => {
@@ -129,18 +130,35 @@ describe('onboarding steps (e2e)', () => {
             baseCurrency: 'CHF',
         });
 
-        const me = await server()
-            .get('/api/households/me')
+        const mine = await server()
+            .get('/api/households')
             .set('Cookie', cookie)
             .expect(200);
-        expect(me.body.id).toBe(res.body.id);
+        expect(mine.body.map((h: { id: string }) => h.id)).toEqual([
+            res.body.id,
+        ]);
     });
 
-    it('refuses a second onboarding with 409', async () => {
-        await server()
+    it('a second onboarding creates another household of the same owner', async () => {
+        const res = await server()
             .post('/api/households/onboarding')
             .set('Cookie', cookie)
             .send({ name: 'Again', categoryNames: ['X'], accounts: [account] })
-            .expect(409);
+            .expect(201);
+
+        const mine = await server()
+            .get('/api/households')
+            .set('Cookie', cookie)
+            .expect(200);
+        expect(
+            mine.body.map((h: { name: string; role: string }) => [
+                h.name,
+                h.role,
+            ]),
+        ).toEqual([
+            ['Home', 'owner'],
+            ['Again', 'owner'],
+        ]);
+        expect(mine.body[1].id).toBe(res.body.id);
     });
 });

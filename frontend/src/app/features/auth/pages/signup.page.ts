@@ -1,8 +1,14 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    computed,
+    input,
+    signal,
+} from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../../core/auth/auth.service';
-import { APP_PATHS } from '../../../config/paths.config';
+import { APP_PATHS, INVITE_PARAM } from '../../../config/paths.config';
 import { AuthLayoutComponent } from '../dumb_components/auth-layout/auth-layout.component';
 import { SignupFormComponent } from '../dumb_components/signup-form/signup-form.component';
 import { authErrorKey } from '../services/auth-error';
@@ -26,6 +32,7 @@ import type { SignUpData } from '../auth.types';
             <a
                 class="type-label-large text-primary"
                 [routerLink]="'/' + paths.LOGIN"
+                [queryParams]="inviteParams()"
                 >{{ 'auth.signup.toLogin' | translate }}</a
             >
         </app-auth-layout>
@@ -33,6 +40,13 @@ import type { SignUpData } from '../auth.types';
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SignupPage {
+    /** `?invite=` when the visitor came from an invitation link; carried on so the next page can say how to get back. */
+    readonly invite = input<string>();
+    readonly inviteParams = computed(() => {
+        const invite = this.invite();
+        return invite ? { [INVITE_PARAM]: invite } : {};
+    });
+
     readonly paths = APP_PATHS;
     readonly busy = signal(false);
     readonly error = signal<string | null>(null);
@@ -50,7 +64,7 @@ export class SignupPage {
         try {
             await this.auth.signUp(name, email, password);
             await this.router.navigate(['/' + APP_PATHS.CHECK_EMAIL], {
-                queryParams: { email },
+                queryParams: { email, ...this.inviteParams() },
             });
         } catch (e) {
             this.error.set(this.translate.instant(authErrorKey(e)));

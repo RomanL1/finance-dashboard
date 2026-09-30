@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    OnInit,
+    signal,
+} from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatIcon } from '@angular/material/icon';
 import { MatTabLink, MatTabNav, MatTabNavPanel } from '@angular/material/tabs';
 import {
@@ -7,10 +13,12 @@ import {
     RouterLinkActive,
     RouterOutlet,
 } from '@angular/router';
-import { TranslatePipe } from '@ngx-translate/core';
+import { firstValueFrom } from 'rxjs';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { APP_PATHS } from '../../../config/paths.config';
 import { AuthService } from '../../../core/auth/auth.service';
 import type { AppIcon } from '../../../core/icons/icons';
+import { HouseholdService } from '../../household/services/household.service';
 
 /**
  * Authenticated layout: M3 top app bar, navigation bar at the bottom on phones and a tab row
@@ -101,8 +109,26 @@ import type { AppIcon } from '../../../core/icons/icons';
     `,
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ShellPage {
-    constructor(protected readonly auth: AuthService) {}
+export class ShellPage implements OnInit {
+    constructor(
+        protected readonly auth: AuthService,
+        private readonly households: HouseholdService,
+        private readonly snackBar: MatSnackBar,
+        private readonly translate: TranslateService,
+    ) {}
+
+    /** Switching households restarts the app; the confirmation shows once it is back. At the top, clear of the phone's navigation bar. */
+    async ngOnInit(): Promise<void> {
+        if (!this.households.takeSwitchNotice()) return;
+        const { name } = await this.households.getHousehold();
+        const message = await firstValueFrom(
+            this.translate.get('settings.households.switched', { name }),
+        );
+        this.snackBar.open(message, undefined, {
+            duration: 4000,
+            verticalPosition: 'top',
+        });
+    }
 
     /**
      * A tab stays active on its child routes (analytics/budgets, transactions/recurring), and query params (period filter)

@@ -8,9 +8,11 @@ import { CheckEmailPage } from './check-email.page';
 describe('CheckEmailPage', () => {
     let resendVerification: ReturnType<typeof vi.fn>;
     const email = signal<string | undefined>('ann@b.c');
+    const invite = signal<string | undefined>(undefined);
 
     beforeEach(() => {
         email.set('ann@b.c');
+        invite.set(undefined);
         resendVerification = vi.fn().mockResolvedValue(undefined);
         TestBed.configureTestingModule({
             providers: [
@@ -23,7 +25,10 @@ describe('CheckEmailPage', () => {
 
     function create() {
         const fixture = TestBed.createComponent(CheckEmailPage, {
-            bindings: [inputBinding('email', email)],
+            bindings: [
+                inputBinding('email', email),
+                inputBinding('invite', invite),
+            ],
         });
         fixture.detectChanges();
         return {
@@ -59,5 +64,22 @@ describe('CheckEmailPage', () => {
         const { el } = create();
 
         expect(el.querySelector('app-button')).toBeNull();
+    });
+
+    it('tells an invitee to open the invitation link again', () => {
+        invite.set('tok');
+        const { el } = create();
+
+        expect(el.textContent).toContain('auth.checkEmail.inviteHint');
+        expect(el.querySelector('a')?.getAttribute('href')).toBe(
+            '/login?invite=tok',
+        );
+    });
+
+    it('shows no invitation hint after a plain sign-up', () => {
+        const { el } = create();
+
+        expect(el.textContent).not.toContain('auth.checkEmail.inviteHint');
+        expect(el.querySelector('a')?.getAttribute('href')).toBe('/login');
     });
 });

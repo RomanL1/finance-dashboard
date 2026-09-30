@@ -40,6 +40,14 @@ export type UpdateHouseholdDto = {
     timeZone?: string;
 };
 
+export type HouseholdMemberDto = {
+    userId: string;
+    name: string;
+    email: string;
+    role: 'owner' | 'member';
+    joinedAt: string;
+};
+
 export type CategoryDto = {
     id: string;
     name: string;
@@ -358,6 +366,36 @@ export type SaveRecurringTransactionDto = {
     weekendShift?: boolean;
 };
 
+export type InvitationDto = {
+    id: string;
+    note: string | null;
+    createdAt: string;
+    expiresAt: string;
+};
+
+export type CreateInvitationDto = {
+    /**
+     * Only the owner sees it
+     */
+    note?: string;
+};
+
+export type CreatedInvitationDto = {
+    id: string;
+    note: string | null;
+    createdAt: string;
+    expiresAt: string;
+    /**
+     * Link token; returned only here, the server keeps just its hash
+     */
+    token: string;
+};
+
+export type InvitationPreviewDto = {
+    householdName: string;
+    ownerName: string;
+};
+
 export type HealthHealthData = {
     body?: never;
     path?: never;
@@ -386,19 +424,19 @@ export type AppConfigGetResponses = {
 export type AppConfigGetResponse =
     AppConfigGetResponses[keyof AppConfigGetResponses];
 
-export type HouseholdMineData = {
+export type HouseholdListData = {
     body?: never;
     path?: never;
     query?: never;
-    url: '/api/households/me';
+    url: '/api/households';
 };
 
-export type HouseholdMineResponses = {
-    200: HouseholdDto;
+export type HouseholdListResponses = {
+    200: Array<HouseholdDto>;
 };
 
-export type HouseholdMineResponse =
-    HouseholdMineResponses[keyof HouseholdMineResponses];
+export type HouseholdListResponse =
+    HouseholdListResponses[keyof HouseholdListResponses];
 
 export type HouseholdUpdateHouseholdData = {
     body: UpdateHouseholdDto;
@@ -418,6 +456,51 @@ export type HouseholdUpdateHouseholdResponses = {
 
 export type HouseholdUpdateHouseholdResponse =
     HouseholdUpdateHouseholdResponses[keyof HouseholdUpdateHouseholdResponses];
+
+export type HouseholdMembersData = {
+    body?: never;
+    path: {
+        /**
+         * Household id
+         */
+        householdId: string;
+    };
+    query?: never;
+    url: '/api/households/{householdId}/members';
+};
+
+export type HouseholdMembersResponses = {
+    200: Array<HouseholdMemberDto>;
+};
+
+export type HouseholdMembersResponse =
+    HouseholdMembersResponses[keyof HouseholdMembersResponses];
+
+export type HouseholdRemoveMemberData = {
+    body?: never;
+    path: {
+        /**
+         * User id
+         */
+        userId: string;
+        /**
+         * Household id
+         */
+        householdId: string;
+    };
+    query?: never;
+    url: '/api/households/{householdId}/members/{userId}';
+};
+
+export type HouseholdRemoveMemberResponses = {
+    /**
+     * Member removed
+     */
+    204: void;
+};
+
+export type HouseholdRemoveMemberResponse =
+    HouseholdRemoveMemberResponses[keyof HouseholdRemoveMemberResponses];
 
 export type CategoryGetCategoriesData = {
     body?: never;
@@ -1127,3 +1210,126 @@ export type RecurringResumeRecurringTransactionResponses = {
 
 export type RecurringResumeRecurringTransactionResponse =
     RecurringResumeRecurringTransactionResponses[keyof RecurringResumeRecurringTransactionResponses];
+
+export type HouseholdInvitationListData = {
+    body?: never;
+    path: {
+        /**
+         * Household id
+         */
+        householdId: string;
+    };
+    query?: never;
+    url: '/api/households/{householdId}/invitations';
+};
+
+export type HouseholdInvitationListResponses = {
+    200: Array<InvitationDto>;
+};
+
+export type HouseholdInvitationListResponse =
+    HouseholdInvitationListResponses[keyof HouseholdInvitationListResponses];
+
+export type HouseholdInvitationCreateData = {
+    body: CreateInvitationDto;
+    path: {
+        /**
+         * Household id
+         */
+        householdId: string;
+    };
+    query?: never;
+    url: '/api/households/{householdId}/invitations';
+};
+
+export type HouseholdInvitationCreateErrors = {
+    /**
+     * Too many open invitations
+     */
+    409: unknown;
+};
+
+export type HouseholdInvitationCreateResponses = {
+    200: CreatedInvitationDto;
+};
+
+export type HouseholdInvitationCreateResponse =
+    HouseholdInvitationCreateResponses[keyof HouseholdInvitationCreateResponses];
+
+export type HouseholdInvitationRevokeData = {
+    body?: never;
+    path: {
+        /**
+         * Invitation id
+         */
+        invitationId: string;
+        /**
+         * Household id
+         */
+        householdId: string;
+    };
+    query?: never;
+    url: '/api/households/{householdId}/invitations/{invitationId}';
+};
+
+export type HouseholdInvitationRevokeResponses = {
+    /**
+     * Invitation revoked
+     */
+    204: void;
+};
+
+export type HouseholdInvitationRevokeResponse =
+    HouseholdInvitationRevokeResponses[keyof HouseholdInvitationRevokeResponses];
+
+export type InvitationPreviewData = {
+    body?: never;
+    path: {
+        /**
+         * Token from the link
+         */
+        token: string;
+    };
+    query?: never;
+    url: '/api/invitations/{token}';
+};
+
+export type InvitationPreviewErrors = {
+    /**
+     * Unknown, expired, revoked or already used
+     */
+    404: unknown;
+};
+
+export type InvitationPreviewResponses = {
+    200: InvitationPreviewDto;
+};
+
+export type InvitationPreviewResponse =
+    InvitationPreviewResponses[keyof InvitationPreviewResponses];
+
+export type InvitationAcceptData = {
+    body?: never;
+    path: {
+        /**
+         * Token from the link
+         */
+        token: string;
+    };
+    query?: never;
+    url: '/api/invitations/{token}/accept';
+};
+
+export type InvitationAcceptErrors = {
+    /**
+     * Unknown, expired, revoked or already used
+     */
+    404: unknown;
+};
+
+export type InvitationAcceptResponses = {
+    200: HouseholdDto;
+};
+
+export type InvitationAcceptResponse =
+    InvitationAcceptResponses[keyof InvitationAcceptResponses];

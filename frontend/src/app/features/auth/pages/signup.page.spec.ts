@@ -1,3 +1,4 @@
+import { inputBinding, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { provideTranslateService } from '@ngx-translate/core';
@@ -7,9 +8,11 @@ import { SignupPage } from './signup.page';
 describe('SignupPage', () => {
     let signUp: ReturnType<typeof vi.fn>;
     let navigate: ReturnType<typeof vi.spyOn>;
+    const invite = signal<string | undefined>(undefined);
     const data = { name: 'Ann', email: 'ann@b.c', password: 'password1' };
 
     beforeEach(() => {
+        invite.set(undefined);
         signUp = vi.fn().mockResolvedValue(undefined);
         TestBed.configureTestingModule({
             providers: [
@@ -24,7 +27,9 @@ describe('SignupPage', () => {
     });
 
     function create(): SignupPage {
-        const fixture = TestBed.createComponent(SignupPage);
+        const fixture = TestBed.createComponent(SignupPage, {
+            bindings: [inputBinding('invite', invite)],
+        });
         fixture.detectChanges();
         return fixture.componentInstance;
     }
@@ -50,5 +55,16 @@ describe('SignupPage', () => {
         expect(page.error()).toBe('auth.errors.TOO_MANY_REQUESTS');
         expect(navigate).not.toHaveBeenCalled();
         expect(page.busy()).toBe(false);
+    });
+
+    it('carries an invitation on to check-email', async () => {
+        invite.set('tok');
+        const page = create();
+
+        await page.onSignUp(data);
+
+        expect(navigate).toHaveBeenCalledWith(['/check-email'], {
+            queryParams: { email: 'ann@b.c', invite: 'tok' },
+        });
     });
 });

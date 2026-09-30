@@ -5,7 +5,12 @@ import {
     OnboardingCompleteGuard,
     OnboardingGuard,
 } from '../features/household/services/onboarding.guard';
-import { ANALYTICS_PATHS, APP_PATHS, TRANSACTION_PATHS } from './paths.config';
+import {
+    ANALYTICS_PATHS,
+    APP_PATHS,
+    SETTINGS_PATHS,
+    TRANSACTION_PATHS,
+} from './paths.config';
 
 const loadShellPage = () =>
     import('../features/shell/pages/shell.page').then((m) => m.ShellPage);
@@ -94,6 +99,14 @@ export const routes: Routes = [
             ),
     },
     {
+        /** No guard: the page itself tells a signed-out visitor to log in or sign up first. */
+        path: APP_PATHS.INVITE + '/:token',
+        loadComponent: () =>
+            import('../features/household/pages/invite.page').then(
+                (m) => m.InvitePage,
+            ),
+    },
+    {
         path: APP_PATHS.ONBOARDING,
         canActivate: [AuthGuard, OnboardingCompleteGuard],
         loadComponent: () =>
@@ -165,7 +178,16 @@ export const routes: Routes = [
             },
             {
                 path: APP_PATHS.SETTINGS,
-                loadComponent: loadSettingsPage,
+                children: [
+                    { path: '', loadComponent: loadSettingsPage },
+                    {
+                        path: SETTINGS_PATHS.MEMBERS,
+                        loadComponent: () =>
+                            import('../features/household/pages/members.page').then(
+                                (m) => m.MembersPage,
+                            ),
+                    },
+                ],
             },
         ],
     },

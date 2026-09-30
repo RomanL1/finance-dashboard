@@ -41,10 +41,27 @@ import type {
     CategoryUpdateCategoryResponses,
     HealthHealthData,
     HealthHealthResponses,
-    HouseholdMineData,
-    HouseholdMineResponses,
+    HouseholdInvitationCreateData,
+    HouseholdInvitationCreateErrors,
+    HouseholdInvitationCreateResponses,
+    HouseholdInvitationListData,
+    HouseholdInvitationListResponses,
+    HouseholdInvitationRevokeData,
+    HouseholdInvitationRevokeResponses,
+    HouseholdListData,
+    HouseholdListResponses,
+    HouseholdMembersData,
+    HouseholdMembersResponses,
+    HouseholdRemoveMemberData,
+    HouseholdRemoveMemberResponses,
     HouseholdUpdateHouseholdData,
     HouseholdUpdateHouseholdResponses,
+    InvitationAcceptData,
+    InvitationAcceptErrors,
+    InvitationAcceptResponses,
+    InvitationPreviewData,
+    InvitationPreviewErrors,
+    InvitationPreviewResponses,
     OnboardingOnboardData,
     OnboardingOnboardResponses,
     OnboardingValidateAccountsData,
@@ -119,11 +136,11 @@ export const appConfigGet = <ThrowOnError extends boolean = false>(
         ThrowOnError
     >({ url: '/api/config', ...options });
 
-export const householdMine = <ThrowOnError extends boolean = false>(
-    options?: Options<HouseholdMineData, ThrowOnError>,
-): RequestResult<HouseholdMineResponses, unknown, ThrowOnError> =>
+export const householdList = <ThrowOnError extends boolean = false>(
+    options?: Options<HouseholdListData, ThrowOnError>,
+): RequestResult<HouseholdListResponses, unknown, ThrowOnError> =>
     (options?.client ?? client).get<
-        HouseholdMineResponses,
+        HouseholdListResponses,
         unknown,
         ThrowOnError
     >({
@@ -134,7 +151,7 @@ export const householdMine = <ThrowOnError extends boolean = false>(
                 type: 'apiKey',
             },
         ],
-        url: '/api/households/me',
+        url: '/api/households',
         ...options,
     });
 
@@ -159,6 +176,44 @@ export const householdUpdateHousehold = <ThrowOnError extends boolean = false>(
             'Content-Type': 'application/json',
             ...options.headers,
         },
+    });
+
+export const householdMembers = <ThrowOnError extends boolean = false>(
+    options: Options<HouseholdMembersData, ThrowOnError>,
+): RequestResult<HouseholdMembersResponses, unknown, ThrowOnError> =>
+    (options.client ?? client).get<
+        HouseholdMembersResponses,
+        unknown,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/{householdId}/members',
+        ...options,
+    });
+
+export const householdRemoveMember = <ThrowOnError extends boolean = false>(
+    options: Options<HouseholdRemoveMemberData, ThrowOnError>,
+): RequestResult<HouseholdRemoveMemberResponses, unknown, ThrowOnError> =>
+    (options.client ?? client).delete<
+        HouseholdRemoveMemberResponses,
+        unknown,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/{householdId}/members/{userId}',
+        ...options,
     });
 
 export const categoryGetCategories = <ThrowOnError extends boolean = false>(
@@ -868,5 +923,106 @@ export const recurringResumeRecurringTransaction = <
             },
         ],
         url: '/api/households/{householdId}/recurring-transactions/{recurringTransactionId}/resume',
+        ...options,
+    });
+
+export const householdInvitationList = <ThrowOnError extends boolean = false>(
+    options: Options<HouseholdInvitationListData, ThrowOnError>,
+): RequestResult<HouseholdInvitationListResponses, unknown, ThrowOnError> =>
+    (options.client ?? client).get<
+        HouseholdInvitationListResponses,
+        unknown,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/{householdId}/invitations',
+        ...options,
+    });
+
+export const householdInvitationCreate = <ThrowOnError extends boolean = false>(
+    options: Options<HouseholdInvitationCreateData, ThrowOnError>,
+): RequestResult<
+    HouseholdInvitationCreateResponses,
+    HouseholdInvitationCreateErrors,
+    ThrowOnError
+> =>
+    (options.client ?? client).post<
+        HouseholdInvitationCreateResponses,
+        HouseholdInvitationCreateErrors,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/{householdId}/invitations',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers,
+        },
+    });
+
+export const householdInvitationRevoke = <ThrowOnError extends boolean = false>(
+    options: Options<HouseholdInvitationRevokeData, ThrowOnError>,
+): RequestResult<HouseholdInvitationRevokeResponses, unknown, ThrowOnError> =>
+    (options.client ?? client).delete<
+        HouseholdInvitationRevokeResponses,
+        unknown,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/{householdId}/invitations/{invitationId}',
+        ...options,
+    });
+
+export const invitationPreview = <ThrowOnError extends boolean = false>(
+    options: Options<InvitationPreviewData, ThrowOnError>,
+): RequestResult<
+    InvitationPreviewResponses,
+    InvitationPreviewErrors,
+    ThrowOnError
+> =>
+    (options.client ?? client).get<
+        InvitationPreviewResponses,
+        InvitationPreviewErrors,
+        ThrowOnError
+    >({ url: '/api/invitations/{token}', ...options });
+
+export const invitationAccept = <ThrowOnError extends boolean = false>(
+    options: Options<InvitationAcceptData, ThrowOnError>,
+): RequestResult<
+    InvitationAcceptResponses,
+    InvitationAcceptErrors,
+    ThrowOnError
+> =>
+    (options.client ?? client).post<
+        InvitationAcceptResponses,
+        InvitationAcceptErrors,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/invitations/{token}/accept',
         ...options,
     });

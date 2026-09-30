@@ -6,3 +6,4 @@ export * from '../../../features/account/model/account.schema.js';
 export * from '../../../features/transaction/model/transaction.schema.js';
 export * from '../../../features/budget/model/budget.schema.js';
 export * from '../../../features/recurring/model/recurring.schema.js';
+export * from '../../../features/invitation/model/invitation.schema.js';

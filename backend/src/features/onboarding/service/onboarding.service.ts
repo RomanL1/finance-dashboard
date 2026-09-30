@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import {
-    ConflictError,
     newId,
     SUPPORTED_CURRENCIES,
     ValidationError,
@@ -8,7 +7,6 @@ import {
     type SupportedCurrency,
 } from '../../../shared/kernel/index.js';
 import type { Household } from '../../household/model/household.js';
-import { HouseholdService } from '../../household/service/household.service.js';
 import {
     assertUniqueCategoryNames,
     buildCategory,
@@ -29,10 +27,7 @@ export interface OnboardingInput {
 
 @Injectable()
 export class OnboardingService {
-    constructor(
-        private readonly onboarding: OnboardingRepository,
-        private readonly households: HouseholdService,
-    ) {}
+    constructor(private readonly onboarding: OnboardingRepository) {}
 
     validateCategoryNames(categoryNames: string[]): void {
         assertUniqueCategoryNames(categoryNames);
@@ -41,11 +36,9 @@ export class OnboardingService {
     /**
      * Onboarding is submitted once, in full: the household, its categories and its
      * accounts are written together, so no partial household ever exists server-side.
+     * A user may onboard again: each run creates another household they own.
      */
     async onboard(ownerUserId: Id, input: OnboardingInput): Promise<Household> {
-        if (await this.households.hasHousehold(ownerUserId)) {
-            throw new ConflictError('User already belongs to a household');
-        }
         assertUniqueCategoryNames(input.categoryNames);
 
         const household: Household = {

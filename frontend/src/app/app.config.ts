@@ -2,7 +2,9 @@ import { registerLocaleData } from '@angular/common';
 import localeDe from '@angular/common/locales/de';
 import {
     ApplicationConfig,
+    inject,
     LOCALE_ID,
+    provideAppInitializer,
     provideBrowserGlobalErrorListeners,
 } from '@angular/core';
 import {
@@ -18,6 +20,8 @@ import { DelayedPreloadingStrategy } from './config/delayed-preloading.strategy'
 import { routes } from './config/routes.config';
 import { provideAppIcons } from './core/icons/icons';
 import { restoreLanguage } from './core/i18n/language.service';
+import { watchHouseholdAccess } from './features/household/services/household-access';
+import { HouseholdService } from './features/household/services/household.service';
 
 /** `lang` and `LOCALE_ID` always move together; the settings language switcher reloads the app to change them. */
 const LANG = restoreLanguage();
@@ -44,5 +48,8 @@ export const appConfig: ApplicationConfig = {
             lang: LANG,
         }),
         { provide: LOCALE_ID, useValue: LANG },
+        provideAppInitializer(() =>
+            watchHouseholdAccess(inject(HouseholdService)),
+        ),
     ],
 };

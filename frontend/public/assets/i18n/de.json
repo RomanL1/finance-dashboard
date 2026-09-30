@@ -48,7 +48,8 @@
             "hint": "Öffne den Link in der E-Mail, um dein Konto fertig einzurichten. Er ist 24 Stunden gültig. Sieh auch im Spam-Ordner nach, falls nichts ankommt.",
             "resend": "Link erneut senden",
             "resent": "Ein neuer Link ist unterwegs.",
-            "toLogin": "Zurück zur Anmeldung"
+            "toLogin": "Zurück zur Anmeldung",
+            "inviteHint": "Du bist über eine Einladung hier. Öffne den Einladungslink erneut, sobald deine E-Mail bestätigt ist, um dem Haushalt beizutreten."
         },
         "verifyEmail": {
             "title": "E-Mail bestätigen",
@@ -118,7 +119,9 @@
         },
         "accounts": {
             "description": "Füge mindestens ein Konto hinzu, um es zu verfolgen."
-        }
+        },
+        "newHouseholdTitle": "Neuer Haushalt",
+        "cancel": "Abbrechen"
     },
     "account": {
         "form": {
@@ -332,7 +335,8 @@
             "baseCurrency": "Währung",
             "baseCurrencyHint": "Nur Anzeige. Alle Konten und Transaktionen verwenden diese Währung; eine Änderung benennt sie um, Beträge werden nicht umgerechnet.",
             "timeZone": "Zeitzone",
-            "timeZoneHint": "Wiederkehrende Buchungen entstehen um Mitternacht dieser Zone. Eine Änderung wirkt nur auf spätere Buchungen."
+            "timeZoneHint": "Wiederkehrende Buchungen entstehen um Mitternacht dieser Zone. Eine Änderung wirkt nur auf spätere Buchungen.",
+            "members": "Mitglieder"
         },
         "appearance": {
             "title": "Darstellung",
@@ -343,6 +347,12 @@
             "hideBalances": "Kontostände verbergen",
             "hideTransactions": "Transaktionsbeträge verbergen",
             "hideAmountsHint": "Macht die Beträge auf diesem Gerät unkenntlich, z. B. wenn jemand mitschaut. Transaktionsbeträge umfassen auch Summen, Budgets und Auswertungen."
+        },
+        "households": {
+            "title": "Deine Haushalte",
+            "active": "Aktiv",
+            "create": "Neuer Haushalt",
+            "switched": "Jetzt im Haushalt «{{name}}»"
         }
     },
     "stats": {
@@ -488,5 +498,47 @@
             "resume": "Fortsetzen",
             "toggleFailed": "Die wiederkehrende Buchung konnte nicht geändert werden."
         }
+    },
+    "members": {
+        "title": "Mitglieder",
+        "back": "Zurück zu den Einstellungen",
+        "cancel": "Abbrechen",
+        "remove": {
+            "action": "{{name}} entfernen",
+            "title": "Mitglied entfernen?",
+            "message": "Der Zugriff auf diesen Haushalt endet sofort. Alles, was die Person erfasst hat, bleibt erhalten. Mit einer neuen Einladung kann sie wieder beitreten.",
+            "confirm": "Entfernen"
+        },
+        "invitations": {
+            "title": "Einladen",
+            "description": "Erstelle einen Link und schicke ihn der Person selbst. Mit jedem Link kann eine Person beitreten, er ist 24 Stunden gültig.",
+            "noteLabel": "Notiz (optional)",
+            "noteHint": "Nur du siehst die Notiz, z. B. für wen der Link ist.",
+            "noteTooLong": "Höchstens {{max}} Zeichen",
+            "create": "Einladungslink erstellen",
+            "createFailed": "Der Link konnte nicht erstellt werden. Ein Haushalt kann höchstens 10 offene Einladungen haben; widerrufe eine und versuche es erneut.",
+            "linkReady": "Einladungslink",
+            "linkOnce": "Kopiere ihn jetzt: Der Link wird nur dieses eine Mal angezeigt.",
+            "copy": "Link kopieren",
+            "copied": "Kopiert",
+            "open": "Offene Einladungen",
+            "empty": "Keine offenen Einladungen.",
+            "noNote": "Ohne Notiz",
+            "validUntil": "Gültig bis {{date}}",
+            "revoke": "Widerrufen",
+            "revokeTitle": "Einladung widerrufen?",
+            "revokeMessage": "Der Link funktioniert ab sofort nicht mehr."
+        }
+    },
+    "invite": {
+        "title": "Einladung",
+        "loading": "Einladung wird geprüft…",
+        "message": "{{ownerName}} lädt dich in den Haushalt «{{householdName}}» ein. Du siehst und bearbeitest dessen Konten, Transaktionen und Budgets.",
+        "join": "Haushalt beitreten",
+        "signInFirst": "Melde dich an oder registriere dich, um beizutreten.",
+        "toLogin": "Anmelden",
+        "toSignup": "Registrieren",
+        "invalid": "Diese Einladung ist nicht mehr gültig. Bitte den Inhaber oder die Inhaberin des Haushalts um einen neuen Link.",
+        "toApp": "Zur App"
     }
 }

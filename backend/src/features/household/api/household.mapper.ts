@@ -1,5 +1,8 @@
-import { HouseholdDto } from '../model/household.dto.js';
-import type { HouseholdMembership } from '../model/household.js';
+import { HouseholdDto, HouseholdMemberDto } from '../model/household.dto.js';
+import type {
+    HouseholdMember,
+    HouseholdMembership,
+} from '../model/household.js';
 
 export function toHouseholdDto({
     household,
@@ -13,5 +16,17 @@ export function toHouseholdDto({
     dto.baseCurrency = household.baseCurrency;
     dto.timeZone = household.timeZone;
     dto.createdAt = household.createdAt.toISOString();
+    return dto;
+}
+
+export function toHouseholdMemberDto(
+    member: HouseholdMember,
+): HouseholdMemberDto {
+    const dto = new HouseholdMemberDto();
+    dto.userId = member.userId;
+    dto.name = member.name;
+    dto.email = member.email;
+    dto.role = member.role;
+    dto.joinedAt = member.joinedAt.toISOString();
     return dto;
 }

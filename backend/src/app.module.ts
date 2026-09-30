@@ -12,6 +12,7 @@ import { OnboardingModule } from './features/onboarding/onboarding.module.js';
 import { TransactionModule } from './features/transaction/transaction.module.js';
 import { BudgetModule } from './features/budget/budget.module.js';
 import { RecurringModule } from './features/recurring/recurring.module.js';
+import { InvitationModule } from './features/invitation/invitation.module.js';
 
 @Module({
     imports: [
@@ -28,6 +29,7 @@ import { RecurringModule } from './features/recurring/recurring.module.js';
         TransactionModule,
         BudgetModule,
         RecurringModule,
+        InvitationModule,
     ],
 })
 export class AppModule {}

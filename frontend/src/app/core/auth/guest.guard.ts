@@ -1,9 +1,14 @@
 import { Injectable } from '@angular/core';
-import { CanActivate, Router, UrlTree } from '@angular/router';
+import {
+    ActivatedRouteSnapshot,
+    CanActivate,
+    Router,
+    UrlTree,
+} from '@angular/router';
 import { AuthService } from './auth.service';
-import { APP_PATHS } from '../../config/paths.config';
+import { APP_PATHS, INVITE_PARAM } from '../../config/paths.config';
 
-/** Keeps signed-in users off the login, sign-up and password pages. */
+/** Keeps signed-in users off the login, sign-up and password pages. One who came from an invitation link goes back to it. */
 @Injectable({ providedIn: 'root' })
 export class GuestGuard implements CanActivate {
     constructor(
@@ -11,12 +16,16 @@ export class GuestGuard implements CanActivate {
         private readonly router: Router,
     ) {}
 
-    async canActivate(): Promise<boolean | UrlTree> {
+    async canActivate(
+        route: ActivatedRouteSnapshot,
+    ): Promise<boolean | UrlTree> {
         if (!this.auth.ready()) {
             await this.auth.refresh();
         }
-        return this.auth.isAuthenticated()
-            ? this.router.createUrlTree(['/' + APP_PATHS.HOME])
-            : true;
+        if (!this.auth.isAuthenticated()) return true;
+        const invite = route.queryParamMap.get(INVITE_PARAM);
+        return this.router.createUrlTree(
+            invite ? ['/' + APP_PATHS.INVITE, invite] : ['/' + APP_PATHS.HOME],
+        );
     }
 }
