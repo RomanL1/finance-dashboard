@@ -1,5 +1,6 @@
 # Builds the api and web images for linux/amd64 and linux/arm64 (Apple Silicon runs arm64 Linux images).
 # Pull requests only build; pushes to main and v* tags also publish to ghcr.io/<owner>/finance-dashboard-{api,web}.
+# A v* tag (e.g. v0.7.0) is a release: images get the tags 0.7.0, 0.7 and latest, then a GitHub release is created for the tag.
 name: docker
 
 on:
@@ -57,3 +58,20 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=${{ matrix.name }}
           cache-to: type=gha,mode=max,scope=${{ matrix.name }}
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          owner=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          gh release create "$TAG" --verify-tag --generate-notes --notes "Images:
+          - \`ghcr.io/$owner/finance-dashboard-api:${TAG#v}\`
+          - \`ghcr.io/$owner/finance-dashboard-web:${TAG#v}\`"
