@@ -96,6 +96,14 @@ import type {
     TransactionGetTransactionsResponses,
     TransactionUpdateTransactionData,
     TransactionUpdateTransactionResponses,
+    TransferCreateTransferData,
+    TransferCreateTransferResponses,
+    TransferDeleteTransferData,
+    TransferDeleteTransferResponses,
+    TransferGetTransfersData,
+    TransferGetTransfersResponses,
+    TransferUpdateTransferData,
+    TransferUpdateTransferResponses,
 } from './types.gen';
 
 export type Options<
@@ -1025,4 +1033,88 @@ export const invitationAccept = <ThrowOnError extends boolean = false>(
         ],
         url: '/api/invitations/{token}/accept',
         ...options,
+    });
+
+export const transferGetTransfers = <ThrowOnError extends boolean = false>(
+    options: Options<TransferGetTransfersData, ThrowOnError>,
+): RequestResult<TransferGetTransfersResponses, unknown, ThrowOnError> =>
+    (options.client ?? client).get<
+        TransferGetTransfersResponses,
+        unknown,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/{householdId}/transfers',
+        ...options,
+    });
+
+export const transferCreateTransfer = <ThrowOnError extends boolean = false>(
+    options: Options<TransferCreateTransferData, ThrowOnError>,
+): RequestResult<TransferCreateTransferResponses, unknown, ThrowOnError> =>
+    (options.client ?? client).post<
+        TransferCreateTransferResponses,
+        unknown,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/{householdId}/transfers',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers,
+        },
+    });
+
+export const transferDeleteTransfer = <ThrowOnError extends boolean = false>(
+    options: Options<TransferDeleteTransferData, ThrowOnError>,
+): RequestResult<TransferDeleteTransferResponses, unknown, ThrowOnError> =>
+    (options.client ?? client).delete<
+        TransferDeleteTransferResponses,
+        unknown,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/{householdId}/transfers/{transferId}',
+        ...options,
+    });
+
+export const transferUpdateTransfer = <ThrowOnError extends boolean = false>(
+    options: Options<TransferUpdateTransferData, ThrowOnError>,
+): RequestResult<TransferUpdateTransferResponses, unknown, ThrowOnError> =>
+    (options.client ?? client).patch<
+        TransferUpdateTransferResponses,
+        unknown,
+        ThrowOnError
+    >({
+        security: [
+            {
+                in: 'cookie',
+                name: 'better-auth.session_token',
+                type: 'apiKey',
+            },
+        ],
+        url: '/api/households/{householdId}/transfers/{transferId}',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers,
+        },
     });

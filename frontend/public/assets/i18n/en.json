@@ -304,7 +304,50 @@
         },
         "tabs": {
             "history": "History",
-            "recurring": "Recurring"
+            "recurring": "Recurring",
+            "transfers": "Transfers"
+        }
+    },
+    "transfer": {
+        "page": {
+            "subtitle": "Money moved between your own accounts, like paying off a credit card. Transfers change both balances but never count as income or expense."
+        },
+        "loadFailed": "Could not load the transfers.",
+        "list": {
+            "empty": "No transfers yet.",
+            "emptyHint": "Tap + to move money between accounts.",
+            "untitled": "Transfer",
+            "to": "to"
+        },
+        "form": {
+            "amountLabel": "Amount",
+            "amountRequired": "Enter an amount greater than 0",
+            "fromLabel": "From account",
+            "toLabel": "To account",
+            "accountRequired": "Choose an account",
+            "dateLabel": "Date",
+            "titleLabel": "Title (optional)"
+        },
+        "dialog": {
+            "title": "New transfer",
+            "editTitle": "Edit transfer",
+            "settleTitle": "Settle credit card",
+            "hint": "Moves money between two of your accounts. Income, expenses and budgets stay unchanged.",
+            "settleHint": "Pays off the card from the account you choose. The amount is the current debt, including bookings already planned for this month; change it for a partial payment.",
+            "cancel": "Cancel",
+            "save": "Save",
+            "delete": "Delete",
+            "failed": "Could not save the transfer.",
+            "deleteFailed": "Could not delete the transfer."
+        },
+        "delete": {
+            "title": "Delete transfer?",
+            "message": "This removes the transfer and adjusts both account balances.",
+            "confirm": "Delete"
+        },
+        "settle": {
+            "action": "Settle {{name}}",
+            "menu": "Settle"
         }
     },
     "nav": {

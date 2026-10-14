@@ -41,6 +41,9 @@ import {
     type PeriodKind,
 } from '../../stats/stats.types';
 import { TransactionHistoryComponent } from '../../transaction/smart_components/transaction-history/transaction-history.component';
+import { DialogService } from '../../../components/dialog/dialog.service';
+import { openTransferDialog } from '../../transfer/smart_components/transfer-dialog/open-transfer-dialog';
+import { settleDefaults } from '../../transfer/transfer.types';
 
 type HomeView = 'overview' | 'budget';
 
@@ -227,7 +230,10 @@ function readView(): HomeView {
                         }
                     </div>
                     @if (accounts.value()) {
-                        <app-account-chips [accounts]="activeAccounts()" />
+                        <app-account-chips
+                            [accounts]="activeAccounts()"
+                            (settle)="settle($event)"
+                        />
                     } @else {
                         <app-skeleton variant="chips" />
                     }
@@ -381,8 +387,24 @@ export class HomePage {
         private readonly statsService: StatsService,
         private readonly budgetService: BudgetService,
         private readonly analytics: AnalyticsService,
+        private readonly dialogs: DialogService,
         private readonly router: Router,
     ) {}
+
+    /** Pays off a credit card's debt: a transfer, so only the balances change, not the period sums. */
+    async settle(accountId: string): Promise<void> {
+        const household = this.household.value();
+        const card = this.accounts.value()?.find((a) => a.id === accountId);
+        if (!household || !card) return;
+        const ref = await openTransferDialog(this.dialogs, {
+            householdId: household.id,
+            defaults: settleDefaults(card),
+            settle: true,
+        });
+        ref.afterClosed().subscribe((changed) => {
+            if (changed) this.accounts.reload();
+        });
+    }
 
     /** The period lives in the URL so reload and back/forward keep it. */
     setPeriod(period: Period): void {

@@ -13,6 +13,7 @@ import { TransactionModule } from './features/transaction/transaction.module.js'
 import { BudgetModule } from './features/budget/budget.module.js';
 import { RecurringModule } from './features/recurring/recurring.module.js';
 import { InvitationModule } from './features/invitation/invitation.module.js';
+import { TransferModule } from './features/transfer/transfer.module.js';
 
 @Module({
     imports: [
@@ -30,6 +31,7 @@ import { InvitationModule } from './features/invitation/invitation.module.js';
         BudgetModule,
         RecurringModule,
         InvitationModule,
+        TransferModule,
     ],
 })
 export class AppModule {}

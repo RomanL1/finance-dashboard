@@ -50,6 +50,14 @@ Flag on a **Transaction** created by a **Recurring transaction** with a **Varyin
 **Weekend shift** (de: Am Wochenende vorziehen):
 Option of a monthly or longer **Recurring transaction**: an **Occurrence** on Saturday or Sunday is booked on the Friday before, even across a month boundary. The schedule itself keeps the unshifted date.
 
+**Transfer** (de: Umbuchung):
+Money moved from one account to another of the same **Household** at a date. Lowers the paying account's balance and raises the receiving one's; never counts as income, expense or toward a budget.
+_Avoid_: transaction (a **Transfer** is not one), booking
+
+**Settle**:
+Paying off a credit card's debt with a **Transfer** from an account the user picks. Offered for an active credit card with a negative balance; proposes the whole debt.
+_Avoid_: pay off, clear
+
 **Paused**:
 State of a **Recurring transaction** whose **Occurrences** are skipped for good until resumed.
 
@@ -60,6 +68,7 @@ State of a **Recurring transaction** whose **Occurrences** are skipped for good 
 - An **Invitation** belongs to one **Household**; a **Household** has at most ten open **Invitations**
 - Removing a **Member** keeps everything they entered: data belongs to the **Household**
 - A **Recurring transaction** belongs to one account and optionally one category
+- A **Transfer** has two different accounts of the same **Household**, both active at its date; an account with **Transfers** cannot be deleted
 - A **Transaction** comes from at most one **Recurring transaction**; when the **Recurring transaction** is deleted, **Transactions** whose day has come stay and lose the link
 - Editing, pausing or deleting a **Recurring transaction** never changes **Transactions** whose day has come; its **Upcoming transactions** follow the change
 - An **Occurrence** moved by the **Weekend shift** belongs to the month it is booked in
