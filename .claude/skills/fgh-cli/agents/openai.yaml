@@ -1,0 +1,3 @@
+interface:
+  display_name: "Forgejo CLI (fgh)"
+  short_description: "Use fgh for private Forgejo tasks and Actions"
