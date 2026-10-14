@@ -16,7 +16,11 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { AccountBadgeComponent } from '../../../../components/account-badge/account-badge.component';
 import { AmountComponent } from '../../../../components/amount/amount.component';
 import { IconButtonComponent } from '../../../../components/button/button.component';
-import { isActiveAccount, type AccountDto } from '../../account.types';
+import {
+    canSettle,
+    isActiveAccount,
+    type AccountDto,
+} from '../../account.types';
 
 /** Settings view: every account, archived ones dimmed, with an actions menu per row. Same row grid as the transaction list. */
 @Component({
@@ -100,6 +104,16 @@ import { isActiveAccount, type AccountDto } from '../../account.types';
             </ul>
             <mat-menu #menu="matMenu">
                 <ng-template matMenuContent let-account="account">
+                    @if (settleable(account)) {
+                        <button
+                            mat-menu-item
+                            type="button"
+                            (click)="settle.emit(account.id)"
+                        >
+                            <mat-icon svgIcon="payments" />
+                            {{ 'transfer.settle.menu' | translate }}
+                        </button>
+                    }
                     <button
                         mat-menu-item
                         type="button"
@@ -147,6 +161,12 @@ export class AccountManageListComponent {
     readonly archive = output<string>();
     readonly unarchive = output<string>();
     readonly remove = output<string>();
+    /** Pay off a credit card's debt from another account. */
+    readonly settle = output<string>();
+
+    protected settleable(account: AccountDto): boolean {
+        return canSettle(account);
+    }
 
     protected isActive(account: AccountDto): boolean {
         return isActiveAccount(account);

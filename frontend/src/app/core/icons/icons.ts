@@ -24,12 +24,14 @@ import label from '@material-symbols/svg-400/outlined/label-fill.svg';
 import lightMode from '@material-symbols/svg-400/outlined/light_mode-fill.svg';
 import moreVert from '@material-symbols/svg-400/outlined/more_vert-fill.svg';
 import group from '@material-symbols/svg-400/outlined/group-fill.svg';
+import payments from '@material-symbols/svg-400/outlined/payments-fill.svg';
 import pause from '@material-symbols/svg-400/outlined/pause-fill.svg';
 import personRemove from '@material-symbols/svg-400/outlined/person_remove-fill.svg';
 import playArrow from '@material-symbols/svg-400/outlined/play_arrow-fill.svg';
 import receiptLong from '@material-symbols/svg-400/outlined/receipt_long-fill.svg';
 import repeat from '@material-symbols/svg-400/outlined/repeat-fill.svg';
 import settings from '@material-symbols/svg-400/outlined/settings-fill.svg';
+import syncAlt from '@material-symbols/svg-400/outlined/sync_alt-fill.svg';
 import unarchive from '@material-symbols/svg-400/outlined/unarchive-fill.svg';
 import visibility from '@material-symbols/svg-400/outlined/visibility-fill.svg';
 import visibilityOff from '@material-symbols/svg-400/outlined/visibility_off-fill.svg';
@@ -60,11 +62,13 @@ export const APP_ICONS = {
     light_mode: lightMode,
     more_vert: moreVert,
     pause,
+    payments,
     person_remove: personRemove,
     play_arrow: playArrow,
     receipt_long: receiptLong,
     repeat,
     settings,
+    sync_alt: syncAlt,
     unarchive,
     visibility,
     visibility_off: visibilityOff,

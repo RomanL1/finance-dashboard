@@ -50,4 +50,49 @@ describe('AccountChipsComponent', () => {
         expect(chips).toHaveLength(2);
         expect(chips[1].textContent).toContain('Savings');
     });
+
+    it('offers to settle an active credit card with debt only', () => {
+        accounts.set([
+            {
+                id: 'a1',
+                number: 1,
+                description: 'Checking',
+                type: 'checking',
+                amount: -100,
+                currency: 'CHF',
+                archivedAt: null,
+            },
+            {
+                id: 'card',
+                number: 2,
+                description: 'Visa',
+                type: 'credit_card',
+                amount: -2000,
+                currency: 'CHF',
+                archivedAt: null,
+            },
+            {
+                id: 'paid',
+                number: 3,
+                description: 'Amex',
+                type: 'credit_card',
+                amount: 0,
+                currency: 'CHF',
+                archivedAt: null,
+            },
+        ] as AccountDto[]);
+        const fixture = TestBed.createComponent(AccountChipsComponent, {
+            bindings: [inputBinding('accounts', accounts)],
+        });
+        fixture.detectChanges();
+        const settled: string[] = [];
+        fixture.componentInstance.settle.subscribe((id) => settled.push(id));
+        const buttons = (fixture.nativeElement as HTMLElement).querySelectorAll(
+            'button',
+        );
+
+        expect(buttons).toHaveLength(1);
+        buttons[0].click();
+        expect(settled).toEqual(['card']);
+    });
 });

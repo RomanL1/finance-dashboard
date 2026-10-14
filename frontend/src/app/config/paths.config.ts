@@ -27,6 +27,7 @@ export const NEW_HOUSEHOLD_PARAM = 'new';
 export const TRANSACTION_PATHS = {
     HISTORY: 'history',
     RECURRING: 'recurring',
+    TRANSFERS: 'transfers',
 } as const;
 
 /** Tabs under `analytics`, relative to it. */

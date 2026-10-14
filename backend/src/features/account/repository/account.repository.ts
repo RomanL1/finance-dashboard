@@ -1,22 +1,27 @@
 import { DRIZZLE } from '../../../shared/infra/db/db.module.js';
 import type { Db } from '../../../shared/infra/db/db.js';
 import { Inject, Injectable } from '@nestjs/common';
-import { and, eq, gt, gte, inArray, isNotNull, sql } from 'drizzle-orm';
+import { and, eq, gt, gte, inArray, isNotNull, or, sql } from 'drizzle-orm';
 import { Account, CreateAccount, UpdateAccount } from '../model/account.js';
 import { Id } from '../../../shared/kernel/index.js';
 import { financeAccount, nextAccountNumber } from '../model/account.schema.js';
 import { transaction } from '../../transaction/model/transaction.schema.js';
 import { recurringTransaction } from '../../recurring/model/recurring.schema.js';
+import { transfer } from '../../transfer/model/transfer.schema.js';
 
 @Injectable()
 export class AccountRepository {
     constructor(@Inject(DRIZZLE) private readonly db: Db) {}
 
-    /** Balance is derived: initial value plus signed transaction sum. */
+    /** Balance is derived: initial value plus signed transaction sum plus transfers in minus transfers out. */
     private readonly balance =
         sql<number>`${financeAccount.initialValue} + coalesce((
         select sum(case when ${transaction.type} = 'income' then ${transaction.amount} else -${transaction.amount} end)
         from ${transaction} where ${transaction.accountId} = ${financeAccount.id}
+    ), 0) + coalesce((
+        select sum(${transfer.amount}) from ${transfer} where ${transfer.toAccountId} = ${financeAccount.id}
+    ), 0) - coalesce((
+        select sum(${transfer.amount}) from ${transfer} where ${transfer.fromAccountId} = ${financeAccount.id}
     ), 0)`.mapWith(Number);
 
     private readonly columns = {
@@ -116,6 +121,7 @@ export class AccountRepository {
         return account ?? null;
     }
 
+    /** Transfers count as history too: their FKs are `restrict`. */
     async hasTransactions(householdId: Id, id: Id): Promise<boolean> {
         const [row] = await this.db
             .select({ id: transaction.id })
@@ -131,7 +137,25 @@ export class AccountRepository {
                 ),
             )
             .limit(1);
-        return row !== undefined;
+        if (row) return true;
+        const [moved] = await this.db
+            .select({ id: transfer.id })
+            .from(transfer)
+            .innerJoin(
+                financeAccount,
+                or(
+                    eq(financeAccount.id, transfer.fromAccountId),
+                    eq(financeAccount.id, transfer.toAccountId),
+                ),
+            )
+            .where(
+                and(
+                    eq(financeAccount.id, id),
+                    eq(financeAccount.householdId, householdId),
+                ),
+            )
+            .limit(1);
+        return moved !== undefined;
     }
 
     async hasRecurringTransactions(householdId: Id, id: Id): Promise<boolean> {

@@ -148,6 +148,13 @@ export const routes: Routes = [
                                 (m) => m.RecurringPage,
                             ),
                     },
+                    {
+                        path: TRANSACTION_PATHS.TRANSFERS,
+                        loadComponent: () =>
+                            import('../features/transfer/pages/transfers.page').then(
+                                (m) => m.TransfersPage,
+                            ),
+                    },
                 ],
             },
             {

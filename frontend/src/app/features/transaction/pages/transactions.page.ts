@@ -7,7 +7,7 @@ import {
 } from '../../../components/tab-nav/tab-nav.component';
 import { TRANSACTION_PATHS } from '../../../config/paths.config';
 
-/** Layout for the transaction tabs: the booked history and the recurring transactions that feed it. */
+/** Layout for the transaction tabs: the booked history, the recurring transactions that feed it, and transfers between accounts. */
 @Component({
     selector: 'app-transactions-page',
     imports: [RouterOutlet, TabNavComponent, TranslatePipe],
@@ -33,6 +33,10 @@ export class TransactionsPage {
         {
             path: TRANSACTION_PATHS.RECURRING,
             label: 'transaction.tabs.recurring',
+        },
+        {
+            path: TRANSACTION_PATHS.TRANSFERS,
+            label: 'transaction.tabs.transfers',
         },
     ];
 }

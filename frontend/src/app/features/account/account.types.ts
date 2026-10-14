@@ -29,3 +29,12 @@ export interface AccountDialogData {
 export function isActiveAccount(account: AccountDto, at = new Date()): boolean {
     return account.archivedAt == null || new Date(account.archivedAt) > at;
 }
+
+/** An active credit card that owes money (negative balance): it can be settled by a transfer from another account. */
+export function canSettle(account: AccountDto, at = new Date()): boolean {
+    return (
+        account.type === 'credit_card' &&
+        account.amount < 0 &&
+        isActiveAccount(account, at)
+    );
+}

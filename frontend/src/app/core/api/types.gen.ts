@@ -396,6 +396,55 @@ export type InvitationPreviewDto = {
     ownerName: string;
 };
 
+export type TransferDto = {
+    id: string;
+    /**
+     * Paying account
+     */
+    fromAccountId: string;
+    /**
+     * Receiving account
+     */
+    toAccountId: string;
+    /**
+     * Minor units (cents), positive
+     */
+    amount: number;
+    title: string | null;
+    date: string;
+    createdAt: string;
+};
+
+export type TransferPageDto = {
+    items: Array<TransferDto>;
+    /**
+     * Matching rows across all pages
+     */
+    total: number;
+    /**
+     * 1-based
+     */
+    page: number;
+    pageSize: number;
+};
+
+export type CreateTransferDto = {
+    /**
+     * Paying account within the household
+     */
+    fromAccountId: string;
+    /**
+     * Receiving account within the household, not the payer
+     */
+    toAccountId: string;
+    /**
+     * Minor units (cents)
+     */
+    amount: number;
+    title?: string | null;
+    date: string;
+};
+
 export type HealthHealthData = {
     body?: never;
     path?: never;
@@ -1333,3 +1382,103 @@ export type InvitationAcceptResponses = {
 
 export type InvitationAcceptResponse =
     InvitationAcceptResponses[keyof InvitationAcceptResponses];
+
+export type TransferGetTransfersData = {
+    body?: never;
+    path: {
+        /**
+         * Household id
+         */
+        householdId: string;
+    };
+    query?: {
+        /**
+         * Only transfers from or to this account
+         */
+        accountId?: string;
+        /**
+         * 1-based
+         */
+        page?: number;
+        /**
+         * Rows per page
+         */
+        pageSize?: number;
+    };
+    url: '/api/households/{householdId}/transfers';
+};
+
+export type TransferGetTransfersResponses = {
+    200: TransferPageDto;
+};
+
+export type TransferGetTransfersResponse =
+    TransferGetTransfersResponses[keyof TransferGetTransfersResponses];
+
+export type TransferCreateTransferData = {
+    body: CreateTransferDto;
+    path: {
+        /**
+         * Household id
+         */
+        householdId: string;
+    };
+    query?: never;
+    url: '/api/households/{householdId}/transfers';
+};
+
+export type TransferCreateTransferResponses = {
+    200: TransferDto;
+};
+
+export type TransferCreateTransferResponse =
+    TransferCreateTransferResponses[keyof TransferCreateTransferResponses];
+
+export type TransferDeleteTransferData = {
+    body?: never;
+    path: {
+        /**
+         * Transfer id
+         */
+        transferId: string;
+        /**
+         * Household id
+         */
+        householdId: string;
+    };
+    query?: never;
+    url: '/api/households/{householdId}/transfers/{transferId}';
+};
+
+export type TransferDeleteTransferResponses = {
+    /**
+     * Transfer successfully deleted
+     */
+    204: void;
+};
+
+export type TransferDeleteTransferResponse =
+    TransferDeleteTransferResponses[keyof TransferDeleteTransferResponses];
+
+export type TransferUpdateTransferData = {
+    body: CreateTransferDto;
+    path: {
+        /**
+         * Transfer id
+         */
+        transferId: string;
+        /**
+         * Household id
+         */
+        householdId: string;
+    };
+    query?: never;
+    url: '/api/households/{householdId}/transfers/{transferId}';
+};
+
+export type TransferUpdateTransferResponses = {
+    200: TransferDto;
+};
+
+export type TransferUpdateTransferResponse =
+    TransferUpdateTransferResponses[keyof TransferUpdateTransferResponses];

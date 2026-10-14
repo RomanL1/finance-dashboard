@@ -1,13 +1,26 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    input,
+    output,
+} from '@angular/core';
+import { MatIcon } from '@angular/material/icon';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AccountBadgeComponent } from '../../../../components/account-badge/account-badge.component';
 import { AmountComponent } from '../../../../components/amount/amount.component';
-import type { AccountDto } from '../../account.types';
+import { IconButtonComponent } from '../../../../components/button/button.component';
+import { canSettle, type AccountDto } from '../../account.types';
 
-/** Horizontal row of account balances, bleeding to the viewport edge on phones. */
+/** Horizontal row of account balances, bleeding to the viewport edge on phones. A credit card with debt offers to settle it. */
 @Component({
     selector: 'app-account-chips',
-    imports: [AccountBadgeComponent, AmountComponent, TranslatePipe],
+    imports: [
+        AccountBadgeComponent,
+        AmountComponent,
+        IconButtonComponent,
+        MatIcon,
+        TranslatePipe,
+    ],
     template: `
         @if (accounts().length === 0) {
             <p class="type-body-medium text-on-surface-variant">
@@ -21,6 +34,7 @@ import type { AccountDto } from '../../account.types';
                 @for (account of accounts(); track account.id) {
                     <li
                         class="flex shrink-0 snap-start items-center gap-3 rounded-full bg-surface-high py-2 pr-4 pl-2"
+                        [class.!pr-1]="settleable(account)"
                     >
                         <app-account-badge [number]="account.number" />
                         <div class="flex flex-col">
@@ -36,6 +50,18 @@ import type { AccountDto } from '../../account.types';
                                 [showPlus]="false"
                             />
                         </div>
+                        @if (settleable(account)) {
+                            <app-icon-button
+                                [ariaLabel]="
+                                    'transfer.settle.action'
+                                        | translate
+                                            : { name: account.description }
+                                "
+                                (clicked)="settle.emit(account.id)"
+                            >
+                                <mat-icon svgIcon="payments" />
+                            </app-icon-button>
+                        }
                     </li>
                 }
             </ul>
@@ -45,4 +71,10 @@ import type { AccountDto } from '../../account.types';
 })
 export class AccountChipsComponent {
     readonly accounts = input.required<AccountDto[]>();
+    /** Pay off a credit card's debt from another account. */
+    readonly settle = output<string>();
+
+    protected settleable(account: AccountDto): boolean {
+        return canSettle(account);
+    }
 }

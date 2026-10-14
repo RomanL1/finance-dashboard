@@ -42,6 +42,8 @@ import { HouseholdService } from '../../household/services/household.service';
 import { HouseholdSwitcherComponent } from '../../household/dumb_components/household-switcher/household-switcher.component';
 import { AccountService } from '../../account/services/account.service';
 import { AccountManageListComponent } from '../../account/dumb_components/account-manage-list/account-manage-list.component';
+import { openTransferDialog } from '../../transfer/smart_components/transfer-dialog/open-transfer-dialog';
+import { settleDefaults } from '../../transfer/transfer.types';
 import type { AccountDialogComponent } from '../../account/smart_components/account-dialog/account-dialog.component';
 import type {
     AccountDialogData,
@@ -305,6 +307,7 @@ import type { AppIcon } from '../../../core/icons/icons';
                             (archive)="archive(h.id, $event, true)"
                             (unarchive)="archive(h.id, $event, false)"
                             (remove)="deleteAccount(h.id, $event)"
+                            (settle)="settle(h.id, $event)"
                         />
                     }
                 </section>
@@ -432,6 +435,20 @@ export class SettingsPage {
         );
         ref.afterClosed().subscribe((saved) => {
             if (saved) this.accounts.reload();
+        });
+    }
+
+    /** Pays off a credit card's debt from an account the user picks in the dialog. */
+    async settle(householdId: string, accountId: string): Promise<void> {
+        const card = this.find(accountId);
+        if (!card) return;
+        const ref = await openTransferDialog(this.dialogs, {
+            householdId,
+            defaults: settleDefaults(card),
+            settle: true,
+        });
+        ref.afterClosed().subscribe((changed) => {
+            if (changed) this.accounts.reload();
         });
     }
 

@@ -304,7 +304,50 @@
         },
         "tabs": {
             "history": "Verlauf",
-            "recurring": "Wiederkehrend"
+            "recurring": "Wiederkehrend",
+            "transfers": "Umbuchungen"
+        }
+    },
+    "transfer": {
+        "page": {
+            "subtitle": "Geld, das zwischen deinen eigenen Konten bewegt wird, z. B. um eine Kreditkarte zu begleichen. Umbuchungen ändern beide Kontostände, zählen aber nie als Einnahme oder Ausgabe."
+        },
+        "loadFailed": "Die Umbuchungen konnten nicht geladen werden.",
+        "list": {
+            "empty": "Noch keine Umbuchungen.",
+            "emptyHint": "Tippe auf +, um Geld zwischen Konten zu bewegen.",
+            "untitled": "Umbuchung",
+            "to": "nach"
+        },
+        "form": {
+            "amountLabel": "Betrag",
+            "amountRequired": "Gib einen Betrag größer als 0 ein",
+            "fromLabel": "Von Konto",
+            "toLabel": "Auf Konto",
+            "accountRequired": "Wähle ein Konto",
+            "dateLabel": "Datum",
+            "titleLabel": "Titel (optional)"
+        },
+        "dialog": {
+            "title": "Neue Umbuchung",
+            "editTitle": "Umbuchung bearbeiten",
+            "settleTitle": "Kreditkarte begleichen",
+            "hint": "Bewegt Geld zwischen zwei deiner Konten. Einnahmen, Ausgaben und Budgets bleiben unverändert.",
+            "settleHint": "Begleicht die Karte vom gewählten Konto. Der Betrag ist die aktuelle Schuld, inklusive bereits für diesen Monat geplanter Buchungen; ändere ihn für eine Teilzahlung.",
+            "cancel": "Abbrechen",
+            "save": "Speichern",
+            "delete": "Löschen",
+            "failed": "Die Umbuchung konnte nicht gespeichert werden.",
+            "deleteFailed": "Die Umbuchung konnte nicht gelöscht werden."
+        },
+        "delete": {
+            "title": "Umbuchung löschen?",
+            "message": "Entfernt die Umbuchung und passt beide Kontostände an.",
+            "confirm": "Löschen"
+        },
+        "settle": {
+            "action": "{{name}} begleichen",
+            "menu": "Begleichen"
         }
     },
     "nav": {
